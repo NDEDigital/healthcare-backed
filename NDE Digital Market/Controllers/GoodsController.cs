@@ -150,9 +150,10 @@ namespace NDE_Digital_Market.Controllers
             {
                 SqlConnection con = new SqlConnection(_prominentConnection);
                 con.Open();
-                string query = @"SELECT A.GroupCode, A.GoodsID, D.GroupName, A.GoodsName,
+                string query = @"   SELECT A.GroupCode, A.GoodsID, D.GroupName, A.GoodsName,
                 ISNULL(A.Spec1,'') + ' ' + ISNULL(A.Spec2,'') + ' ' + ISNULL(A.Spec3,'') + ' ' + ISNULL(A.Spec4,'') AS Specification
-                FROM GoodsDefinition A JOIN GoodsGroupMaster D ON A.GroupCode = D.GroupCode";
+                FROM GoodsDefinition A JOIN GoodsGroupMaster D ON A.GroupCode = D.GroupCode WHERE D.GroupName = @GroupName 
+				ORDER BY GroupCode  DESC";
 
                 SqlCommand cmd = new SqlCommand(query, con);
                 cmd.Parameters.AddWithValue("@GroupName", GroupName);
