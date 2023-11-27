@@ -18,13 +18,15 @@ namespace NDE_Digital_Market.Controllers
     {
         private readonly string _connectionSteel;
         private readonly string _connectionNimpex;
+        private readonly string _prominentConnection;
         private readonly string _connectionDigitalMarket;
         private CommonServices _commonServices;
         public OrderController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
             _connectionSteel = config.GetConnectionString("DefaultConnection");
-            _connectionNimpex = config.GetConnectionString("NimpexConnection");
+            _prominentConnection = config.GetConnectionString("ProminentConnection");
+            _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
         }
 
@@ -40,7 +42,7 @@ namespace NDE_Digital_Market.Controllers
             try
             {
                 // Your database connection logic here
-                using (SqlConnection connection = new SqlConnection(_connectionDigitalMarket))
+                using (SqlConnection connection = new SqlConnection(_prominentConnection))
                 {
                     connection.Open();
 
@@ -130,7 +132,7 @@ namespace NDE_Digital_Market.Controllers
                                 detailCommand.Parameters.AddWithValue("@DeliveryDate", DateTime.Parse(detailItem.DeliveryDate));
                                 detailCommand.Parameters.AddWithValue("@Specification", detailItem.Specification);
                                 detailCommand.Parameters.AddWithValue("@GroupCode", detailItem.GroupCode);
-                                detailCommand.Parameters.AddWithValue("@SellerCode", detailItem.SellerCode);
+                                detailCommand.Parameters.AddWithValue("@SellerCode", detailItem.SellerCode  );
                                 detailCommand.Parameters.AddWithValue("@Status", detailItem.Status);
                                 detailCommand.ExecuteNonQuery();
 
@@ -170,121 +172,7 @@ namespace NDE_Digital_Market.Controllers
 
             }
         }
-        //public IActionResult Order([FromBody] MasterDetailModel orderData)
-        //{
-        //    try
-        //    {
-        //        // Your database connection logic here
-        //        using (SqlConnection connection = new SqlConnection(_connectionDigitalMarket))
-        //        {
-        //            connection.Open();
-
-        //            // Begin a transaction (optional)
-        //            //using (SqlTransaction transaction = connection.BeginTransaction())
-        //            //{
-        //            try
-        //            {
-        //                int masterId = 0;
-        //                // Insert the master data
-        //                foreach (var masterItem in orderData.master)
-        //                {
-        //                    SqlCommand getLastMasterIdCmd = new SqlCommand("SELECT ISNULL(MAX(OrderMasterId), 0) FROM OrderMaster;", connection);
-
-        //                    masterId = Convert.ToInt32(getLastMasterIdCmd.ExecuteScalar()) + 1;
-        //                    masterItem.BuyerCode = CommonServices.DecryptPassword(masterItem.BuyerCode);
-
-        //                    string systemCode = "";
-
-        //                    SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", connection);
-        //                    {
-        //                        cmdSP.CommandType = CommandType.StoredProcedure;
-        //                        cmdSP.Parameters.AddWithValue("@TableName", "OrderMaster");
-        //                        cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
-        //                        cmdSP.Parameters.AddWithValue("@AddNumber", 1);
-        //                        systemCode = cmdSP.ExecuteScalar().ToString();
-
-        //                    }
-
-        //                    if (!string.IsNullOrEmpty(systemCode))
-        //                    {
-        //                        masterItem.OrderNo = systemCode.Split('%')[1];
-        //                    }
-
-
-        //                    string masterInsertSql = "INSERT INTO OrderMaster (OrderMasterId, OrderNo, OrderDate," +
-        //                        "BuyerCode, Address, PaymentMethod, NumberOfItem, TotalPrice, Status, PhoneNumber,DeliveryCharge) " +
-        //                        "VALUES (@OrderMasterId,@OrderNo, @OrderDate, @BuyerCode, @Address, @PaymentMethod, @NumberOfItem, @TotalPrice, @Status, @PhoneNumber,@DeliveryCharge)";
-
-        //                    using (SqlCommand masterCommand = new SqlCommand(masterInsertSql, connection))
-        //                    {
-        //                        masterCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
-        //                        masterCommand.Parameters.AddWithValue("@OrderNo", masterItem.OrderNo);
-        //                        masterCommand.Parameters.AddWithValue("@OrderDate", DateTime.Parse(masterItem.OrderDate));
-        //                        masterCommand.Parameters.AddWithValue("@BuyerCode", masterItem.BuyerCode);
-        //                        masterCommand.Parameters.AddWithValue("@Address", masterItem.Address);
-        //                        masterCommand.Parameters.AddWithValue("@PaymentMethod", masterItem.PaymentMethod);
-        //                        masterCommand.Parameters.AddWithValue("@NumberOfItem", masterItem.NumberOfItem);
-        //                        masterCommand.Parameters.AddWithValue("@TotalPrice", masterItem.TotalPrice);
-        //                        masterCommand.Parameters.AddWithValue("@Status", masterItem.Status);
-        //                        masterCommand.Parameters.AddWithValue("@PhoneNumber", masterItem.phoneNumber);
-        //                        masterCommand.Parameters.AddWithValue("@DeliveryCharge", masterItem.DeliveryCharge);
-
-        //                        masterCommand.ExecuteNonQuery();
-        //                    }
-        //                }
-
-        //                // Insert the detail data
-        //                foreach (var detailItem in orderData.detail)
-        //                {
-        //                    string detailInsertSql = "INSERT INTO OrderDetails (OrderMasterId,GoodsId,GoodsName,Quantity, Discount, Price,DeliveryCharge,DeliveryDate,Specification, GroupCode, SellerCode, Status) " +
-        //                        "VALUES (@OrderMasterId, @GoodsId,@GoodsName, @Quantity, @Discount, @Price,@DeliveryCharge, @DeliveryDate, @Specification," +
-        //                        "@GroupCode,@SellerCode,@Status)";
-
-        //                    using (SqlCommand detailCommand = new SqlCommand(detailInsertSql, connection))
-        //                    {
-        //                        detailCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
-        //                        detailCommand.Parameters.AddWithValue("@GoodsId", detailItem.GoodsId);
-        //                        detailCommand.Parameters.AddWithValue("@GoodsName", detailItem.GoodsName);
-        //                        detailCommand.Parameters.AddWithValue("@Quantity", detailItem.Quantity);
-        //                        detailCommand.Parameters.AddWithValue("@Discount", detailItem.Discount);
-        //                        detailCommand.Parameters.AddWithValue("@Price", detailItem.Price);
-        //                        detailCommand.Parameters.AddWithValue("@DeliveryCharge", detailItem.DeliveryCharge);
-        //                        detailCommand.Parameters.AddWithValue("@DeliveryDate", DateTime.Parse(detailItem.DeliveryDate));
-        //                        detailCommand.Parameters.AddWithValue("@Specification", detailItem.Specification);
-        //                        detailCommand.Parameters.AddWithValue("@GroupCode", detailItem.GroupCode);
-        //                        detailCommand.Parameters.AddWithValue("@SellerCode", detailItem.SellerCode);
-        //                        detailCommand.Parameters.AddWithValue("@Status", detailItem.Status);
-        //                        detailCommand.ExecuteNonQuery();
-        //                    }
-        //                }
-
-        //                // Commit the transaction (if used)
-        //                //transaction.Commit();
-
-        //                return Ok(new { message = "Data inserted successfully." });
-
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                // Rollback the transaction in case of an exception
-        //                //transaction.Rollback();
-
-        //                // Handle the exception
-        //                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
-
-        //            }
-        //        }
-        //        //}
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Handle any exceptions here
-        //        return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
-
-        //    }
-        //}
-
-        //------------------ added by Marufa -------------------
+      
 
         [HttpPost, Authorize(Roles = "admin")]
        // [HttpPost ]
@@ -293,7 +181,7 @@ namespace NDE_Digital_Market.Controllers
         {
 
             int PendingCount = 0, ApprovedCount = 0, DeliveredCount = 0, ReturnedCount = 0, CancelledCount = 0, TotalRowCount = 0 , ToReturnCount = 0;
-            using SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            using SqlConnection con = new SqlConnection(_prominentConnection);
             con.Open();
             string condition = "";
 
@@ -457,7 +345,7 @@ namespace NDE_Digital_Market.Controllers
         [HttpPost("GetDatailsData"),Authorize(Roles = "admin")]
         public IActionResult GetDatailsData([FromForm] int OrderMasterId)
         {
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
 
             List<AdminOrderDetailsModel> detailsModels = new List<AdminOrderDetailsModel>();
             SqlCommand sqlCommand = new SqlCommand("SELECT [OrderMasterId],[OrderDetailId],[SellerCode] ,[GoodsId],[GoodsName],[GroupCode],[Specification],[Quantity],[Discount],[Price],[Status]" +
@@ -511,7 +399,7 @@ namespace NDE_Digital_Market.Controllers
                 List<int> MasterIds = orderMasterId.Split(',').Select(int.Parse).ToList();
                 MasterIdString = string.Join(",", MasterIds);
             }
-            using SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            using SqlConnection con = new SqlConnection(_prominentConnection);
             string detailsStatus = "Cancelled";
            
             SqlCommand cmd;
@@ -545,7 +433,7 @@ namespace NDE_Digital_Market.Controllers
         {
             int PendingCount = 0, ApprovedCount = 0, DeliveredCount = 0, ReturnedCount = 0, CancelledCount = 0, TotalRowCount = 0, ToReturnCount = 0;
             List<ProductReturnModel> returnData = new List<ProductReturnModel>();
-            using SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            using SqlConnection con = new SqlConnection(_prominentConnection);
             con.Open();
             string condition = "FROM  [ProductReturn] r  LEFT JOIN  [ReturnType] t ON r.[TypeId] = t.[TypeId]" +
                          " JOIN  OrderDetails od ON r.[DetailsId] = od.[OrderDetailId] AND od.[Status] = @status";
@@ -695,7 +583,7 @@ namespace NDE_Digital_Market.Controllers
          string sqlSelect = "SELECT r.[ReturnId],r.[GoodsName], r.[GroupName], r.[GroupCode], r.[GoodsId],r.[TypeId],r.[Remarks],r.[OrderNo],r.[DeliveryDate],r.[Price],r.[DetailsId],r.[SellerCode],r.[ApplyDate] ,t.[TypeId]," +
                 "t.[ReturnType], od.[OrderDetailId],od.[Status] , ( SELECT COUNT(*) " + @condition + ") AS TotalRowCount " + condition + " ORDER BY [ApplyDate] DESC" +
                 " OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
-            using (SqlConnection connection = new SqlConnection(_connectionDigitalMarket))
+            using (SqlConnection connection = new SqlConnection(_prominentConnection))
             {
                 using (SqlCommand cmd = new SqlCommand(sqlSelect, connection))
                 {
@@ -749,7 +637,7 @@ namespace NDE_Digital_Market.Controllers
         {
             UserModel user = new UserModel();
             string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserCode = @userCode ", con);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
@@ -853,7 +741,7 @@ namespace NDE_Digital_Market.Controllers
             List<SellerOrderMaster> orderLst = new List<SellerOrderMaster>();
             List<CountsList> countsList = new List<CountsList>();
 
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             string queryForSeller = "sp_OrderMasterDataForSeller";
             con.Open();
             SqlCommand cmdForSeller = new SqlCommand(queryForSeller, con);
@@ -908,7 +796,7 @@ namespace NDE_Digital_Market.Controllers
         public IActionResult updateSellerOrderStatus([FromForm] string idList, [FromForm] string status, [FromForm] string sellerCode)
         {
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             List<int> ids = idList.Split(',').Select(int.Parse).ToList();
             string idListString = string.Join(",", ids);
             SqlCommand cmd = new SqlCommand("UPDATE OrderDetails SET Status = @status WHERE OrderMasterId IN (" + idListString + ") AND SellerCode=@sellerCode  And  Status != 'Rejected'", con);
@@ -928,7 +816,7 @@ namespace NDE_Digital_Market.Controllers
             List<BuyerOrderModel> buyerOrderLst = new List<BuyerOrderModel>();
             List<CountsList> countsList = new List<CountsList>();
 
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             string queryForBuyer = "sp_OrderDataForBuyer";
             con.Open();
             SqlCommand cmdForBuyer = new SqlCommand(queryForBuyer, con);
@@ -1005,7 +893,7 @@ namespace NDE_Digital_Market.Controllers
            public IActionResult checkUnderOrderProccess( int GoodsId,string GroupCode) 
             {
 
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
            SqlCommand cmd = new SqlCommand("SELECT CASE   WHEN COUNT(*) > 0 THEN 'true'   ELSE 'false'" +
                 "END AS isUnderOrderProccess FROM OrderDetails WHERE GoodsId = @GoodsId AND GroupCode = @GroupCode AND Status NOT IN ('Delivered', 'Reviewed', 'Cancelled');", con);
             cmd.CommandType = CommandType.Text;
@@ -1039,7 +927,7 @@ namespace NDE_Digital_Market.Controllers
         public IActionResult updateDetailsOrderStatus([FromForm] string idList, [FromForm] string status )
         {
            
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             List<int> ids = idList.Split(',').Select(int.Parse).ToList();
             string idListString = string.Join(",", ids);
             if(status != "Cancelled") {
@@ -1070,7 +958,7 @@ namespace NDE_Digital_Market.Controllers
             List<int> ids = idList.Split(',').Select(int.Parse).ToList();
             string idListString = string.Join(",", ids);
             List<ShortendUserModel> users = new List<ShortendUserModel>();
-            SqlConnection con = new SqlConnection(_connectionDigitalMarket);
+            SqlConnection con = new SqlConnection(_prominentConnection);
             SqlCommand cmd = new SqlCommand(
       "SELECT OM.OrderMasterId, UR.UserId, UR.FullName, UR.Email, UR.PhoneNumber " +
       "FROM OrderMaster OM " +

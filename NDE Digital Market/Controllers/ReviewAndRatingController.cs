@@ -156,7 +156,7 @@ namespace NDE_Digital_Market.Controllers
                                 command.Parameters.AddWithValue("@BuyerId", decryptedBuyerCode);
                                 command.Parameters.AddWithValue("@GroupCode", reviewAndRating.GroupCode);
                                 command.Parameters.AddWithValue("@GoodsId", reviewAndRating.GoodsId);
-                                command.Parameters.AddWithValue("@GroupName", reviewAndRating.GroupName);
+                                command.Parameters.AddWithValue("@GroupName", reviewAndRating.GroupName ?? "");
                                 command.Parameters.AddWithValue("@SellerId", reviewAndRating.SellerId);
                                 command.Parameters.AddWithValue("@DateTime", DateTime.Now);
                                 if (reviewAndRating.ImagePath != null)

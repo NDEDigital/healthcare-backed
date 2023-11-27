@@ -12,7 +12,7 @@
         public float DeliveryCharge { get; set; }
         public string Specification { get; set; }
         public string GroupCode { get; set; }
-        public string SellerCode { get; set; }
+        public string? SellerCode  { get; set; }
         public string Status { get; set; }
      }
 }

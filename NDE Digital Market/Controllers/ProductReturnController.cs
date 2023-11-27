@@ -50,7 +50,7 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@DetailsId", returnData.DetailsId);
                 cmd.Parameters.AddWithValue("@SellerCode", returnData.SellerCode);
                 cmd.Parameters.AddWithValue("@OrderNo", returnData.OrderNo);
-                cmd.Parameters.AddWithValue("@GoodsName", returnData.GoodsName);
+                cmd.Parameters.AddWithValue("@GoodsName", returnData.GoodsName ?? " ");
                 cmd.Parameters.AddWithValue("@DeliveryDate", returnData.DeliveryDate);
 
 

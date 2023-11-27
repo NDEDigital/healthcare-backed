@@ -28,7 +28,7 @@ namespace NDE_Digital_Market.Controllers
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
-            con = new SqlConnection(_configuration.GetConnectionString("DigitalMarketConnection"));
+            con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
            // _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
         }
 
@@ -99,7 +99,7 @@ namespace NDE_Digital_Market.Controllers
                 //SP END
 
                 // Encrypt the Password
-                string encryptedPassword = CommonServices.EncryptPassword(user.Password);
+            string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             createPasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
             SqlCommand cmd = new SqlCommand("  INSERT INTO UserRegistration (UserId, UserCode, CountryRegion, IsBuyer, IsSeller, IsAdmin, FullName, PhoneNumber, Email, PasswordHash, PasswordSalt, Address, CompanyName, Website, ProductCategory, YearsInBusiness, BusinessRegistrationNumber, TaxIdNumber, PreferredPaymentMethod, TimeStamp)\nVALUES (@userID, @userCode, @contryRegion, @isBuyer, @isSeller, @isAdmin, @fullName, @phoneNumber, @email, @passwordHash, @passwordSalt, @address, @companyName, @website, @productCategory, @yearsInBusiness, @businessRegNum, @TaxIDNum, @preferredPaymentMethod, @TimeStamp)", con);
                 cmd.CommandType = CommandType.Text;
