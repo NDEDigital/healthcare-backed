@@ -1000,16 +1000,23 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetSellerInventory")]
-        public List<SellerInventoryModel> GetProductList(string SellerCode)
+        public List<SellerInventoryModel> GetProductList(string SellerCode ,String? GoodsName, String? GroupCode)
         {
             List<SellerInventoryModel> res = new List<SellerInventoryModel>();
-
-            if (SellerCode =="USR-STL-MDL-23-11-0003")
+            string decryptedSupplierCode = CommonServices.DecryptPassword(SellerCode);
+              if (decryptedSupplierCode == "USR-STL-MDL-23-11-0003")
+             
             {
                 using (SqlConnection con = new SqlConnection(_prominentConnection))
                 {
-                    string query = @"SELECT [GoodsID],[GroupCode],[GoodsName] FROM [GoodsDefinition]";
+                    string query = @"SELECT [GoodsID],[GroupCode],[GoodsName] FROM [GoodsDefinition] where (
+                                    (@GoodsName IS NULL OR @GoodsName = '' OR [GoodsName] LIKE   @GoodsName   )
+                                    AND (@GroupCode IS NULL OR @GroupCode = '' OR [GroupCode] LIKE  @GroupCode   )
+                                    )";
                     SqlCommand cmd = new SqlCommand(query, con);
+
+                    cmd.Parameters.AddWithValue("@GoodsName", '%' + GoodsName + '%');
+                    cmd.Parameters.AddWithValue("@GroupCode", '%' + GroupCode + '%');
                     SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
 
