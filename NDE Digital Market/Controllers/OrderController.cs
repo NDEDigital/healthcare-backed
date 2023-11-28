@@ -993,6 +993,58 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
+
+
+        // by Marufa
+
+        [HttpGet]
+        [Route("GetSellerInventory")]
+        public List<SellerInventoryModel> GetProductList(string SellerCode)
+        {
+            List<SellerInventoryModel> res = new List<SellerInventoryModel>();
+
+            if (SellerCode =="USR-STL-MDL-23-11-0003")
+            {
+                using (SqlConnection con = new SqlConnection(_prominentConnection))
+                {
+                    string query = @"SELECT [GoodsID],[GroupCode],[GoodsName] FROM [GoodsDefinition]";
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+
+                    con.Open();
+                    adapter.Fill(dt);
+                    con.Close();
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        for (int i = 0; i < dt.Rows.Count; i++)
+                        {
+                            SellerInventoryModel modelObj = new SellerInventoryModel();
+
+                            modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+                            modelObj.GoodsID = int.Parse(dt.Rows[i]["GoodsID"].ToString());
+                            modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+                            modelObj.AvailableQuantity = 30;
+                            modelObj.TotalQuantity = 45;
+
+                            modelObj.salesQuantiy = 45 - 30;
+                            modelObj.Price = 10000;
+
+                            res.Add(modelObj);
+                        }
+                    }
+                }
+            }
+
+
+         
+
+            return res;
+        }
+
+
     }
 }
 
