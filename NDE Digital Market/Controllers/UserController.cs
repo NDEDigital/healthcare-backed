@@ -187,7 +187,7 @@ namespace NDE_Digital_Market.Controllers
 
                 if (!VerifyPasswordHash(user.Password, storedPasswordHash, storedPasswordSalt))
                 {
-                    return BadRequest("Wrong password.");
+                    return BadRequest(new { message = "Invalid Password" });
                 }
                 //await SetRefreshToken(newRefreshToken, encryptedUserCode);
                 // Return the user object as a response

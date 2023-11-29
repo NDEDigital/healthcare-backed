@@ -259,7 +259,7 @@ namespace NDE_Digital_Market.Controllers
             Status,
             (SELECT COUNT(*) FROM  OrderMaster {condition}) AS TotalCount
         FROM  OrderMaster {condition}
-        ORDER BY  OrderDate DESC
+        ORDER BY  OrderNo DESC
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
 
             SqlCommand cmd = new SqlCommand(query, con);
@@ -483,7 +483,7 @@ namespace NDE_Digital_Market.Controllers
  
         FROM  OrderMaster;"+
                 " SELECT r.[ReturnId], r.[GroupName],r.[GoodsName], r.[GroupCode], r.[GoodsId],r.[TypeId],r.[Remarks],r.[OrderNo],r.[DeliveryDate],r.[Price],r.[DetailsId],r.[SellerCode],r.[ApplyDate] ,t.[TypeId]," +
-                "t.[ReturnType], od.[OrderDetailId],od.[Status] , ( SELECT COUNT(*) " + @condition + ") AS TotalRowCount " + condition + " ORDER BY [ApplyDate] DESC" +
+                "t.[ReturnType], od.[OrderDetailId],od.[Status] , ( SELECT COUNT(*) " + @condition + ") AS TotalRowCount " + condition + " ORDER BY OrderNo DESC" +
                 " OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
 
