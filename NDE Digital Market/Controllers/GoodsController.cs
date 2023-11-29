@@ -18,9 +18,9 @@ namespace NDE_Digital_Market.Controllers
         private readonly string _connectionDigitalMarket;
         public GoodsController(IConfiguration config)
         {
-            _connectionSteel = config.GetConnectionString("DefaultConnection");
+      
             _prominentConnection = config.GetConnectionString("ProminentConnection");
-            _connectionNimpex = config.GetConnectionString("NimpexConnection");
+       
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
         }
 
