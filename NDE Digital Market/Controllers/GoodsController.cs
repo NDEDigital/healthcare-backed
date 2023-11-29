@@ -49,7 +49,7 @@ namespace NDE_Digital_Market.Controllers
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                modelObj.CompanyName = "NDE Prominent";
+                modelObj.CompanyName = "Nimpex";
                 modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
                 modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
                 modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
@@ -131,7 +131,7 @@ namespace NDE_Digital_Market.Controllers
                     if (matchExists > 0)
                     {
                         ProductCompanyModel obj = new ProductCompanyModel();
-                        obj.CompanyName = "NDE Prominent";
+                        obj.CompanyName = "Nimpex";
                         obj.CompanyCode = "1";
                         res.Add(obj);
                     }
@@ -166,7 +166,7 @@ namespace NDE_Digital_Market.Controllers
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                    modelObj.CompanyName = "NDE Prominent";
+                    modelObj.CompanyName = "Nimpex";
                     modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
                     modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
                     modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
