@@ -764,7 +764,7 @@ namespace NDE_Digital_Market.Controllers
                 SellerOrderMaster order = new SellerOrderMaster();
                 order.OrderMasterId = Convert.ToInt32(dt.Rows[i]["OrderMasterId"]);
                 order.OrderNo = dt.Rows[i]["OrderNo"].ToString();
-                order.OrderDate = dt.Rows[i]["OrderDate"].ToString().Split(" ")[0];
+                order.OrderDate = dt.Rows[i]["OrderDate"].ToString() ;
                 order.Address = dt.Rows[i]["Address"].ToString();
                 order.Status = dt.Rows[i]["Status"].ToString();
                 order.PaymentMethod = dt.Rows[i]["PaymentMethod"].ToString();
