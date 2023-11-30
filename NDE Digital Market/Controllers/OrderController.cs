@@ -309,7 +309,7 @@ namespace NDE_Digital_Market.Controllers
                     AdminOrderMaster modelObj = new AdminOrderMaster();
                     modelObj.OrderMasterId = row["OrderMasterId"].ToString();
                     modelObj.OrderNo = row["OrderNo"].ToString();
-                    modelObj.OrderDate = row["OrderDate"].ToString().Split(" ")[0];
+                    modelObj.OrderDate = row["OrderDate"].ToString();
                     modelObj.Address = row["Address"].ToString();
                     modelObj.PaymentMethod = row["PaymentMethod"].ToString();
                     modelObj.NumberOfItem = row["NumberOfItem"].ToString();
