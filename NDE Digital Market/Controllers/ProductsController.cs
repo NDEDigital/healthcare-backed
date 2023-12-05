@@ -5,7 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-
+using NDE_Digital_Market.Model.MaterialStock;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -17,6 +17,7 @@ namespace NDE_Digital_Market.Controllers
         private readonly SqlConnection con;
         //private readonly IWebHostEnvironment _hostingEnvironment;
         //public ProductsController(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        private CommonServices _commonServices;
         public ProductsController(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -81,6 +82,7 @@ VALUES
     (@GoodsName, @GroupCode, @GroupName, @Specification, @Price, @SellerCode, @Quantity, 
      @QuantityUnit, @AddedDate, @UpdatedDate, @AddedBy, @UpdatedBy, @AddedPc, @UpdatedPc, 
      @ImagePath, @Status);
+ SELECT SCOPE_IDENTITY();
 ";
 
 
@@ -107,8 +109,22 @@ VALUES
             try
             {
                 con.Open();
-                cmd.ExecuteNonQuery();
+                object result = cmd.ExecuteScalar();
+                if (result != null)
+                {
+                    product.GoodsId = result.ToString();
+                }
                 con.Close();
+                List<MaterialStock> stock = new List<MaterialStock>();
+                MaterialStock obj = new MaterialStock();
+                obj.GroupCode = product.GroupCode;
+                obj.GoodsId = Convert.ToInt32(product.GoodsId);
+                obj.SellerCode = product.SellerCode;
+                obj.SalesQty = 0;
+                obj.OperationType = "ADD";
+                stock.Add(obj);
+                string ans = _commonServices.InsertUpdateStockQt(stock);
+
                 return Ok(); // If execution is successful
             }
             catch (SqlException ex)

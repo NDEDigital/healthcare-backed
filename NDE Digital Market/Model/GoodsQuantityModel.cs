@@ -4,7 +4,7 @@
     {
         public string? CompanyName { get; set; }
         public string? GroupCode { get; set; }
-        public string? GoodsID { get; set; }
+        public string? GoodsId { get; set; }
         public string? GroupName { get; set; }
         public string? GoodsName { get; set; }
         public string? Specification { get; set; }
