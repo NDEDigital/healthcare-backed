@@ -71,7 +71,7 @@ namespace NDE_Digital_Market.Controllers
                 GoodsQuantityModel modelObj = new GoodsQuantityModel();
                 modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
                 modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
+                modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
                 modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                 modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                 modelObj.Specification = dt.Rows[i]["Specification"].ToString();
@@ -218,7 +218,7 @@ namespace NDE_Digital_Market.Controllers
                     GoodsQuantityModel modelObj = new GoodsQuantityModel();
                     modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
                     modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                    modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
+                    modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
                     modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                     modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                     modelObj.Specification = dt.Rows[i]["Specification"].ToString();
