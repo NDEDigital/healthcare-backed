@@ -47,8 +47,8 @@ namespace NDE_Digital_Market.Controllers
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
             //string path = Path.Combine(rootPath,@"images\Uploads", product.ImageName);
-           //string path = Path.Combine(@"G:\NDEDigitalMarket\src\assets\images\Uploads", product.ImageName);
-            string path = Path.Combine(@"C:\NDE-Digital-Market\dist\nde-digital-market\assets\images\Uploads", product.ImageName);
+            string path = Path.Combine(@"E:\Nimpex Health Care\NDE-Digital-Medical-Front-\src\assets\images\Uploads", product.ImageName);
+            //string path = Path.Combine(@"C:\NDE-Digital-Market\dist\nde-digital-market\assets\images\Uploads", product.ImageName);
             product.ImagePath = path;
             //Console.WriteLine(path);
             product.AddedBy = decryptedSupplierCode;
@@ -84,9 +84,7 @@ VALUES
 ";
 
 
-            SqlCommand cmd = new SqlCommand("INSERT INTO ProductList VALUES  (@ProductId,@ProductCode,@ProductName,@ProductDescription," +
-                "@MaterialType,@MaterialName,@Height,@Width,@Length,@Weight,@Finish,@Grade,@Price,@ImagePath,@SupplierCode,@Quantity,@QuantityUnit,@DimensionUnit," +
-                "@WeightUnit,@AddedDate,@UpdatedDate,@AddedBy,@UpdatedBy,@AddedPC,@UpdatedPC,@Status,@StatusBit)", con);
+            SqlCommand cmd = new SqlCommand(query, con);
 
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
