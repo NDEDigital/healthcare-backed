@@ -33,16 +33,17 @@ namespace NDE_Digital_Market.Controllers
         //data => DateTime.Now
         //PC => "0.0.0.0"
 
-        [HttpPost, Authorize(Roles = "seller")]
+        //[HttpPost, Authorize(Roles = "seller")]
+        [HttpPost]
         [Route("AddProduct")]
-        public IActionResult AddProcuct([FromForm] ProductsModel product)
+        public IActionResult AddProcuct([FromForm] GoodsQuantityModel product)
         {
 
             product.AddedDate = DateTime.Now;
-            product.UpdateDate = DateTime.Now;
+            product.UpdatedDate = DateTime.Now;
 
-            string decryptedSupplierCode = CommonServices.DecryptPassword(product.SupplierCode);
-            product.SupplierCode = decryptedSupplierCode;
+            string decryptedSupplierCode = CommonServices.DecryptPassword(product.SellerCode);
+            product.SellerCode = decryptedSupplierCode;
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
             //string path = Path.Combine(rootPath,@"images\Uploads", product.ImageName);
@@ -71,40 +72,39 @@ namespace NDE_Digital_Market.Controllers
                 con.Close();
             }
 
-            product.ProductId = int.Parse(systemCode.Split('%')[0]);
-            product.ProductCode = systemCode.Split('%')[1];
+           
+            string query = @"INSERT INTO ProductList
+    (GoodsName, GroupCode, GroupName, Specification, Price, SellerCode, Quantity, 
+     QuantityUnit, AddedDate, UpdatedDate, AddedBy, UpdatedBy, AddedPc, UpdatedPc, 
+     ImagePath, Status)
+VALUES
+    (@GoodsName, @GroupCode, @GroupName, @Specification, @Price, @SellerCode, @Quantity, 
+     @QuantityUnit, @AddedDate, @UpdatedDate, @AddedBy, @UpdatedBy, @AddedPc, @UpdatedPc, 
+     @ImagePath, @Status);
+";
+
+
             SqlCommand cmd = new SqlCommand("INSERT INTO ProductList VALUES  (@ProductId,@ProductCode,@ProductName,@ProductDescription," +
                 "@MaterialType,@MaterialName,@Height,@Width,@Length,@Weight,@Finish,@Grade,@Price,@ImagePath,@SupplierCode,@Quantity,@QuantityUnit,@DimensionUnit," +
                 "@WeightUnit,@AddedDate,@UpdatedDate,@AddedBy,@UpdatedBy,@AddedPC,@UpdatedPC,@Status,@StatusBit)", con);
 
             cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@ProductId", product.ProductId);
-            cmd.Parameters.AddWithValue("@ProductCode", product.ProductCode);
-            cmd.Parameters.AddWithValue("@ProductName", product.ProductName);
-            cmd.Parameters.AddWithValue("@ProductDescription", product.ProductDescription);
-            cmd.Parameters.AddWithValue("@MaterialType", product.MaterialType);
-            cmd.Parameters.AddWithValue("@MaterialName", product.MaterialName);
-            cmd.Parameters.AddWithValue("@Height", product.Height);
-            cmd.Parameters.AddWithValue("@Width", product.Width);
-            cmd.Parameters.AddWithValue("@Length", product.Length);
-            cmd.Parameters.AddWithValue("@Weight", product.Weight);
-            cmd.Parameters.AddWithValue("@Finish", product.Finish);
-            cmd.Parameters.AddWithValue("@Grade", product.Grade);
+            cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
+            cmd.Parameters.AddWithValue("@GroupCode", product.GroupCode);
+            cmd.Parameters.AddWithValue("@GroupName", product.GroupName);
+            cmd.Parameters.AddWithValue("@Specification", product.Specification);
             cmd.Parameters.AddWithValue("@Price", product.Price);
-            cmd.Parameters.AddWithValue("@ImagePath", product.ImagePath);
-            cmd.Parameters.AddWithValue("@SupplierCode", decryptedSupplierCode);
-            cmd.Parameters.AddWithValue("@Quantity", product.Quantity);
+            cmd.Parameters.AddWithValue("@SellerCode", product.SellerCode);
+            cmd.Parameters.AddWithValue("@Quantity", product.quantity);
             cmd.Parameters.AddWithValue("@QuantityUnit", product.QuantityUnit);
-            cmd.Parameters.AddWithValue("@DimensionUnit", product.DimensionUnit);
-            cmd.Parameters.AddWithValue("@WeightUnit", product.WeightUnit);
-            cmd.Parameters.AddWithValue("@AddedDate", product.AddedDate);
-            cmd.Parameters.AddWithValue("@UpdatedDate", product.UpdateDate);
+            cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now); // or product.AddedDate if it's already set
+            cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now); // or product.UpdatedDate if it's already set
             cmd.Parameters.AddWithValue("@AddedBy", product.AddedBy);
             cmd.Parameters.AddWithValue("@UpdatedBy", product.UpdatedBy);
-            cmd.Parameters.AddWithValue("@AddedPC", product.AddedPC);
-            cmd.Parameters.AddWithValue("@UpdatedPC", product.UpdatedPC);
+            cmd.Parameters.AddWithValue("@AddedPc", product.AddedPc);
+            cmd.Parameters.AddWithValue("@UpdatedPc", product.UpdatedPc);
+            cmd.Parameters.AddWithValue("@ImagePath", product.ImagePath);
             cmd.Parameters.AddWithValue("@Status", product.Status);
-            cmd.Parameters.AddWithValue("@StatusBit", product.StatusBit);
 
             try
             {
@@ -366,11 +366,11 @@ namespace NDE_Digital_Market.Controllers
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
 
-            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @ProductId AND SellerCode = @SellerCode", con);
+            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @ProductId AND SellerCode = @Aw", con);
 
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@ProductId", ProductId);
-            cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
+            cmd.Parameters.AddWithValue("@SupplierCode", decryptedSupplierCode);
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();
