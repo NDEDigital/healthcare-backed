@@ -13,6 +13,8 @@
         public string? QuantityUnit { get; set; }
         public string? ImagePath { get; set; }
         public float Price { get; set; }
+        public string Status { get; set; }
+        public DateTime? AddedDate { get; set; }
 
     }
 }

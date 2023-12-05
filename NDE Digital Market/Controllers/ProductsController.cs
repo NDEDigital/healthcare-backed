@@ -213,17 +213,18 @@ namespace NDE_Digital_Market.Controllers
             cmd.Parameters.AddWithValue("@UserCode", decryptedSupplierCode);
             con.Open();
             SqlDataReader reader = cmd.ExecuteReader();
+            con.Close();
             if (reader.Read())
             {
                 string phoneNumber = reader["PhoneNumber"].ToString();
-                con.Close();
+            
                 if (phoneNumber == "admin")
                 {
                     isAdmin = true;
                 }
             }
 
-            List<SellerProductsModel> Products = new List<SellerProductsModel>();
+            List<GoodsQuantityModel> Products = new List<GoodsQuantityModel>();
 
             if (isAdmin && status != null)
             {
@@ -258,34 +259,20 @@ namespace NDE_Digital_Market.Controllers
 
                 for (int i = 0; i < dt1.Rows.Count; i++)
                 {
-                    SellerProductsModel obj = new SellerProductsModel();
-                    obj.ProductId = Convert.ToInt32(dt1.Rows[i]["ProductId"]);
-                    obj.Status = dt1.Rows[i]["Status"].ToString();
-                    obj.StatusBit = Convert.ToInt32(dt1.Rows[i]["StatusBit"]);
-                    obj.ProductCode = dt1.Rows[i]["ProductCode"].ToString();
-                    obj.ProductName = dt1.Rows[i]["ProductName"].ToString();
-                    obj.ProductDescription = dt1.Rows[i]["ProductDescription"].ToString();
-                    obj.MaterialType = dt1.Rows[i]["MaterialType"].ToString();
-                    obj.MaterialName = dt1.Rows[i]["MaterialName"].ToString();
-                    obj.Height = Convert.ToSingle(dt1.Rows[i]["Height"]);
-                    obj.Width = Convert.ToSingle(dt1.Rows[i]["Width"]);
-                    obj.Length = Convert.ToSingle(dt1.Rows[i]["Length"]);
-                    obj.Weight = Convert.ToSingle(dt1.Rows[i]["Weight"]);
-                    obj.Finish = dt1.Rows[i]["Finish"].ToString();
-                    obj.Grade = dt1.Rows[i]["Grade"].ToString();
-                    obj.Price = Convert.ToSingle(dt1.Rows[i]["Price"]);
-                    obj.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
-                    obj.SupplierCode = dt1.Rows[i]["SupplierCode"].ToString();
-                    obj.Quantity = Convert.ToSingle(dt1.Rows[i]["Quantity"]);
-                    obj.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
-                    obj.DimensionUnit = dt1.Rows[i]["DimensionUnit"].ToString();
-                    obj.WeightUnit = dt1.Rows[i]["WeightUnit"].ToString();
-                    obj.companyName = dt1.Rows[i]["CompanyName"].ToString();
-                    obj.AddedDate = Convert.ToDateTime(dt1.Rows[i]["AddedDate"]);
-
-                    //obj.IsAdmin = isAdmin;
-
-                    Products.Add(obj);
+                    GoodsQuantityModel modelObj = new GoodsQuantityModel();
+                    modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+                    modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+                    modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
+                    modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
+                    modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+                    modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+                    modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+                    modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+                    modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+                    modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+                    modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+                    modelObj.AddedDate = Convert.ToDateTime(dt1.Rows[i]["AddedDate"]);      
+                    Products.Add(modelObj);
                 }
             }
             else
@@ -305,15 +292,15 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetProduct")]
-        public List<SellerProductsModel> GetSellerProduct(string sellerCode)
+        public List<GoodsQuantityModel>GetSellerProduct(string sellerCode)
         {
             Console.WriteLine(sellerCode, "sellerCode");
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
-            string query = "SELECT * FROM ProductList WHERE SupplierCode = @DecryptedSupplierCode AND Status='Approved' ORDER BY UpdatedDate DESC;";
+            string query = "SELECT * FROM ProductList WHERE SellerCode = @decryptedSupplierCode AND Status = 'approved' ORDER BY UpdatedDate DESC;";
             SqlCommand cmd = new SqlCommand(query, con);
             cmd.Parameters.AddWithValue("@DecryptedSupplierCode", decryptedSupplierCode);
-            con.Close();
+          
             con.Open();
             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
@@ -322,36 +309,26 @@ namespace NDE_Digital_Market.Controllers
 
             con.Close();
 
-            List<SellerProductsModel> sellerProducts = new List<SellerProductsModel>();
+            List<GoodsQuantityModel> sellerProducts = new List<GoodsQuantityModel>();
 
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                SellerProductsModel obj = new SellerProductsModel();
+                GoodsQuantityModel modelObj = new GoodsQuantityModel();
 
 
-                obj.ProductId = Convert.ToInt32(dt.Rows[i]["ProductId"]);
-                obj.Status = dt.Rows[i]["Status"].ToString();
-                obj.StatusBit = Convert.ToInt32(dt.Rows[i]["StatusBit"]);
-                obj.ProductCode = dt.Rows[i]["ProductCode"].ToString();
-                obj.ProductName = dt.Rows[i]["ProductName"].ToString();
-                obj.ProductDescription = dt.Rows[i]["ProductDescription"].ToString();
-                obj.MaterialType = dt.Rows[i]["MaterialType"].ToString();
-                obj.MaterialName = dt.Rows[i]["MaterialName"].ToString();
-                obj.Height = Convert.ToSingle(dt.Rows[i]["Height"]);
-                obj.Width = Convert.ToSingle(dt.Rows[i]["Width"]);
-                obj.Length = Convert.ToSingle(dt.Rows[i]["Length"]);
-                obj.Weight = Convert.ToSingle(dt.Rows[i]["Weight"]);
-                obj.Finish = dt.Rows[i]["Finish"].ToString();
-                obj.Grade = dt.Rows[i]["Grade"].ToString();
-                obj.Price = Convert.ToSingle(dt.Rows[i]["Price"]);
-                obj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
-                obj.SupplierCode = dt.Rows[i]["SupplierCode"].ToString();
-                obj.Quantity = Convert.ToSingle(dt.Rows[i]["Quantity"]);
-                obj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-                obj.DimensionUnit = dt.Rows[i]["DimensionUnit"].ToString();
-                obj.WeightUnit = dt.Rows[i]["WeightUnit"].ToString();
+                modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+                modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+                modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
+                modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
+                modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+                modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+                modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+                modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+                modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+                modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+                modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
 
-                sellerProducts.Add(obj);
+                sellerProducts.Add(modelObj);
 
             }
             return sellerProducts;

@@ -57,7 +57,7 @@ namespace NDE_Digital_Market.Controllers
                         ON 
                            MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
                         WHERE 
-                            ProductList.StatusBit = 1;";
+                            ProductList.Status = 'approved';";
 
             SqlCommand cmd = new SqlCommand(query, con);
             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
@@ -202,7 +202,7 @@ namespace NDE_Digital_Market.Controllers
                         ON 
                            MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
                         WHERE 
-                            ProductList.StatusBit = 1 AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
+                            ProductList.Status = 'approved' AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
 
                 SqlCommand cmd = new SqlCommand(query, con);
                 cmd.Parameters.AddWithValue("@GroupName", GroupName);
