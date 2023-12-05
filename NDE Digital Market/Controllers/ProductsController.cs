@@ -23,7 +23,7 @@ namespace NDE_Digital_Market.Controllers
             _configuration = configuration;
             _commonServices = new CommonServices(configuration);
             //_hostingEnvironment = hostingEnvironment;
-            con = new SqlConnection(_configuration.GetConnectionString("DigitalMarketConnection"));
+            con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
         }
@@ -275,17 +275,17 @@ VALUES
                 for (int i = 0; i < dt1.Rows.Count; i++)
                 {
                     GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                    modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-                    modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                    modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
-                    modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-                    modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-                    modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+                    modelObj.CompanyName = dt1.Rows[i]["CompanyName"].ToString();
+                    modelObj.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
+                    modelObj.GoodsId = dt1.Rows[i]["GoodsID"].ToString();
+                    modelObj.GroupName = dt1.Rows[i]["GroupName"].ToString();
+                    modelObj.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
+                    modelObj.Specification = dt1.Rows[i]["Specification"].ToString();
                     modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-                    modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-                    modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-                    modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-                    modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+                    modelObj.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
+                    modelObj.Price = float.Parse(dt1.Rows[i]["Price"].ToString());
+                    modelObj.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
+                    modelObj.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
                     modelObj.AddedDate = Convert.ToDateTime(dt1.Rows[i]["AddedDate"]);      
                     Products.Add(modelObj);
                 }

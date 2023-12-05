@@ -1008,12 +1008,12 @@ namespace NDE_Digital_Market.Controllers
                 using (SqlConnection con = new SqlConnection(_prominentConnection))
                 {
                     string query = @"SELECT ProductList.GroupCode, ProductList.GoodsId, ProductList.GoodsName,ISNULL(PresentQty,0) AS AvailableQuantity, ProductList.Quantity,ProductList.Price
-From ProductList
-LEFT JOIN 
-MaterialStockQty
-ON 
-ProductList.GroupCode = MaterialStockQty.GroupCode AND ProductList.GoodsId = MaterialStockQty.GoodsId AND ProductList.SellerCode = MaterialStockQty.SellerCode
-WHERE ProductList.SellerCode = @SellerCode AND  (
+                                        From ProductList
+                                        LEFT JOIN 
+                                        MaterialStockQty
+                                        ON 
+                                        ProductList.GroupCode = MaterialStockQty.GroupCode AND ProductList.GoodsId = MaterialStockQty.GoodsId AND ProductList.SellerCode = MaterialStockQty.SellerCode
+                                        WHERE ProductList.SellerCode = @SellerCode AND  (
                                     (@GoodsName IS NULL OR @GoodsName = '' OR ProductList.GoodsName LIKE   @GoodsName   )
                                     AND (@GroupCode IS NULL OR @GroupCode = '' OR ProductList.GroupCode LIKE  @GroupCode   )
                                     );";
