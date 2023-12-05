@@ -1000,26 +1000,30 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetSellerInventory")]
-        public List<SellerInventoryModel> GetProductList(string SellerCode ,String? GoodsName, String? GroupCode)
+        public List<SellerInventoryModel> GetProductList(string SellerCode,String? GoodsName,String? GroupCode)
         {
             List<SellerInventoryModel> res = new List<SellerInventoryModel>();
             string decryptedSupplierCode = CommonServices.DecryptPassword(SellerCode);
-              if (decryptedSupplierCode == "USR-STL-MDL-23-11-0003")
-             
-            {
+         
                 using (SqlConnection con = new SqlConnection(_prominentConnection))
                 {
-                    string query = @"SELECT [GoodsID],[GroupCode],[GoodsName] FROM [GoodsDefinition] where (
-                                    (@GoodsName IS NULL OR @GoodsName = '' OR [GoodsName] LIKE   @GoodsName   )
-                                    AND (@GroupCode IS NULL OR @GroupCode = '' OR [GroupCode] LIKE  @GroupCode   )
-                                    )";
+                    string query = @"SELECT ProductList.GroupCode, ProductList.GoodsId, ProductList.GoodsName,ISNULL(PresentQty,0) AS AvailableQuantity, ProductList.Quantity,ProductList.Price
+From ProductList
+LEFT JOIN 
+MaterialStockQty
+ON 
+ProductList.GroupCode = MaterialStockQty.GroupCode AND ProductList.GoodsId = MaterialStockQty.GoodsId AND ProductList.SellerCode = MaterialStockQty.SellerCode
+WHERE ProductList.SellerCode = @SellerCode AND  (
+                                    (@GoodsName IS NULL OR @GoodsName = '' OR ProductList.GoodsName LIKE   @GoodsName   )
+                                    AND (@GroupCode IS NULL OR @GroupCode = '' OR ProductList.GroupCode LIKE  @GroupCode   )
+                                    );";
+                  
                     SqlCommand cmd = new SqlCommand(query, con);
-
+                    cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
                     cmd.Parameters.AddWithValue("@GoodsName", '%' + GoodsName + '%');
                     cmd.Parameters.AddWithValue("@GroupCode", '%' + GroupCode + '%');
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
-
                     con.Open();
                     adapter.Fill(dt);
                     con.Close();
@@ -1033,17 +1037,17 @@ namespace NDE_Digital_Market.Controllers
                             modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
                             modelObj.GoodsID = int.Parse(dt.Rows[i]["GoodsID"].ToString());
                             modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-                            modelObj.AvailableQuantity = 30;
-                            modelObj.TotalQuantity = 45;
+                            modelObj.AvailableQuantity =Convert.ToInt32(dt.Rows[i]["AvailableQuantity"].ToString());
+                            modelObj.TotalQuantity = Convert.ToInt32(dt.Rows[i]["Quantity"].ToString()); 
 
-                            modelObj.salesQuantiy = 45 - 30;
-                            modelObj.Price = 10000;
+                            modelObj.salesQuantiy = modelObj.TotalQuantity - modelObj.AvailableQuantity;
+                            modelObj.Price = Convert.ToInt32(dt.Rows[i]["Price"].ToString());
 
-                            res.Add(modelObj);
+                        res.Add(modelObj);
                         }
                     }
                 }
-            }
+            
 
 
          
