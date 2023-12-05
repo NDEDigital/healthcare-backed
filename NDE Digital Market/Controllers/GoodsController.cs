@@ -202,7 +202,7 @@ namespace NDE_Digital_Market.Controllers
                     modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                     modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                     modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                    modelObj.ApproveSalesQty = "30";
+                    modelObj.ApproveSalesQty = 5;
               
                     modelObj.SellerCode = "USR-STL-MDL-23-11-0003";
                     //Console.WriteLine(i);
