@@ -366,11 +366,11 @@ namespace NDE_Digital_Market.Controllers
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
 
-            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  ProductId = @ProductId AND SupplierCode = @SupplierCode", con);
+            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @ProductId AND SellerCode = @SellerCode", con);
 
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@ProductId", ProductId);
-            cmd.Parameters.AddWithValue("@SupplierCode", decryptedSupplierCode);
+            cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();
