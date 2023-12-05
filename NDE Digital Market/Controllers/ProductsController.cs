@@ -21,7 +21,7 @@ namespace NDE_Digital_Market.Controllers
         public ProductsController(IConfiguration configuration)
         {
             _configuration = configuration;
-            _commonServices = new CommonServices(config);
+            _commonServices = new CommonServices(configuration);
             //_hostingEnvironment = hostingEnvironment;
             con = new SqlConnection(_configuration.GetConnectionString("DigitalMarketConnection"));
             //string rootPath = _hostingEnvironment.ContentRootPath;
