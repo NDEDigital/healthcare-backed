@@ -8,11 +8,11 @@
         public string GroupName { get; set; }
         public string GoodsName { get; set; }
         public string Specification { get; set; }
-        public string ApproveSalesQty { get; set; } = "0";
+        public float ApproveSalesQty { get; set; }
         public string SellerCode { get; set; }
         public string? QuantityUnit { get; set; }
         public string? ImagePath { get; set; }
-        public string Price { get; set; } = "";
+        public float Price { get; set; }
 
     }
 }

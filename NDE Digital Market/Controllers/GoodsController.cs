@@ -75,9 +75,9 @@ namespace NDE_Digital_Market.Controllers
                 modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                 modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                 modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                modelObj.ApproveSalesQty = dt.Rows[i]["Quantity"].ToString();
+                modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
                 modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-                modelObj.Price = dt.Rows[i]["Price"].ToString();
+                modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
                 modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
                 modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
 
@@ -133,29 +133,38 @@ namespace NDE_Digital_Market.Controllers
             List<ProductCompanyModel> res = new List<ProductCompanyModel>();
             using (SqlConnection connection = new SqlConnection(_prominentConnection))
             {
-                int matchExists = 0;
+             
                 connection.Open();
 
-                string query = @"SELECT CASE WHEN EXISTS (
-                            SELECT 1
-                            FROM GoodsGroupMaster
-                            WHERE GroupName = @groupName And GroupCode =@groupCode
-                        ) THEN 1 ELSE 0 END AS MatchExists";
+                string query = @"SELECT 
+                                  UR.CompanyName,
+                                  UR.CompanyCode
+                                From ProductList
+                                LEFT JOIN
+                                UserRegistration AS UR
+                                ON
+                                 ProductList.SellerCode = UR.UserCode
+                                 Where ProductList.GroupCode = @GroupCode AND ProductList.GroupName = @GroupName";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     
-                    command.Parameters.AddWithValue("@groupName", GroupName);
-                    command.Parameters.AddWithValue("@groupCode", GroupCode);
+                    command.Parameters.AddWithValue("@GroupName", GroupName);
+                    command.Parameters.AddWithValue("@GroupCode", GroupCode);
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dt = new DataTable();
 
-                    matchExists = (int)command.ExecuteScalar();
-                    if (matchExists > 0)
+                    adapter.Fill(dt);
+                    connection.Close();
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         ProductCompanyModel obj = new ProductCompanyModel();
-                        obj.CompanyName = "Nimpex";
-                        obj.CompanyCode = "1";
+                        obj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+                        obj.CompanyCode = dt.Rows[i]["CompanyCode"].ToString();
                         res.Add(obj);
                     }
+
+                    
                 }        
             }
 
