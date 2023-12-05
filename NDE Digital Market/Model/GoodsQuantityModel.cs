@@ -22,7 +22,7 @@
         public string? UpdatedPc { get; set; }
         public IFormFile? Image { get; set; }
         public string? ImageName { get; set; }
-        public int? quantity { get; set; }
+        public int? Quantity { get; set; }
         
     }
 }

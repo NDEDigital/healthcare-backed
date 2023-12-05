@@ -96,7 +96,7 @@ VALUES
             cmd.Parameters.AddWithValue("@Specification", product.Specification);
             cmd.Parameters.AddWithValue("@Price", product.Price);
             cmd.Parameters.AddWithValue("@SellerCode", product.SellerCode);
-            cmd.Parameters.AddWithValue("@Quantity", product.quantity);
+            cmd.Parameters.AddWithValue("@Quantity", product.Quantity);
             cmd.Parameters.AddWithValue("@QuantityUnit", product.QuantityUnit);
             cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now); // or product.AddedDate if it's already set
             cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now); // or product.UpdatedDate if it's already set
@@ -281,12 +281,12 @@ VALUES
                     modelObj.GroupName = dt1.Rows[i]["GroupName"].ToString();
                     modelObj.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
                     modelObj.Specification = dt1.Rows[i]["Specification"].ToString();
-                    modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+                    modelObj.ApproveSalesQty = float.Parse(dt1.Rows[i]["Quantity"].ToString());
                     modelObj.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
                     modelObj.Price = float.Parse(dt1.Rows[i]["Price"].ToString());
                     modelObj.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
                     modelObj.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
-                    modelObj.AddedDate = Convert.ToDateTime(dt1.Rows[i]["AddedDate"]);      
+                    modelObj.AddedDate = dt1.Rows[i]["AddedDate"] != DBNull.Value ? Convert.ToDateTime(dt1.Rows[i]["AddedDate"]) : (DateTime?)null;
                     Products.Add(modelObj);
                 }
             }
@@ -448,7 +448,7 @@ VALUES
                 if (Obj.status == "rejected")
                 {
                     cancelEdited = true;
-                    queryEdited = queryEdited.Append($"UPDATE ProductList  SET Status = 'approved',StatusBit= 2, UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPC= '{Obj.updatedPC}'  WHERE ProductID IN ({Obj.productIDs})");
+                    queryEdited = queryEdited.Append($"UPDATE ProductList  SET Status = 'approved', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})");
                     //queryEdited = queryEdited.Append($"SELECT SupplierCode,email,full_name FROM ProductList LEFT JOIN UserRegistration ON SupplierCode=UserCode WHERE ProductID IN ({Obj.productIDs})");
                 }
                 else
@@ -461,28 +461,28 @@ VALUES
                     foreach (string productId in productIDsArray)
                     {
 
-                        queryEdited.Append($"UPDATE ProductList SET ProductName = EPL.ProductName, ProductDescription = EPL.ProductDescription, " +
-                        $"MaterialType = EPL.MaterialType,MaterialName = EPL.MaterialName,Height = EPL.Height,Length = EPL.Length,Weight = EPL.Weight," +
-                        $"Finish = EPL.Finish,Grade = EPL.Grade,Price = EPL.Price,Quantity = EPL.Quantity,QuantityUnit" +
-                        $" = EPL.QuantityUnit,DimensionUnit = EPL.DimensionUnit,WeightUnit = EPL.WeightUnit, ");
+                        queryEdited.Append($"UPDATE ProductList SET GoodsName = EPL.GoodsName, Specification = EPL.Specification, " +
+                        $"GroupCode = EPL.MaterialType,GroupName = EPL.MaterialName," +
+                        $"Price = EPL.Price,Quantity = EPL.Quantity,QuantityUnit" +
+                        $" = EPL.QuantityUnit, ");
 
-                        queryEdited.Append($"Status = '{Obj.status}', StatusBit = '{statusBit}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',updatedPC= '{Obj.updatedPC}'");
-                        queryEdited.Append($"FROM (SELECT * FROM EditedProductList WHERE ProductID = {productId}) AS EPL ");
-                        queryEdited.Append($"WHERE ProductList.ProductID = {productId} AND ProductList.SupplierCode = EPL.SupplierCode;");
+                        queryEdited.Append($"Status = '{Obj.status}',  UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',updatedPc= '{Obj.updatedPC}'");
+                        queryEdited.Append($"FROM (SELECT * FROM EditedProductList WHERE GoodsId = {productId}) AS EPL ");
+                        queryEdited.Append($"WHERE ProductList.Goodsid = {productId} AND ProductList.SellerCode = EPL.SellerCode;");
 
 
                     }
                 }
 
                 StringBuilder deleteQuery = new StringBuilder();
-                deleteQuery.Append($"DELETE FROM EditedProductList WHERE ProductID IN ({Obj.productIDs})");
+                deleteQuery.Append($"DELETE FROM EditedProductList WHERE GoodsId IN ({Obj.productIDs})");
                 string combinedQuery = queryEdited.ToString() + deleteQuery.ToString();
                 SqlCommand cmdEdite = new SqlCommand(combinedQuery, con);
                 con.Open();
                 cmdEdite.CommandType = CommandType.Text;
                 cmdEdite.ExecuteNonQuery();
 
-                string selectQuery = $"SELECT SupplierCode, Email, FullName,ProductName FROM ProductList LEFT JOIN UserRegistration ON SupplierCode=UserCode WHERE ProductID IN ({Obj.productIDs})";
+                string selectQuery = $"SELECT SellerCode, Email, FullName,GoodsName FROM ProductList LEFT JOIN UserRegistration ON SellerCode=UserCode WHERE GoodsId IN ({Obj.productIDs})";
                 using (SqlCommand selectCmd = new SqlCommand(selectQuery, con))
                 {
                     selectCmd.CommandType = CommandType.Text;
@@ -492,10 +492,10 @@ VALUES
                         while (reader.Read())
                         {
                             EditedUserInfoModel user = new EditedUserInfoModel();
-                            user.SupplierCode = reader["SupplierCode"].ToString();
+                            user.SupplierCode = reader["SellerCode"].ToString();
                             user.Email = reader["Email"].ToString();
                             user.FullName = reader["FullName"].ToString();
-                            user.ProductName = reader["ProductName"].ToString();
+                            user.ProductName = reader["GoodsName"].ToString();
                             users.Add(user);
                         }
                         // Now you can use the 'users' list with the retrieved data.
@@ -509,7 +509,7 @@ VALUES
             }
             else
             {
-                string query = $"UPDATE ProductList  SET Status = '{Obj.status}',StatusBit= '{statusBit}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPC= '{Obj.updatedPC}'  WHERE ProductID IN ({Obj.productIDs})";
+                string query = $"UPDATE ProductList  SET Status = '{Obj.status}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})";
                 SqlCommand cmd = new SqlCommand(query, con);
 
                 con.Open();
@@ -535,9 +535,9 @@ VALUES
         [Route("comapreEditedProduct")]
         public IActionResult comapreEditedProduct(int productId)
         {
-            SellerProductsModel oldData = new SellerProductsModel();
-            SellerProductsModel newData = new SellerProductsModel();
-            string query = "SELECT * FROM ProductList WHERE ProductId=@ProductId; SELECT * FROM EditedProductList WHERE ProductId=@ProductId;";
+            GoodsQuantityModel oldData = new GoodsQuantityModel();
+            GoodsQuantityModel newData = new GoodsQuantityModel();
+            string query = "SELECT * FROM ProductList WHERE GoodsId=@ProductId; SELECT * FROM EditedProductList WHERE GoodsId=@ProductId;";
             con.Open();
             SqlCommand cmd = new SqlCommand(query, con);
             cmd.CommandType = CommandType.Text;
@@ -550,51 +550,31 @@ VALUES
             con.Close();
             for (int i = 0; i < dt0.Rows.Count; i++)
             {
-                oldData.ProductId = Convert.ToInt32(dt0.Rows[i]["ProductId"]);
+                oldData.GoodsId = dt0.Rows[i]["GoodsId"].ToString();
                 oldData.Status = dt0.Rows[i]["Status"].ToString();
-                oldData.StatusBit = Convert.ToInt32(dt0.Rows[i]["StatusBit"]);
-                oldData.ProductCode = dt0.Rows[i]["ProductCode"].ToString();
-                oldData.ProductName = dt0.Rows[i]["ProductName"].ToString();
-                oldData.ProductDescription = dt0.Rows[i]["ProductDescription"].ToString();
-                oldData.MaterialType = dt0.Rows[i]["MaterialType"].ToString();
-                oldData.MaterialName = dt0.Rows[i]["MaterialName"].ToString();
-                oldData.Height = Convert.ToSingle(dt0.Rows[i]["Height"]);
-                oldData.Width = Convert.ToSingle(dt0.Rows[i]["Width"]);
-                oldData.Length = Convert.ToSingle(dt0.Rows[i]["Length"]);
-                oldData.Weight = Convert.ToSingle(dt0.Rows[i]["Weight"]);
-                oldData.Finish = dt0.Rows[i]["Finish"].ToString();
-                oldData.Grade = dt0.Rows[i]["Grade"].ToString();
+                oldData.GoodsName = dt0.Rows[i]["GoodsName"].ToString();
+                oldData.Specification = dt0.Rows[i]["Specification"].ToString();
+                oldData.GroupCode = dt0.Rows[i]["GroupCode"].ToString();
+                oldData.GroupName = dt0.Rows[i]["GroupName"].ToString();
                 oldData.Price = Convert.ToSingle(dt0.Rows[i]["Price"]);
                 oldData.ImagePath = dt0.Rows[i]["ImagePath"].ToString();
-                oldData.SupplierCode = dt0.Rows[i]["SupplierCode"].ToString();
-                oldData.Quantity = Convert.ToSingle(dt0.Rows[i]["Quantity"]);
+                oldData.SellerCode = dt0.Rows[i]["SellerCode"].ToString();
+                oldData.Quantity = Convert.ToInt32(dt0.Rows[i]["Quantity"].ToString());
                 oldData.QuantityUnit = dt0.Rows[i]["QuantityUnit"].ToString();
-                oldData.DimensionUnit = dt0.Rows[i]["DimensionUnit"].ToString();
-                oldData.WeightUnit = dt0.Rows[i]["WeightUnit"].ToString();
             }
             for (int i = 0; i < dt1.Rows.Count; i++)
             {
-                newData.ProductId = Convert.ToInt32(dt1.Rows[i]["ProductId"]);
-                newData.Status = dt1.Rows[i]["Status"].ToString();
-                newData.StatusBit = Convert.ToInt32(dt1.Rows[i]["StatusBit"]);
-
-                newData.ProductName = dt1.Rows[i]["ProductName"].ToString();
-                newData.ProductDescription = dt1.Rows[i]["ProductDescription"].ToString();
-                newData.MaterialType = dt1.Rows[i]["MaterialType"].ToString();
-                newData.MaterialName = dt1.Rows[i]["MaterialName"].ToString();
-                newData.Height = Convert.ToSingle(dt1.Rows[i]["Height"]);
-                newData.Width = Convert.ToSingle(dt1.Rows[i]["Width"]);
-                newData.Length = Convert.ToSingle(dt1.Rows[i]["Length"]);
-                newData.Weight = Convert.ToSingle(dt1.Rows[i]["Weight"]);
-                newData.Finish = dt1.Rows[i]["Finish"].ToString();
-                newData.Grade = dt1.Rows[i]["Grade"].ToString();
-                newData.Price = Convert.ToSingle(dt1.Rows[i]["Price"]);
-
-                newData.SupplierCode = dt1.Rows[i]["SupplierCode"].ToString();
-                newData.Quantity = Convert.ToSingle(dt1.Rows[i]["Quantity"]);
-                newData.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
-                newData.DimensionUnit = dt1.Rows[i]["DimensionUnit"].ToString();
-                newData.WeightUnit = dt1.Rows[i]["WeightUnit"].ToString();
+                newData.GoodsId = dt0.Rows[i]["GoodsId"].ToString();
+                newData.Status = dt0.Rows[i]["Status"].ToString();
+                newData.GoodsName = dt0.Rows[i]["GoodsName"].ToString();
+                newData.Specification = dt0.Rows[i]["Specification"].ToString();
+                newData.GroupCode = dt0.Rows[i]["GroupCode"].ToString();
+                newData.GroupName = dt0.Rows[i]["GroupName"].ToString();
+                newData.Price = Convert.ToSingle(dt0.Rows[i]["Price"]);
+                newData.ImagePath = dt0.Rows[i]["ImagePath"].ToString();
+                newData.SellerCode = dt0.Rows[i]["SellerCode"].ToString();
+                newData.Quantity = Convert.ToInt32(dt0.Rows[i]["Quantity"].ToString());
+                newData.QuantityUnit = dt0.Rows[i]["QuantityUnit"].ToString();
             }
             return Ok(new { message = "GET Products data successful", oldData, newData });
         }
