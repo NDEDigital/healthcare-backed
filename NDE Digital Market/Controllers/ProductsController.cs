@@ -213,7 +213,7 @@ namespace NDE_Digital_Market.Controllers
             cmd.Parameters.AddWithValue("@UserCode", decryptedSupplierCode);
             con.Open();
             SqlDataReader reader = cmd.ExecuteReader();
-            con.Close();
+          
             if (reader.Read())
             {
                 string phoneNumber = reader["PhoneNumber"].ToString();
@@ -223,7 +223,7 @@ namespace NDE_Digital_Market.Controllers
                     isAdmin = true;
                 }
             }
-
+            con.Close();
             List<GoodsQuantityModel> Products = new List<GoodsQuantityModel>();
 
             if (isAdmin && status != null)
@@ -297,7 +297,29 @@ namespace NDE_Digital_Market.Controllers
             Console.WriteLine(sellerCode, "sellerCode");
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
-            string query = "SELECT * FROM ProductList WHERE SellerCode = @decryptedSupplierCode AND Status = 'approved' ORDER BY UpdatedDate DESC;";
+            string query = @"SELECT 
+                            ProductList.GoodsId, 
+                            ProductList.GoodsName, 
+                            ProductList.GroupCode,
+                            ProductList.GroupName,
+                            ProductList.Specification,
+                            ProductList.Price,
+                            ProductList.SellerCode,
+                            ProductList.ImagePath,
+                            ISNULL(MaterialStockQty.PresentQty, 0) AS Quantity,
+                            ProductList.QuantityUnit,  
+	                        UserRegistration.CompanyName
+
+                         FROM ProductList
+                        LEFT JOIN
+                        UserRegistration
+                        ON
+                        ProductList.SellerCode = UserRegistration.UserCode
+                        LEFT JOIN
+                                                MaterialStockQty
+                                                ON
+                                                   MaterialStockQty.GroupCode = ProductList.GroupCode AND MaterialStockQty.GoodsId = ProductList.GoodsId
+                        WHERE ProductList.SellerCode = @DecryptedSupplierCode  ORDER BY ProductList.UpdatedDate DESC; ";
             SqlCommand cmd = new SqlCommand(query, con);
             cmd.Parameters.AddWithValue("@DecryptedSupplierCode", decryptedSupplierCode);
           
