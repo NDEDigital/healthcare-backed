@@ -176,18 +176,38 @@ namespace NDE_Digital_Market.Controllers
         public List<GoodsQuantityModel> GetProductList(string CompanyCode, string GroupName)
         {
             List<GoodsQuantityModel> res = new List<GoodsQuantityModel>();
-            if (CompanyCode == "1")
-            {
+          
                 SqlConnection con = new SqlConnection(_prominentConnection);
                 con.Open();
-                string query = @"   SELECT A.GroupCode, A.GoodsID, D.GroupName, A.GoodsName,
-                ISNULL(A.Spec1,'') + ' ' + ISNULL(A.Spec2,'') + ' ' + ISNULL(A.Spec3,'') + ' ' + ISNULL(A.Spec4,'') AS Specification
-                FROM GoodsDefinition A JOIN GoodsGroupMaster D ON A.GroupCode = D.GroupCode WHERE D.GroupName = @GroupName 
-				ORDER BY GroupCode  DESC";
+                string query = @"SELECT 
+                            ProductList.GoodsId, 
+                            ProductList.GoodsName, 
+                            ProductList.GroupCode,
+                            ProductList.GroupName,
+                            ProductList.Specification,
+                            ProductList.Price,
+                            ProductList.SellerCode,
+                            ProductList.ImagePath,
+                            ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
+                            ProductList.QuantityUnit,  
+	                        UserRegistration.CompanyName
+                        FROM 
+                            ProductList
+                        LEFT JOIN 
+                            UserRegistration
+                        ON 
+                            ProductList.SellerCode = UserRegistration.UserCode
+                        LEFT JOIN
+                        MaterialStockQty
+                        ON 
+                           MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
+                        WHERE 
+                            ProductList.StatusBit = 1 AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
 
                 SqlCommand cmd = new SqlCommand(query, con);
                 cmd.Parameters.AddWithValue("@GroupName", GroupName);
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
 
                 adapter.Fill(dt);
@@ -196,20 +216,21 @@ namespace NDE_Digital_Market.Controllers
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                    modelObj.CompanyName = "Nimpex";
+                    modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
                     modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
                     modelObj.GoodsID = dt.Rows[i]["GoodsID"].ToString();
                     modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                     modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                     modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                    modelObj.ApproveSalesQty = 5;
-              
-                    modelObj.SellerCode = "USR-STL-MDL-23-11-0003";
-                    //Console.WriteLine(i);
+                    modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+                    modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+                    modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+                    modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+                    modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
 
                     res.Add(modelObj);
                 }
-            }
+            
           
      
             return res;
