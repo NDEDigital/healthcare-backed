@@ -150,11 +150,7 @@ VALUES
             string decryptedSupplierCode = CommonServices.DecryptPassword(product.SellerCode);
             product.UpdatedBy = decryptedSupplierCode;
             product.UpdatedDate = DateTime.Now;
-            //SqlCommand cmd = new SqlCommand("UPDATE ProductList SET ProductName = @ProductName,ProductDescription = @ProductDescription," +
-            //    "MaterialType = @MaterialType,MaterialName=@MaterialName,Height = @Height,Width = @Width,Length = @Length,Weight = @Weight,Finish = @Finish,Grade = @Grade,Price = @Price,Quantity = @Quantity," +
-            //    "QuantityUnit = @QuantityUnit,DimensionUnit = @DimensionUnit, WeightUnit = @WeightUnit,UpdatedDate = @UpdateDate,UpdatedBy = @UpdatedBy,UpdatedPC = @UpdatedPC,Status=@Status, StatusBit=@StatusBit" +
-            //    " WHERE  SupplierCode = @SupplierCode AND ProductId = @ProductId", con);
-            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (GoodsName, Specification, GroupCode, GroupName,Quantity,Price, QuantityUnit, UpdatedDate, UpdatedBy, UpdatedPc, Status, SellerCode)VALUES(@GoodsName, @Specification, @GroupCode, @GroupName,@Price, @Quantity, @QuantityUnit, @UpdatedDate, @UpdatedBy, @UpdatedPc, @Status,  @SellerCode);" +
+            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (GoodsId, GoodsName, Specification, GroupCode, GroupName,Quantity,Price, QuantityUnit, UpdatedDate, UpdatedBy, UpdatedPc, Status, SellerCode)VALUES( @GoodsId, @GoodsName, @Specification, @GroupCode, @GroupName,@Price, @Quantity, @QuantityUnit, @UpdatedDate, @UpdatedBy, @UpdatedPc, @Status,  @SellerCode);" +
                 "UPDATE ProductList SET Status=@Status WHERE  SellerCode = @SellerCode AND GoodsId = @GoodsId", con);
             cmd.CommandType = CommandType.Text;
 
@@ -173,11 +169,7 @@ VALUES
             cmd.Parameters.AddWithValue("@Status", product.Status);
             cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
 
-           
-
-            //con.Open();
-            //cmd.ExecuteNonQuery();
-            //con.Close();
+        
             try
             {
                 con.Open();
@@ -290,8 +282,6 @@ VALUES
             //return Tuple.Create(Products, (object)isAdmin);
             return Ok(new { message = "content get successfully", Products, isAdmin, newCount, editedCount, approvedCount, rejectedCount });
 
-
-
         }
 
         // ======================= GET Product ==================
@@ -385,38 +375,14 @@ VALUES
 
         }
 
-        // ======================= Update Product Status ==================
-        //[HttpPut]
-        //[Route("UpdateProductStatus")]
-
-        //public IActionResult UpdateProductStatus([FromForm] UpdateProductStatusModel Obj)
-        //{
-        //    Console.WriteLine(Obj);
-        //    string decryptedSupplierCode = CommonServices.DecryptPassword(Obj.userCode);
-        //    string UpdatedBy = decryptedSupplierCode;
-        //    DateTime UpdateDate = DateTime.Now;
-        //    Console.WriteLine(Obj.productIDs);
-        //    int statusBit=1;
-        //    if (Obj.status == "approved")
-        //    {
-        //         statusBit = 2;
-        //    }
-        //    if(Obj.status == "rejected"){ statusBit = 3; }
-        //    string query = $"UPDATE ProductList  SET Status = '{Obj.status}',StatusBit= '{statusBit}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',updatedPC= '{Obj.updatedPC}'  WHERE ProductID IN ({Obj.productIDs})";
-        //    SqlCommand cmd = new SqlCommand(query,con);
-        //    con.Open();
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.ExecuteNonQuery();
-        //    con.Close();
-        //    return Ok(new { message = "Product status updated successfully" });
-        //}
+  
 
 
         [HttpPut]
         [Route("UpdateProductStatus")]
         public IActionResult UpdateProductStatus([FromForm] UpdateProductStatusModel Obj)
         {
-            Console.WriteLine(Obj);
+           
             string decryptedSupplierCode = CommonServices.DecryptPassword(Obj.userCode);
             bool cancelEdited = false;
             List<EditedUserInfoModel> users = new List<EditedUserInfoModel>();
@@ -453,7 +419,7 @@ VALUES
                     {
 
                         queryEdited.Append($"UPDATE ProductList SET GoodsName = EPL.GoodsName, Specification = EPL.Specification, " +
-                        $"GroupCode = EPL.MaterialType,GroupName = EPL.MaterialName," +
+                        $"GroupCode = EPL.GroupCode,GroupName = EPL.GroupName," +
                         $"Price = EPL.Price,Quantity = EPL.Quantity,QuantityUnit" +
                         $" = EPL.QuantityUnit, ");
 
@@ -555,17 +521,17 @@ VALUES
             }
             for (int i = 0; i < dt1.Rows.Count; i++)
             {
-                newData.GoodsId = dt0.Rows[i]["GoodsId"].ToString();
-                newData.Status = dt0.Rows[i]["Status"].ToString();
-                newData.GoodsName = dt0.Rows[i]["GoodsName"].ToString();
-                newData.Specification = dt0.Rows[i]["Specification"].ToString();
-                newData.GroupCode = dt0.Rows[i]["GroupCode"].ToString();
-                newData.GroupName = dt0.Rows[i]["GroupName"].ToString();
-                newData.Price = Convert.ToSingle(dt0.Rows[i]["Price"]);
-                newData.ImagePath = dt0.Rows[i]["ImagePath"].ToString();
-                newData.SellerCode = dt0.Rows[i]["SellerCode"].ToString();
-                newData.Quantity = Convert.ToInt32(dt0.Rows[i]["Quantity"].ToString());
-                newData.QuantityUnit = dt0.Rows[i]["QuantityUnit"].ToString();
+                newData.GoodsId = dt1.Rows[i]["GoodsId"].ToString();
+                newData.Status = dt1.Rows[i]["Status"].ToString();
+                newData.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
+                newData.Specification = dt1.Rows[i]["Specification"].ToString();
+                newData.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
+                newData.GroupName = dt1.Rows[i]["GroupName"].ToString();
+                newData.Price = Convert.ToSingle(dt1.Rows[i]["Price"]);
+                newData.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
+                newData.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
+                newData.Quantity = Convert.ToInt32(dt1.Rows[i]["Quantity"].ToString());
+                newData.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
             }
             return Ok(new { message = "GET Products data successful", oldData, newData });
         }
