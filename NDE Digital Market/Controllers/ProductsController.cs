@@ -154,12 +154,12 @@ VALUES
             //    "MaterialType = @MaterialType,MaterialName=@MaterialName,Height = @Height,Width = @Width,Length = @Length,Weight = @Weight,Finish = @Finish,Grade = @Grade,Price = @Price,Quantity = @Quantity," +
             //    "QuantityUnit = @QuantityUnit,DimensionUnit = @DimensionUnit, WeightUnit = @WeightUnit,UpdatedDate = @UpdateDate,UpdatedBy = @UpdatedBy,UpdatedPC = @UpdatedPC,Status=@Status, StatusBit=@StatusBit" +
             //    " WHERE  SupplierCode = @SupplierCode AND ProductId = @ProductId", con);
-            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (GoodsId,GoodsName, Specification, GroupCode, GroupName,Quantity,Price, QuantityUnit, UpdatedDate, UpdatedBy, UpdatedPc, Status, SellerCode)VALUES(@GoodsId,@GoodsName, @Specification, @GroupCode, @GroupName,@Price, @Quantity, @QuantityUnit, @UpdatedDate, @UpdatedBy, @UpdatedPc, @Status,  @SellerCode);" +
+            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (GoodsName, Specification, GroupCode, GroupName,Quantity,Price, QuantityUnit, UpdatedDate, UpdatedBy, UpdatedPc, Status, SellerCode)VALUES(@GoodsName, @Specification, @GroupCode, @GroupName,@Price, @Quantity, @QuantityUnit, @UpdatedDate, @UpdatedBy, @UpdatedPc, @Status,  @SellerCode);" +
                 "UPDATE ProductList SET Status=@Status WHERE  SellerCode = @SellerCode AND GoodsId = @GoodsId", con);
             cmd.CommandType = CommandType.Text;
 
 
-            cmd.Parameters.AddWithValue("@GoodsId", product.GoodsId);
+          
             cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
             cmd.Parameters.AddWithValue("@Specification", product.Specification);
             cmd.Parameters.AddWithValue("@GroupCode", product.GroupCode);
