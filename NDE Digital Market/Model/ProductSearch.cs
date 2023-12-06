@@ -5,7 +5,7 @@
         public string GoodsName { get; set; }
         public string GroupCode { get; set; }
         public string GroupName { get; set; }
-        public int GoodsID { get; set; }
+        public int GoodsId { get; set; }
         public string Specification { get; set; }
         public float ApproveSalesQty { get; set; }
         public decimal Price { get; set; }

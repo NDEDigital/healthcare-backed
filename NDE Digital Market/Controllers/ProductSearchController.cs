@@ -52,7 +52,7 @@ namespace NDE_Digital_Market.Controllers
                                 GoodsName = reader["GoodsName"].ToString(),
                                 GroupCode = reader["GroupCode"].ToString(),
                                 GroupName = reader["GroupName"].ToString(),
-                                GoodsID = reader.GetInt32(reader.GetOrdinal("GoodsID")),
+                                GoodsId = reader.GetInt32(reader.GetOrdinal("GoodsId")),
                                 Specification = reader["Specification"].ToString(),
                                 ApproveSalesQty = float.Parse(reader["Quantity"].ToString()),
                                 Price = decimal.Parse(reader["Price"].ToString()),
