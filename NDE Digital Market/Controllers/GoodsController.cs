@@ -137,14 +137,14 @@ namespace NDE_Digital_Market.Controllers
                 connection.Open();
 
                 string query = @"SELECT 
-                                  UR.CompanyName,
-                                  UR.CompanyCode
-                                From ProductList
-                                LEFT JOIN
-                                UserRegistration AS UR
-                                ON
-                                 ProductList.SellerCode = UR.UserCode
-                                 Where ProductList.GroupCode = @GroupCode AND ProductList.GroupName = @GroupName";
+                                          MAX(UR.CompanyName) AS CompanyName,  -- Using MAX() to get one CompanyName per CompanyCode
+                                          UR.CompanyCode
+                                        FROM ProductList
+                                        LEFT JOIN UserRegistration AS UR ON ProductList.SellerCode = UR.UserCode
+                                        WHERE ProductList.GroupCode = @GroupCode
+                                          AND ProductList.GroupName = @GroupName
+                                          AND ProductList.Status = 'approved'
+                                        GROUP BY UR.CompanyCode;";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -218,7 +218,7 @@ namespace NDE_Digital_Market.Controllers
                     GoodsQuantityModel modelObj = new GoodsQuantityModel();
                     modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
                     modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                    modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
+                    modelObj.GoodsId = dt.Rows[i]["GoodsId"].ToString();
                     modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
                     modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
                     modelObj.Specification = dt.Rows[i]["Specification"].ToString();
