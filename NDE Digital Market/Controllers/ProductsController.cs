@@ -159,7 +159,7 @@ VALUES
             cmd.CommandType = CommandType.Text;
 
 
-          
+            cmd.Parameters.AddWithValue("@GoodsId", product.GoodsId);
             cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
             cmd.Parameters.AddWithValue("@Specification", product.Specification);
             cmd.Parameters.AddWithValue("@GroupCode", product.GroupCode);
