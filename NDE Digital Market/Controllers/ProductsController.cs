@@ -145,44 +145,35 @@ VALUES
         [HttpPut, Authorize(Roles = "seller")]
         [Route("UpdateProduct")]
 
-        public IActionResult UpdateProduct([FromForm] ProductsModel product)
+        public IActionResult UpdateProduct([FromForm] GoodsQuantityModel product)
         {
-            string decryptedSupplierCode = CommonServices.DecryptPassword(product.SupplierCode);
+            string decryptedSupplierCode = CommonServices.DecryptPassword(product.SellerCode);
             product.UpdatedBy = decryptedSupplierCode;
-            product.UpdateDate = DateTime.Now;
+            product.UpdatedDate = DateTime.Now;
             //SqlCommand cmd = new SqlCommand("UPDATE ProductList SET ProductName = @ProductName,ProductDescription = @ProductDescription," +
             //    "MaterialType = @MaterialType,MaterialName=@MaterialName,Height = @Height,Width = @Width,Length = @Length,Weight = @Weight,Finish = @Finish,Grade = @Grade,Price = @Price,Quantity = @Quantity," +
             //    "QuantityUnit = @QuantityUnit,DimensionUnit = @DimensionUnit, WeightUnit = @WeightUnit,UpdatedDate = @UpdateDate,UpdatedBy = @UpdatedBy,UpdatedPC = @UpdatedPC,Status=@Status, StatusBit=@StatusBit" +
             //    " WHERE  SupplierCode = @SupplierCode AND ProductId = @ProductId", con);
-            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (ProductId,ProductName, ProductDescription, MaterialType, MaterialName, Height, Width, Length, Weight, Finish, Grade, Price, Quantity, QuantityUnit, DimensionUnit, WeightUnit, UpdatedDate, UpdatedBy, UpdatedPC, Status, StatusBit, SupplierCode)VALUES(@ProductId,@ProductName, @ProductDescription, @MaterialType, @MaterialName, @Height, @Width, @Length, @Weight, @Finish, @Grade, @Price, @Quantity, @QuantityUnit, @DimensionUnit, @WeightUnit, @UpdateDate, @UpdatedBy, @UpdatedPC, @Status, @StatusBit, @SupplierCode);" +
-                " UPDATE ProductList SET status=@Status,StatusBit=4 WHERE  SupplierCode = @SupplierCode AND ProductId = @ProductId", con);
+            SqlCommand cmd = new SqlCommand("INSERT INTO EditedProductList (GoodsId,GoodsName, Specification, GroupCode, GroupName,Quantity,Price, QuantityUnit, UpdatedDate, UpdatedBy, UpdatedPc, Status, SellerCode)VALUES(@GoodsId,@GoodsName, @Specification, @GroupCode, @GroupName,@Price, @Quantity, @QuantityUnit, @UpdatedDate, @UpdatedBy, @UpdatedPc, @Status,  @SellerCode);" +
+                "UPDATE ProductList SET Status=@Status WHERE  SellerCode = @SellerCode AND GoodsId = @GoodsId", con);
             cmd.CommandType = CommandType.Text;
 
 
-            cmd.Parameters.AddWithValue("@ProductName", product.ProductName);
-            cmd.Parameters.AddWithValue("@ProductDescription", product.ProductDescription);
-            cmd.Parameters.AddWithValue("@MaterialType", product.MaterialType);
-            cmd.Parameters.AddWithValue("@MaterialName", product.MaterialName);
-            cmd.Parameters.AddWithValue("@Height", product.Height);
-            cmd.Parameters.AddWithValue("@Width", product.Width);
-            cmd.Parameters.AddWithValue("@Length", product.Length);
-            cmd.Parameters.AddWithValue("@Weight", product.Weight);
-            cmd.Parameters.AddWithValue("@Finish", product.Finish);
-            cmd.Parameters.AddWithValue("@Grade", product.Grade);
-            cmd.Parameters.AddWithValue("@Price", product.Price);
-
+            cmd.Parameters.AddWithValue("@GoodsId", product.GoodsId);
+            cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
+            cmd.Parameters.AddWithValue("@Specification", product.Specification);
+            cmd.Parameters.AddWithValue("@GroupCode", product.GroupCode);
+            cmd.Parameters.AddWithValue("@GroupName", product.GroupName);
             cmd.Parameters.AddWithValue("@Quantity", product.Quantity);
+            cmd.Parameters.AddWithValue("@Price", product.Price);
             cmd.Parameters.AddWithValue("@QuantityUnit", product.QuantityUnit);
-            cmd.Parameters.AddWithValue("@DimensionUnit", product.DimensionUnit);
-            cmd.Parameters.AddWithValue("@WeightUnit", product.WeightUnit);
-            cmd.Parameters.AddWithValue("@UpdateDate", product.UpdateDate);
+            cmd.Parameters.AddWithValue("@UpdatedDate", product.UpdatedDate);
             cmd.Parameters.AddWithValue("@UpdatedBy", product.UpdatedBy);
-            cmd.Parameters.AddWithValue("@UpdatedPC", product.UpdatedPC);
+            cmd.Parameters.AddWithValue("@UpdatedPc", product.UpdatedPc);
             cmd.Parameters.AddWithValue("@Status", product.Status);
-            cmd.Parameters.AddWithValue("@StatusBit", product.StatusBit);
-            //
-            cmd.Parameters.AddWithValue("@SupplierCode", decryptedSupplierCode);
-            cmd.Parameters.AddWithValue("@ProductId", product.ProductId);
+            cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
+
+           
 
             //con.Open();
             //cmd.ExecuteNonQuery();
@@ -381,11 +372,11 @@ VALUES
             string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
 
-            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @ProductId AND SellerCode = @Aw", con);
+            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @GoodsId AND SellerCode = @SellerCode", con);
 
             cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@ProductId", ProductId);
-            cmd.Parameters.AddWithValue("@SupplierCode", decryptedSupplierCode);
+            cmd.Parameters.AddWithValue("@GoodsId", ProductId);
+            cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();
