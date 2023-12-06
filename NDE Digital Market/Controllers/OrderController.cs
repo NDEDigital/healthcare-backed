@@ -812,6 +812,11 @@ namespace NDE_Digital_Market.Controllers
         [Route("getAllOrderForBuyer")]
         public IActionResult getAllOrderForBuyer(string buyerCode, int PageNumber, int rowCount, String? status = null)
         {
+
+            if(status == null)
+            {
+                status = "";
+            }
             string decryptedBuyerCode = CommonServices.DecryptPassword(buyerCode);
             List<BuyerOrderModel> buyerOrderLst = new List<BuyerOrderModel>();
             List<CountsList> countsList = new List<CountsList>();
@@ -830,7 +835,7 @@ namespace NDE_Digital_Market.Controllers
             adapter.Fill(ds);
             DataTable dt = ds.Tables[0];
             DataTable dt1 = ds.Tables[1];
-            DataTable dt2 = ds.Tables[2];
+            //DataTable dt2 = ds.Tables[2];
             con.Close();
             for (int i = 0; i < dt.Rows.Count; i++)
             {
@@ -873,17 +878,17 @@ namespace NDE_Digital_Market.Controllers
                 buyerOrder.OrderDetailsList.Add(order);
             }
             int toShipCount = 0, toDeliverCount = 0, toReviewCount = 0, AllCount = 0, ToReturnCount=0, ReturnedCount=0;
-            for (int i = 0; i < dt2.Rows.Count; i++)
-            {
-                toShipCount = Convert.ToInt32(dt2.Rows[i]["ReadyToShipCount"]);
-                toDeliverCount = Convert.ToInt32(dt2.Rows[i]["ShippedCount"]);
-                toReviewCount = Convert.ToInt32(dt2.Rows[i]["DeliveredCount"]);
-                AllCount = Convert.ToInt32(dt2.Rows[i]["AllCount"]);
-                ToReturnCount = Convert.ToInt32(dt2.Rows[i]["ToReturnCount"]);
-                ReturnedCount = Convert.ToInt32(dt2.Rows[i]["ReturnedCount"]);
+            //for (int i = 0; i < dt2.Rows.Count; i++)
+            //{
+            //    toShipCount = Convert.ToInt32(dt2.Rows[i]["ReadyToShipCount"]);
+            //    toDeliverCount = Convert.ToInt32(dt2.Rows[i]["ShippedCount"]);
+            //    toReviewCount = Convert.ToInt32(dt2.Rows[i]["DeliveredCount"]);
+            //    AllCount = Convert.ToInt32(dt2.Rows[i]["AllCount"]);
+            //    ToReturnCount = Convert.ToInt32(dt2.Rows[i]["ToReturnCount"]);
+            //    ReturnedCount = Convert.ToInt32(dt2.Rows[i]["ReturnedCount"]);
 
 
-            }
+            //}
             return Ok(new { message = "content get successfully", buyerOrderLst, toShipCount, toDeliverCount, toReviewCount, AllCount, ToReturnCount, ReturnedCount });
         }
 
