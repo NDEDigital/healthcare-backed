@@ -116,15 +116,15 @@ VALUES
                     product.GoodsId = result.ToString();
                 }
                 con.Close();
-                List<MaterialStock> stock = new List<MaterialStock>();
-                MaterialStock obj = new MaterialStock();
-                obj.GroupCode = product.GroupCode;
-                obj.GoodsId = Convert.ToInt32(product.GoodsId);
-                obj.SellerCode = product.SellerCode;
-                obj.SalesQty = 0;
-                obj.OperationType = "ADD";
-                stock.Add(obj);
-                string ans = _commonServices.InsertUpdateStockQt(stock);
+              
+                MaterialStockInsert stock = new MaterialStockInsert();
+                stock.GroupCode = product.GroupCode;
+                stock.GoodsId = Convert.ToInt32(product.GoodsId);
+                stock.SellerCode = product.SellerCode;
+                stock.PresentQty = (float)product.Quantity;
+                stock.PreviousQty = (float)product.Quantity;
+             
+                string ans = _commonServices.InsertStockQt(stock);
 
                 return Ok(); // If execution is successful
             }

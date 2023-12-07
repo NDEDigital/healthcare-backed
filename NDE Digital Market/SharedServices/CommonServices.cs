@@ -64,33 +64,51 @@ namespace NDE_Digital_Market.SharedServices
             }
             return cipherText;
         }
-        public string InsertUpdateStockQt(List<MaterialStock> Stock)
+        public string InsertStockQt(MaterialStockInsert Stock)
         {
 
-            string query = @"IF EXISTS (
-                            SELECT 1 
-                            FROM MaterialStockQty
-                            WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode
-                        )
-                        BEGIN
-                            IF @OperationType = 'ADD'
-                            BEGIN
-                                UPDATE MaterialStockQty
-                                SET PreviousQty = PresentQty, PresentQty = PresentQty + @SALES
-                                WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode
-                            END
-                            ELSE IF @OperationType = 'SUBTRACT'
-                            BEGIN
-                                UPDATE MaterialStockQty
-                                SET PreviousQty = PresentQty, PresentQty = PresentQty - @SALES
-                                WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode
-                            END
-                        END
-                        ELSE
-                        BEGIN
+            string query = @"
                             INSERT INTO MaterialStockQty (GroupCode, GoodsId, SellerCode, PreviousQty, PresentQty)
                             VALUES (@GroupCode, @GoodsId, @SellerCode, @PreviousQty, @PresentQty)           
-                        END";
+                       ";
+
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+               
+                    cmd.Parameters.AddWithValue("@GroupCode", Stock.GroupCode);
+                    cmd.Parameters.AddWithValue("@GoodsId", Stock.GoodsId);
+                    cmd.Parameters.AddWithValue("@SellerCode", Stock.SellerCode);
+                    cmd.Parameters.AddWithValue("@PreviousQty", Stock.PreviousQty);
+                    cmd.Parameters.AddWithValue("@PresentQty", Stock.PresentQty);
+
+                    try
+                    {
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                        con.Close();
+                        return "200"; // If execution is successful
+                    }
+                    catch (SqlException ex)
+                    {
+                        // Handle any SQL-related errors
+                        return "SQL Error";
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle any other errors
+                        return "500";
+                    }
+
+            }
+            return "200";
+
+
+        }
+        public string UpdateStockQt(List<MaterialStockUpdate> Stock)
+        {
+
+            string query = @" SET PreviousQty = PresentQty, PresentQty = PresentQty - @SALES
+                              WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode";
 
             using (SqlCommand cmd = new SqlCommand(query, con))
             {
@@ -100,10 +118,6 @@ namespace NDE_Digital_Market.SharedServices
                     cmd.Parameters.AddWithValue("@GoodsId", stock.GoodsId);
                     cmd.Parameters.AddWithValue("@SellerCode", stock.SellerCode);
                     cmd.Parameters.AddWithValue("@SALES", stock.SalesQty);
-                    cmd.Parameters.AddWithValue("@OperationType", stock.OperationType);
-                    cmd.Parameters.AddWithValue("@PreviousQty", 10);
-                    cmd.Parameters.AddWithValue("@PresentQty", 20);
-
                     try
                     {
                         con.Open();
@@ -128,6 +142,10 @@ namespace NDE_Digital_Market.SharedServices
 
 
         }
+
+
+
+
 
     }
 }

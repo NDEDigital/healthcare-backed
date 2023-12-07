@@ -37,7 +37,7 @@ namespace NDE_Digital_Market.Controllers
 
         public IActionResult Order([FromBody] MasterDetailModel orderData)
         {
-            List<MaterialStock> stocks = new List<MaterialStock>();
+            List<MaterialStockUpdate> stocks = new List<MaterialStockUpdate>();
 
             try
             {
@@ -136,19 +136,18 @@ namespace NDE_Digital_Market.Controllers
                                 detailCommand.Parameters.AddWithValue("@Status", detailItem.Status);
                                 detailCommand.ExecuteNonQuery();
 
-                                MaterialStock obj = new MaterialStock();
+                                MaterialStockUpdate obj = new MaterialStockUpdate();
                                 obj.GroupCode = detailItem.GroupCode;
                                 obj.GoodsId = detailItem.GoodsId;
                                 obj.SellerCode = detailItem.SellerCode;
                                 obj.SalesQty = detailItem.Quantity;
-                                obj.OperationType = "SUBTRACT";
                                 stocks.Add(obj);
                             }
                         }
 
                         // Commit the transaction (if used)
                         //transaction.Commit();
-                        string result = _commonServices.InsertUpdateStockQt(stocks);
+                        string result = _commonServices.UpdateStockQt(stocks);
 
                         return Ok(new { message = "Data inserted successfully." });
 
