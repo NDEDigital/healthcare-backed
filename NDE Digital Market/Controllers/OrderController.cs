@@ -388,9 +388,6 @@ namespace NDE_Digital_Market.Controllers
         [HttpPut("AdminOrderUpdateStatus")]
 
 
-
-
-
         public IActionResult UpdateStatus([FromForm] String? orderMasterId, [FromForm] String? detailsApprovedId, [FromForm] String? detailsCancelledId, [FromForm] string status)
         {
             string MasterIdString = "''";
@@ -413,7 +410,7 @@ namespace NDE_Digital_Market.Controllers
                 }
 
 
-                cmd = new SqlCommand(" UPDATE OrderMaster SET Status = @value  WHERE OrderMasterId IN (" + MasterIdString + ") ;  UPDATE OrderDetails SET Status  = 'Pending' WHERE OrderMasterId  IN (" + MasterIdString + "); UPDATE OrderDetails SET Status = 'Rejected' WHERE OrderDetailId IN (" + CancelledString + "); ", con);
+                cmd = new SqlCommand(" UPDATE OrderMaster SET Status = @value  WHERE OrderMasterId IN (" + MasterIdString + ") ;  UPDATE OrderDetails SET Status = @valuegit add  WHERE OrderMasterId  IN (" + MasterIdString + "); UPDATE OrderDetails SET Status = 'Rejected' WHERE OrderDetailId IN (" + CancelledString + "); ", con);
                 cmd.Parameters.AddWithValue("@orderMasterId", orderMasterId);
                 cmd.Parameters.AddWithValue("@value", status);
                 con.Open();

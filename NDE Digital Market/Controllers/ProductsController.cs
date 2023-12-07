@@ -49,7 +49,7 @@ namespace NDE_Digital_Market.Controllers
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
             //string path = Path.Combine(rootPath,@"images\Uploads", product.ImageName);
-            string path = Path.Combine(@"E:\Nimpex Health Care\NDE-Digital-Medical-Front-\src\assets\images\Uploads", product.ImageName);
+            string path = Path.Combine(@"C:\development\NDE Medical\NDE-Digital-Medical-Front-\src\assets\images\medical", product.ImageName);
             //string path = Path.Combine(@"C:\NDE-Digital-Market\dist\nde-digital-market\assets\images\Uploads", product.ImageName);
             product.ImagePath = path;
             //Console.WriteLine(path);
