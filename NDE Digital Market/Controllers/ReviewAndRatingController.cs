@@ -113,8 +113,9 @@ namespace NDE_Digital_Market.Controllers
             string decryptedBuyerCode = CommonServices.DecryptPassword(reviewAndRating.BuyerId);
             if(reviewAndRating.ImageName!= null && reviewAndRating.Image != null)
             {
-                string path = Path.Combine(@"C:\development\NDE Medical\NDE-Digital-Medical-Front-\src\assets\images\Uploads\Review", reviewAndRating.ImageName);
+                //string path = Path.Combine(@"C:\development\NDE Medical\NDE-Digital-Medical-Front-\src\assets\images\Uploads\Review", reviewAndRating.ImageName);
                 //string path = Path.Combine(@"C:\NDE-Digital-Market\dist\nde-digital-market\assets\images\Uploads\Review", reviewAndRating.ImageName);
+                string path = Path.Combine(@"E:\Nimpex Health Care\NDE-Digital-Medical-Front-\src\assets\images\Uploads", reviewAndRating.ImageName);
                 reviewAndRating.ImagePath = path;
                 using (Stream stream = new FileStream(path, FileMode.Create))
                 {

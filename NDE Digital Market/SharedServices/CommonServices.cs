@@ -107,7 +107,7 @@ namespace NDE_Digital_Market.SharedServices
         public string UpdateStockQt(List<MaterialStockUpdate> Stock)
         {
 
-            string query = @" SET PreviousQty = PresentQty, PresentQty = PresentQty - @SALES
+            string query = @"UPDATE MaterialStockQty SET PreviousQty = PresentQty, PresentQty = PresentQty - @SALES
                               WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode";
 
             using (SqlCommand cmd = new SqlCommand(query, con))
