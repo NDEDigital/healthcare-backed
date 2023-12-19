@@ -304,7 +304,7 @@ namespace NDE_Digital_Market.Controllers
                             var bank = new MobileBankModel
                             {
                                 MobileBankingTypeId = reader.GetInt32(reader.GetOrdinal("MobileBankingTypeId")),
-                                MobileBankingTypeName = reader.GetString(reader.GetOrdinal("MobileBankingTypeName")) 
+                                MobileBankingType = reader.GetString(reader.GetOrdinal("MobileBankingType")) 
                             };
                             mobileBanks.Add(bank);
                         }
