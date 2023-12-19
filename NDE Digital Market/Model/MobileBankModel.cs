@@ -3,6 +3,6 @@
     public class MobileBankModel
     {
         public int MobileBankingTypeId { get; set; }
-        public string MobileBankingTypeName { get; set; }
+        public string MobileBankingType { get; set; }
     }
 }
