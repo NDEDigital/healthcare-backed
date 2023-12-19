@@ -326,6 +326,49 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
+        //========================  GetPaymentMethodType =================
+        [HttpGet]
+        [Route("PaymentMethodType")]
+        public async Task<IActionResult> GetPaymentMethodType()
+        {
+            try
+            {
+                var paymentMethod = new List<PaymentMethodType>();
+                using (var con = new SqlConnection(_healthCareConnection))
+                {
+                    await con.OpenAsync();
+                    string query = @"SELECT * FROM PaymentMethodType WHERE IsActive = 1";
+
+                    using (var cmd = new SqlCommand(query, con))
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var bank = new PaymentMethodType
+                            {
+                                PaymentMethodId = reader.GetInt32(reader.GetOrdinal("PaymentMethodId")),
+                                PaymentMethod = reader.GetString(reader.GetOrdinal("PaymentMethod"))
+                            };
+                            paymentMethod.Add(bank);
+                        }
+                    }
+                }
+
+                if (paymentMethod.Count == 0)
+                {
+                    return NotFound("No Payment Method found.");
+                }
+
+                return Ok(paymentMethod);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
 
 
 
