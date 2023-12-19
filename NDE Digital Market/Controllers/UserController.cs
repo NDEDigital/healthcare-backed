@@ -24,12 +24,13 @@ namespace NDE_Digital_Market.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionDigitalMarket;
+        private readonly string _healthCareConnection;
         private readonly SqlConnection con;
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
             con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
-           // _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
+            _healthCareConnection = configuration.GetConnectionString("HealthCare");
         }
 
         //===================================== Create User ================================
@@ -56,20 +57,7 @@ namespace NDE_Digital_Market.Controllers
         [Route("CreateUser")]
         public IActionResult CreateUser(UserModel user)
         {
-            //SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM UserRegistration WHERE PhoneNumber = @phoneNumber", con);
-            //cmd.CommandType = CommandType.Text;
-            //cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
-            //con.Open();
-            //int count = (int)cmd.ExecuteScalar();
-            //con.Close();
-
-            //if (count > 0)
-            //{
-            //    return BadRequest(new { message = "User already exists" });
-            //}
-            //else
-            //{
-                //SP
+            
                 string systemCode = string.Empty;
 
                 // Execute the stored procedure to generate the system code
@@ -80,15 +68,7 @@ namespace NDE_Digital_Market.Controllers
                     cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
                     cmdSP.Parameters.AddWithValue("@AddNumber", 1);
 
-                    //con.Open();
-                    //using (SqlDataReader reader = cmdSP.ExecuteReader())
-                    //{
-                    //    if (reader.Read())
-                    //    {
-                    //        systemCode = reader["SystemCode"].ToString();
-                    //    }
-                    //}
-                    //con.Close();
+     
                     con.Open();
                     systemCode = cmdSP.ExecuteScalar()?.ToString();
                     con.Close();

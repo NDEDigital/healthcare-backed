@@ -2,7 +2,10 @@
 {
     public class NavModel
     {
-        public string GroupName { get; set; }
-        public string GroupCode { get; set; }
+        public int ProductGroupID { get; set; }
+        public string ProductGroupCode { get; set; }
+        public string ProductGroupName { get; set; }
+        public string ProductGroupPrefix { get; set; }
+        public string ProductGroupDetails { get; set; }
     }
 }

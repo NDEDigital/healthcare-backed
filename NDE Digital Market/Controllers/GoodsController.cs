@@ -12,24 +12,57 @@ namespace NDE_Digital_Market.Controllers
     [ApiController]
     public class GoodsController : ControllerBase
     {
-        private readonly string _connectionSteel;
-        private readonly string _connectionNimpex;
+      
         private readonly string _prominentConnection;
         private readonly string _connectionDigitalMarket;
+        private readonly string _healthCareConnection;
         public GoodsController(IConfiguration config)
         {
-      
             _prominentConnection = config.GetConnectionString("ProminentConnection");
-       
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
+            _healthCareConnection = config.GetConnectionString("HealthCare");
         }
 
+        // ============ NavData ============================
+
+        [HttpGet]
+        [Route("GetNavData")]
+        public async Task<List<NavModel>> GetNavData()
+        {
+            List<NavModel> lst = new List<NavModel>();
+            using (SqlConnection con = new SqlConnection(_healthCareConnection))
+            {
+                await con.OpenAsync();
+                string query = @"SELECT * FROM ProductGroups Where IsActive = 1";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        NavModel modelObj = new NavModel
+                        {
+                            ProductGroupCode = reader["ProductGroupCode"].ToString(),
+                            ProductGroupName = reader["ProductGroupName"].ToString(),
+                            ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
+                            ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
+                            ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
+                        };
+                        lst.Add(modelObj);
+                    }
+                }
+
+            }
 
 
+            return lst;
+        }
+
+        //================================== Get Slider GoodsList ================
 
         [HttpGet ]
         [Route("GetGoodsList")]
-        public List<GoodsQuantityModel> GetGoodsList()
+        public async Task<List<GoodsQuantityModel>> GetGoodsList()
         {
             List<GoodsQuantityModel> Lst = new List<GoodsQuantityModel>();
             SqlConnection con = new SqlConnection(_prominentConnection);
@@ -90,40 +123,9 @@ namespace NDE_Digital_Market.Controllers
             return Lst;
         }
 
+        //====================== ProductCompany =================
 
-        // ============ NavData ============================
-
-        [HttpGet]
-        [Route("GetNavData")]
-        public List<NavModel> GetNavData()
-        {
-            List<NavModel> Lst = new List<NavModel>();
-            SqlConnection con = new SqlConnection(_prominentConnection);
-            con.Open();
-            string query = @"SELECT DISTINCT groupName, groupCode FROM GoodsGroupMaster
-                          ";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-
-            adapter.Fill(dt);
-            //Console.WriteLine(dt);
-            con.Close();
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                NavModel modelObj = new NavModel();
-                modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();    
-                modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-                Lst.Add(modelObj);
-            }
-
-
-            
-
-            return Lst;
-        }
-
+      
         [HttpPost]
         [Route("GetProductCompany")]
         public List<ProductCompanyModel> GetProductCompany(string GroupCode, string GroupName)
@@ -235,6 +237,97 @@ namespace NDE_Digital_Market.Controllers
      
             return res;
         }
+
+
+        //========================   GetBank Data =================
+
+        [HttpGet]
+        [Route("BankData")]
+        public async Task<IActionResult> GetBankData()
+        {
+            try
+            {
+                var banks = new List<BankModel>();
+                using (var con = new SqlConnection(_healthCareConnection))
+                {
+                    await con.OpenAsync();
+                    string query = @"SELECT BankId, BankName FROM Banks WHERE IsActive = 1"; // Use 1 for bit field true
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var bank = new BankModel
+                            {
+                                BankId = reader.GetInt32(reader.GetOrdinal("BankId")),
+                                BankName = reader.GetString(reader.GetOrdinal("BankName"))
+                            };
+                            banks.Add(bank);
+                        }
+                    }
+                }
+
+                if (banks.Count == 0)
+                {
+                    return NotFound("No active banks found.");
+                }
+
+                return Ok(banks);
+            }
+            catch (Exception ex)
+            {
+                // Consider logging the exception details here
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        //========================   GetBank Data =================
+        [HttpGet]
+        [Route("MobileBankData")]
+        public async Task<IActionResult> GetMobileBankData()
+        {
+            try
+            {
+                var mobileBanks = new List<MobileBankModel>();
+                using (var con = new SqlConnection(_healthCareConnection))
+                {
+                    await con.OpenAsync();
+                    string query = @"SELECT * FROM MobileBankingType WHERE IsActive = 1"; 
+
+                    using (var cmd = new SqlCommand(query, con))
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var bank = new MobileBankModel
+                            {
+                                MobileBankingTypeId = reader.GetInt32(reader.GetOrdinal("MobileBankingTypeId")),
+                                MobileBankingTypeName = reader.GetString(reader.GetOrdinal("MobileBankingTypeName")) 
+                            };
+                            mobileBanks.Add(bank);
+                        }
+                    }
+                }
+
+                if (mobileBanks.Count == 0)
+                {
+                    return NotFound("No mobile banks found.");
+                }
+
+                return Ok(mobileBanks);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+
+
 
 
 
