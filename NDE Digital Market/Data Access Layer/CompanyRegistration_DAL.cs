@@ -12,7 +12,7 @@ public class CompanyRegistration_DAL
 {
     private readonly IConfiguration _configuration;
     private readonly SqlConnection connection;
-    private readonly string foldername = "F:/Projects/Health Care/healthcare-frontend/src/assets/images/CompanyFiles";
+    private readonly string foldername = @"D:\HealthCare\healthcare-frontend\src\assets\images\CompanyFiles";
     private readonly string filename = "companyfiles";
     public CompanyRegistration_DAL(IConfiguration configuration)
     {
@@ -97,9 +97,9 @@ public class CompanyRegistration_DAL
             cmd.Parameters.AddWithValue("@TaxIdentificationNumber", companyDto.TaxIdentificationNumber);
             cmd.Parameters.AddWithValue("@TradeLicense", TradeLicense);
             cmd.Parameters.AddWithValue("@PreferredPaymentMethodID", companyDto.PreferredPaymentMethodID);
-            cmd.Parameters.AddWithValue("@BankNameID", companyDto.BankNameID);
-            cmd.Parameters.AddWithValue("@AccountNumber", companyDto.AccountNumber);
-            cmd.Parameters.AddWithValue("@AccountHolderName", companyDto.AccountHolderName);
+            cmd.Parameters.AddWithValue("@BankNameID", companyDto.BankNameID ?? 0);
+            cmd.Parameters.AddWithValue("@AccountNumber", companyDto.AccountNumber ?? string.Empty);
+            cmd.Parameters.AddWithValue("@AccountHolderName", companyDto.AccountHolderName ?? string.Empty);
             cmd.Parameters.AddWithValue("@MaxUser", 3);
             cmd.Parameters.AddWithValue("@IsActive", -1);
             cmd.Parameters.AddWithValue("@AddedBy", companyDto.AddedBy);
