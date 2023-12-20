@@ -2,7 +2,7 @@
 {
     public class UserModel
     {
-        public string CompanyId { get; set; }
+        public string? CompanyCode { get; set; }
         public int UserId { get; set; }
         public string UserCode { get; set; }
         public bool? IsBuyer { get; set; }
