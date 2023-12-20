@@ -54,7 +54,8 @@ namespace NDE_Digital_Market.Controllers
             return Ok(new { message = "User  exists check", userExist });
             //   return BadRequest(new { message = "User does not exist" , userExist });
         }
-        
+
+
         private async Task<bool> CompanyExistAsync(string CompanyCode)
         {
             string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 0 ELSE 1 END AS UserCount
@@ -70,67 +71,82 @@ namespace NDE_Digital_Market.Controllers
                 await _healthCareConnection.OpenAsync();
 
                 using (var cmd = new SqlCommand(query, _healthCareConnection))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+
+                    // Execute the query and store the result in the 'userCount' variable
+                    var result = await cmd.ExecuteScalarAsync();
+                    await _healthCareConnection.CloseAsync();
+
+                    // Check if result is not null and cast to int
+                    int userCount = result != null ? Convert.ToInt32(result) : 0;
+                    if (userCount == 0)
                     {
-                                cmd.CommandType = CommandType.Text;
-                                cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
-
-                                // Execute the query and store the result in the 'userCount' variable
-                                var result = await cmd.ExecuteScalarAsync();
-                                await _healthCareConnection.CloseAsync();
-
-                                // Check if result is not null and cast to int
-                                int userCount = result != null ? Convert.ToInt32(result) : 0;   
-                                if(userCount == 0)
-                                {
-                                    return false; 
-                                }
+                        return false;
                     }
-                    
-               }
-            
+                }
+
+            }
+
             catch (Exception ex)
             {
-                 return false;
+                return false;
             }
 
             return true;
         }
 
-    
+
         [HttpPost]
         [Route("CreateUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
-
-            if (user.CompanyId != null)
+            bool companyExist = false;
+            if (user.CompanyCode != null)
             {
-                if (await CompanyExistAsync(user.CompanyId) == false)
+                companyExist = await CompanyExistAsync(user.CompanyCode);
+                if (companyExist == false)
                 {
-                    return BadRequest("Conpany Code problem");
+                    return BadRequest("Company Code problem");
                 }
 
             }
 
             string systemCode = string.Empty;
 
-                // Execute the stored procedure to generate the system code
-                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", _healthCareConnection);
-                {
-                    cmdSP.CommandType = CommandType.StoredProcedure;
-                    cmdSP.Parameters.AddWithValue("@TableName", "UserRegistration");
-                    cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
-                    cmdSP.Parameters.AddWithValue("@AddNumber", 1);
+            // Execute the stored procedure to generate the system code
+            SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", _healthCareConnection);
+            {
+                cmdSP.CommandType = CommandType.StoredProcedure;
+                cmdSP.Parameters.AddWithValue("@TableName", "UserRegistration");
+                cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+                cmdSP.Parameters.AddWithValue("@AddNumber", 1);
 
-     
-                   await _healthCareConnection.OpenAsync();
-                    systemCode = cmdSP.ExecuteScalar()?.ToString();
-                   await _healthCareConnection.CloseAsync();
-                }
 
-            
-                //SP END
+                await _healthCareConnection.OpenAsync();
+                systemCode = cmdSP.ExecuteScalar()?.ToString();
+                await _healthCareConnection.CloseAsync();
+            }
 
-                // Encrypt the Password
+            if (companyExist == true)
+            {
+                string updateCompanyAdmin = @"
+                          UPDATE CompanyRegistration
+                            SET CompanyAdminCode = 'dsds'
+                            WHERE CompanyAdminCode IS NULL AND CompanyCode = @CompanyCode;
+                            ";
+                SqlCommand cmd1 = new SqlCommand(updateCompanyAdmin, _healthCareConnection);
+                cmd1.CommandType = CommandType.Text;
+                cmd1.Parameters.AddWithValue("@CompanyCode", user.CompanyCode);
+
+
+            }
+
+
+            //SP END
+
+            // Encrypt the Password
             string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             createPasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -147,7 +163,7 @@ namespace NDE_Digital_Market.Controllers
             userModel.PasswordSalt = passwordSalt;
             userModel.Address = user.Address;
             userModel.AddedDate = DateTime.UtcNow;
-            userModel.CompanyId = user.CompanyId;
+            userModel.CompanyCode = user.CompanyCode;
 
             string query = @"
                             INSERT INTO UserRegistration (
@@ -176,19 +192,19 @@ namespace NDE_Digital_Market.Controllers
             cmd.Parameters.AddWithValue("@Address", userModel.Address ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@AddedDate", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@TimeStamp", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@CompanyCode", userModel.CompanyId);
-            cmd.Parameters.AddWithValue("@IsActive",true);
+            cmd.Parameters.AddWithValue("@CompanyCode", userModel.CompanyCode);
+            cmd.Parameters.AddWithValue("@IsActive", true);
 
             await _healthCareConnection.OpenAsync();
-               await  cmd.ExecuteNonQueryAsync();
-               await _healthCareConnection.CloseAsync();
-                string encryptedUserCode = CommonServices.EncryptPassword(userModel.UserId.ToString());
-                string role = userModel.IsAdmin == true ? "admin" :
-                              userModel.IsSeller == true ? "seller" :
-                              userModel.IsBuyer == true ? "buyer" :
-                              "";
+            await cmd.ExecuteNonQueryAsync();
+            await _healthCareConnection.CloseAsync();
+            string encryptedUserCode = CommonServices.EncryptPassword(userModel.UserId.ToString());
+            string role = userModel.IsAdmin == true ? "admin" :
+                          userModel.IsSeller == true ? "seller" :
+                          userModel.IsBuyer == true ? "buyer" :
+                          "";
             string token = CreateToken(role);
-                var newRefreshToken = CreateRefreshToken(encryptedUserCode);
+            var newRefreshToken = CreateRefreshToken(encryptedUserCode);
             return Ok(new
             {
                 message = "User created successfully",
@@ -199,6 +215,7 @@ namespace NDE_Digital_Market.Controllers
             });
             //}
         }
+
 
         // =================================================== Login ===================================
         [HttpPost]
