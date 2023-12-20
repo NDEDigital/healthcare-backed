@@ -103,15 +103,15 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
             bool companyExist = false;
-            if (user.CompanyCode != null)
-            {
-                companyExist = await CompanyExistAsync(user.CompanyCode);
-                if (companyExist == false)
-                {
-                    return BadRequest("Company Code problem");
-                }
+            //if (user.CompanyCode != null)
+            //{
+            //    companyExist = await CompanyExistAsync(user.CompanyCode);
+            //    if (companyExist == false)
+            //    {
+            //        return BadRequest("Company Code problem");
+            //    }
 
-            }
+            //}
 
             string systemCode = string.Empty;
 
