@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NDE_Digital_Market.Model;
 using NDE_Digital_Market.DTOs;
 using System.Data;
 using System.Data.SqlClient;
@@ -66,8 +67,8 @@ namespace NDE_Digital_Market.Controllers
                     string ProductGroupsCode = systemCode.Split('%')[1];
 
                     //SP END
-                    string query = "INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName, ProductGroupPrefix, ProductGroupDetails, AddedBy, DateAdded, AddedPC) " +
-                        " VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ProductGroupPrefix, @ProductGroupDetails, @AddedBy, @DateAdded, @AddedPC);";
+                    string query = "INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC) " +
+                        " VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@ProductGroupID", ProductGroupsID);
@@ -75,6 +76,7 @@ namespace NDE_Digital_Market.Controllers
                     cmd.Parameters.AddWithValue("@ProductGroupName", productGroupsDto.ProductGroupName);
                     cmd.Parameters.AddWithValue("@ProductGroupPrefix", productGroupsDto.ProductGroupPrefix);
                     cmd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails);
+                    cmd.Parameters.AddWithValue("@IsActive", 1);
                     cmd.Parameters.AddWithValue("@AddedBy", productGroupsDto.AddedBy);
                     cmd.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                     cmd.Parameters.AddWithValue("@AddedPC", productGroupsDto.AddedPC);
@@ -93,6 +95,38 @@ namespace NDE_Digital_Market.Controllers
                 return BadRequest(ex.Message);
             }
 
+        }
+
+        [HttpGet]
+        [Route("GetProductGroupsList")]
+        public async Task<List<ProductGroupsModel>> GetProductGroupsListAsync()
+        {
+            List<ProductGroupsModel> lst = new List<ProductGroupsModel>();
+            await con.OpenAsync();
+            string query = "SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails],"+
+                " [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
+
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        ProductGroupsModel modelObj = new ProductGroupsModel();
+                        modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                        modelObj.ProductGroupCode = reader["ProductGroupCode"].ToString();
+                        modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+                        modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
+                        modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
+                        modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+
+                        lst.Add(modelObj);
+                    }
+                }
+            }
+
+
+            return lst;
         }
     }
 }
