@@ -55,26 +55,35 @@ namespace NDE_Digital_Market.Controllers
             //   return BadRequest(new { message = "User does not exist" , userExist });
         }
         
-        private async Task<bool> CompanyExist(string CompanyCode)
+        private async Task<bool> CompanyExistAsync(string CompanyCode)
         {
-            string query = @"SELECT COUNT(1) AS UserCount, MAX(CR.MaxUser) AS MaxUser
-                     FROM UserRegistration AS UR
-                     LEFT JOIN CompanyRegistration AS CR ON CR.CompanyCode = UR.CompanyCode
-                     WHERE UR.CompanyCode = @CompanyCode";
+            string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 0 ELSE 1 END AS UserCount
+                                FROM UserRegistration UR
+                                JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
+	                                WHERE UR.CompanyCode=CR.CompanyCode
+	                                AND UR.IsActive=1
+                                And CR.CompanyCode=@CompanyCode
+                                GROUP BY CR.MaxUser";
 
             try
             {
-                              
-                    using (var cmd = new SqlCommand(query, _healthCareConnection))
-                    {
-                        await _healthCareConnection.OpenAsync();
-                        cmd.CommandType = CommandType.Text;
-                        cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+                await _healthCareConnection.OpenAsync();
 
-                        using (var reader = await cmd.ExecuteReaderAsync())
-                        {
-                          
-                        }
+                using (var cmd = new SqlCommand(query, _healthCareConnection))
+                    {
+                                cmd.CommandType = CommandType.Text;
+                                cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+
+                                // Execute the query and store the result in the 'userCount' variable
+                                var result = await cmd.ExecuteScalarAsync();
+                                await _healthCareConnection.CloseAsync();
+
+                                // Check if result is not null and cast to int
+                                int userCount = result != null ? Convert.ToInt32(result) : 0;   
+                                if(userCount == 0)
+                                {
+                                    return false; 
+                                }
                     }
                     
                }
@@ -92,13 +101,17 @@ namespace NDE_Digital_Market.Controllers
         [Route("CreateUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
-                  
-                 //if(user.CompanyId != null)
-                 //  {
-                      
-                 //  }
-             
-                string systemCode = string.Empty;
+
+            if (user.CompanyId != null)
+            {
+                if (await CompanyExistAsync(user.CompanyId) == false)
+                {
+                    return BadRequest("Conpany Code problem");
+                }
+
+            }
+
+            string systemCode = string.Empty;
 
                 // Execute the stored procedure to generate the system code
                 SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", _healthCareConnection);
