@@ -54,12 +54,49 @@ namespace NDE_Digital_Market.Controllers
             return Ok(new { message = "User  exists check", userExist });
             //   return BadRequest(new { message = "User does not exist" , userExist });
         }
+        
+        private async Task<bool> CompanyExist(string CompanyCode)
+        {
+            string query = @"SELECT COUNT(1) AS UserCount, MAX(CR.MaxUser) AS MaxUser
+                     FROM UserRegistration AS UR
+                     LEFT JOIN CompanyRegistration AS CR ON CR.CompanyCode = UR.CompanyCode
+                     WHERE UR.CompanyCode = @CompanyCode";
+
+            try
+            {
+                              
+                    using (var cmd = new SqlCommand(query, _healthCareConnection))
+                    {
+                        await _healthCareConnection.OpenAsync();
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                          
+                        }
+                    }
+                    
+               }
+            
+            catch (Exception ex)
+            {
+                 return false;
+            }
+
+            return true;
+        }
+
     
         [HttpPost]
         [Route("CreateUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
-            
+                  
+                 //if(user.CompanyId != null)
+                 //  {
+                      
+                 //  }
              
                 string systemCode = string.Empty;
 
@@ -96,38 +133,18 @@ namespace NDE_Digital_Market.Controllers
             userModel.PasswordHash = passwordHash;
             userModel.PasswordSalt = passwordSalt;
             userModel.Address = user.Address;
-            userModel.CompanyName = user.CompanyName;
-            userModel.Website = user.Website;
-            userModel.ProductCategory = user.ProductCategory;
-            userModel.CompanyFoundedDate = user.CompanyFoundedDate;
-            userModel.BusinessRegistrationNumber = user.BusinessRegistrationNumber;
-            userModel.TaxIdNumber = user.TaxIdNumber;
-            userModel.TimeStamp = DateTime.UtcNow;
-            userModel.IsActive = 1;
-            userModel.PaymentMethodId = user.PaymentMethodId;
-            userModel.AccountNo = user.AccountNo;
-            userModel.AccountHolderName = user.AccountHolderName;
-            userModel.BankId = user.BankId;
-            userModel.MobileBankingTypeId = user.MobileBankingTypeId;
-            userModel.MobileBankingNo = user.MobileBankingNo;
             userModel.AddedDate = DateTime.UtcNow;
-
+            userModel.CompanyId = user.CompanyId;
 
             string query = @"
                             INSERT INTO UserRegistration (
                                 UserId, UserCode, IsBuyer, IsSeller, IsAdmin, 
-                                FullName, PhoneNumber, Email, PasswordHash, PasswordSalt, Address, 
-                                CompanyName, Website, ProductCategory, CompanyFoundedDate, 
-                                BusinessRegistrationNumber, TaxIdNumber, PaymentMethodId, TimeStamp, 
-                                IsActive, AccountNo, AccountHolderName, BankId, MobileBankingTypeId, 
-                                MobileBankingNo, AddedDate
+                                FullName, PhoneNumber, Email, PasswordHash, PasswordSalt, Address,                           
+                                TimeStamp,IsActive, AddedDate,CompanyCode
                             ) VALUES (
                                 @UserID, @UserCode,  @IsBuyer, @IsSeller, @IsAdmin, 
                                 @FullName, @PhoneNumber, @Email, @PasswordHash, @PasswordSalt, @Address, 
-                                @CompanyName, @Website, @ProductCategory, @CompanyFoundedDate, 
-                                @BusinessRegistrationNumber, @TaxIdNumber, @PaymentMethodId, @TimeStamp, 
-                                @IsActive, @AccountNo, @AccountHolderName, @BankId, @MobileBankingTypeId, 
-                                @MobileBankingNo, @AddedDate
+                                @TimeStamp,@IsActive,@AddedDate,@CompanyCode
                             )";
 
 
@@ -144,23 +161,12 @@ namespace NDE_Digital_Market.Controllers
             cmd.Parameters.AddWithValue("@PasswordHash", userModel.PasswordHash ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@PasswordSalt", userModel.PasswordSalt ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@Address", userModel.Address ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@CompanyName", userModel.CompanyName ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Website", userModel.Website ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ProductCategory", userModel.ProductCategory ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@CompanyFoundedDate", userModel.CompanyFoundedDate.HasValue ? (object)userModel.CompanyFoundedDate.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@BusinessRegistrationNumber", userModel.BusinessRegistrationNumber ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@TaxIdNumber", userModel.TaxIdNumber ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@TimeStamp", userModel.TimeStamp.HasValue ? (object)userModel.TimeStamp.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@IsActive", userModel.IsActive);
-            cmd.Parameters.AddWithValue("@PaymentMethodId", userModel.PaymentMethodId.HasValue ? (object)userModel.PaymentMethodId.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@AccountNo", userModel.AccountNo ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@AccountHolderName", userModel.AccountHolderName ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@BankId", userModel.BankId.HasValue ? (object)userModel.BankId.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@MobileBankingTypeId", userModel.MobileBankingTypeId.HasValue ? (object)userModel.MobileBankingTypeId.Value : DBNull.Value);
-            cmd.Parameters.AddWithValue("@MobileBankingNo", userModel.MobileBankingNo ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@AddedDate", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@TimeStamp", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@CompanyCode", userModel.CompanyId);
+            cmd.Parameters.AddWithValue("@IsActive",true);
 
-               await _healthCareConnection.OpenAsync();
+            await _healthCareConnection.OpenAsync();
                await  cmd.ExecuteNonQueryAsync();
                await _healthCareConnection.CloseAsync();
                 string encryptedUserCode = CommonServices.EncryptPassword(userModel.UserId.ToString());
