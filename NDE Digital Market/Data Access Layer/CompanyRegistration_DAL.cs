@@ -27,7 +27,7 @@ public class CompanyRegistration_DAL
         cmd.Parameters.AddWithValue("@BusinessRegistrationNumber", companyDto.BusinessRegistrationNumber);
         cmd.Parameters.AddWithValue("@TaxIdentificationNumber", companyDto.TaxIdentificationNumber);
         await connection.OpenAsync();
-        int count = (int) await cmd.ExecuteScalarAsync();
+        int count = (int)await cmd.ExecuteScalarAsync();
         await connection.CloseAsync();
         Boolean companyNameExist = false;
         if (count > 0)
@@ -99,7 +99,7 @@ public class CompanyRegistration_DAL
             cmd.Parameters.AddWithValue("@AccountNumber", companyDto.AccountNumber);
             cmd.Parameters.AddWithValue("@AccountHolderName", companyDto.AccountHolderName);
             cmd.Parameters.AddWithValue("@MaxUser", 3);
-            cmd.Parameters.AddWithValue("@IsActive", 0);
+            cmd.Parameters.AddWithValue("@IsActive", -1);
             cmd.Parameters.AddWithValue("@AddedBy", companyDto.AddedBy);
             cmd.Parameters.AddWithValue("@DateAdded", DateTime.Now);
             cmd.Parameters.AddWithValue("@AddedPC", companyDto.AddedPC);
@@ -148,49 +148,53 @@ public class CompanyRegistration_DAL
         return companies;
     }
 
-    public string UpdateCompany(UserModel userModel, CompanyModel companyModel)
+    public async Task<string> UpdateCompanyAsync(CompanyDto companyDto)
     {
-        ////var result = await _UserController.CreateUser(userModel);
-
-        ////// Accessing usercode property
-        ////string usercode = ((ObjectResult)result).Value.GetType().GetProperty("usercode")?.GetValue(((ObjectResult)result).Value)?.ToString();
 
 
-        //string updateSql = "UPDATE CompanyRegistration SET ";
-        //if (companyModel.IsActive != null)
-        //{
-        //    updateSql += " IsActive = @IsActive,";
-        //}
-        //if (companyModel.CompanyAdminCode != null)
-        //{
-        //    updateSql += " CompanyAdminCode = @CompanyAdminCode,";
-        //}
-        ////if (res.message != null)
-        ////{
-        ////    updateSql += " CompanyAdminCode = @CompanyAdminCode,";
-        ////}
-        //updateSql = updateSql.TrimEnd(',');
-        //updateSql += " WHERE CompanyCode = @CompanyCode;";
-        //SqlCommand cmd = new SqlCommand(updateSql, connection);
-        //if (companyModel.IsActive != null)
-        //{
-        //    cmd.Parameters.AddWithValue("@IsActive", companyModel.IsActive);
-        //}
-        //if (companyModel.CompanyAdminCode != null)
-        //{
-        //    cmd.Parameters.AddWithValue("@CompanyAdminCode", companyModel.CompanyAdminCode);
-        //}
-        //cmd.Parameters.AddWithValue("@CompanyCode", companyModel.CompanyCode);
+        string updateSql = "UPDATE CompanyRegistration SET ";
+        if (companyDto.IsActive != null)
+        {
+            updateSql += " IsActive = @IsActive,";
+        }
+        if (companyDto.MaxUser != null)
+        {
+            updateSql += " MaxUser = @MaxUser,";
+        }
+        updateSql = updateSql.TrimEnd(',');
+        updateSql += " WHERE CompanyCode = @CompanyCode;";
+        SqlCommand cmd = new SqlCommand(updateSql, connection);
+        if (companyDto.IsActive != null)
+        {
+            cmd.Parameters.AddWithValue("@IsActive", companyDto.IsActive);
+        }
+        if (companyDto.MaxUser != null)
+        {
+            cmd.Parameters.AddWithValue("@MaxUser", companyDto.MaxUser);
+        }
+        cmd.Parameters.AddWithValue("@CompanyCode", companyDto.CompanyCode);
 
-        //connection.Open();
-        //// Execute the update
-        //int res = cmd.ExecuteNonQuery();
-        //connection.Close();
+        await connection.OpenAsync();
+        // Execute the update
+        int res = await cmd.ExecuteNonQueryAsync();
+        await connection.CloseAsync();
 
-        //if (res > 0)
-        //{
-        //    return "Company is Active Now";
-        //}
+        if (res > 0)
+        {
+            if (companyDto.IsActive != null)
+            {
+                if (companyDto.IsActive == 1)
+                {
+                    return "Company is Active Now.";
+                }
+                else if (companyDto.IsActive == 0)
+                {
+                    return "Company is InActive Now.";
+                }
+
+            }
+
+        }
         return "there is a error";
 
     }

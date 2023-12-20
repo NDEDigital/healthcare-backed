@@ -11,6 +11,6 @@ public interface ICompanyRegistration
 
     Task<List<CompanyModel>> GetCompaniesAsync();
 
-    string UpdateCompany(UserModel userModel, CompanyModel companyModel);
+    Task<string> UpdateCompanyAsync(CompanyDto companyDto);
 
 }

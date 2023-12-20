@@ -37,7 +37,7 @@ public class HK_Gets_DAL
     {
         List<PaymentMethodModel> paymentMethods = new List<PaymentMethodModel>();
         SqlCommand command = new SqlCommand("select PMDetailsID as PMID, PMBankName as PMName from HK_PaymentMethodDetails where PMMasterID = @preferredPM;", con);
-        command.Parameters.AddWithValue("@preferredPM",preferredPM);
+        command.Parameters.AddWithValue("@preferredPM", preferredPM);
         await con.OpenAsync();
         SqlDataReader reader = await command.ExecuteReaderAsync();
 

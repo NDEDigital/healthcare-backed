@@ -40,10 +40,10 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpPut("UpdateCompany")]
-        public IActionResult UpdateCompany([FromForm] UserModel userModel, string data)
+        public async Task<IActionResult> UpdateCompany(CompanyDto companyDto)
         {
-            CompanyModel companyModel = JsonConvert.DeserializeObject<CompanyModel>(data);
-            var res = _CompanyRegistration.UpdateCompany(userModel, companyModel);
+            //CompanyModel companyModel = JsonConvert.DeserializeObject<CompanyModel>(data);
+            var res = await _CompanyRegistration.UpdateCompanyAsync(companyDto);
             return Ok(res);
         }
 

@@ -2,6 +2,7 @@
 {
     public class CompanyDto
     {
+        public string? CompanyCode { get; set; }
         public string? CompanyName { get; set; }
         public string? CompanyAdminCode { get; set; }
         public string? CompanyImage { get; set; } // Assume byte[] for image data
@@ -9,11 +10,12 @@
         public string? BusinessRegistrationNumber { get; set; }
         public string? TaxIdentificationNumber { get; set; }
         public string? TradeLicense { get; set; }
-        public Boolean? IsActive { get; set; }
+        public int? IsActive { get; set; }
         public int? PreferredPaymentMethodID { get; set; }
         public int? BankNameID { get; set; }
         public string? AccountNumber { get; set; }
         public string? AccountHolderName { get; set; }
+        public int? MaxUser { get; set; }
         public string? AddedBy { get; set; }
         public DateTime? DateAdded { get; set; }
         public string? AddedPC { get; set; }

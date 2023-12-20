@@ -15,7 +15,7 @@
         public IFormFile? TradeLicenseFile { get; set; }
         public byte[]? TradeLicenseFileBite { get; set; }
         public string? TradeLicense { get; set; }
-        public Boolean? IsActive { get; set; }
+        public int? IsActive { get; set; }
         public int? PreferredPaymentMethodID { get; set; }
         public string? PreferredPaymentMethodName { get; set; }
         public int? BankNameID { get; set; }
