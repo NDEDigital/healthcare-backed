@@ -36,19 +36,21 @@ namespace NDE_Digital_Market.Controllers
                 string query = @"SELECT * FROM ProductGroups Where IsActive = 1";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                 {
-                    while (await reader.ReadAsync())
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                     {
-                        NavModel modelObj = new NavModel
+                        while (await reader.ReadAsync())
                         {
-                            ProductGroupCode = reader["ProductGroupCode"].ToString(),
-                            ProductGroupName = reader["ProductGroupName"].ToString(),
-                            ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
-                            ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
-                            ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
-                        };
-                        lst.Add(modelObj);
+                            NavModel modelObj = new NavModel
+                            {
+                                ProductGroupCode = reader["ProductGroupCode"].ToString(),
+                                ProductGroupName = reader["ProductGroupName"].ToString(),
+                                ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
+                                ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
+                                ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
+                            };
+                            lst.Add(modelObj);
+                        }
                     }
                 }
 
@@ -239,134 +241,13 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
-        //========================   GetBank Data =================
-
-        [HttpGet]
-        [Route("BankData")]
-        public async Task<IActionResult> GetBankData()
-        {
-            try
-            {
-                var banks = new List<BankModel>();
-                using (var con = new SqlConnection(_healthCareConnection))
-                {
-                    await con.OpenAsync();
-                    string query = @"SELECT BankId, BankName FROM Banks WHERE IsActive = 1"; // Use 1 for bit field true
-
-                    using (SqlCommand cmd = new SqlCommand(query, con))
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            var bank = new BankModel
-                            {
-                                BankId = reader.GetInt32(reader.GetOrdinal("BankId")),
-                                BankName = reader.GetString(reader.GetOrdinal("BankName"))
-                            };
-                            banks.Add(bank);
-                        }
-                    }
-                }
-
-                if (banks.Count == 0)
-                {
-                    return NotFound("No active banks found.");
-                }
-
-                return Ok(banks);
-            }
-            catch (Exception ex)
-            {
-                // Consider logging the exception details here
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+       
 
 
-        //========================   GetBank Data =================
-        [HttpGet]
-        [Route("MobileBankData")]
-        public async Task<IActionResult> GetMobileBankData()
-        {
-            try
-            {
-                var mobileBanks = new List<MobileBankModel>();
-                using (var con = new SqlConnection(_healthCareConnection))
-                {
-                    await con.OpenAsync();
-                    string query = @"SELECT * FROM MobileBankingType WHERE IsActive = 1"; 
 
-                    using (var cmd = new SqlCommand(query, con))
-                    using (var reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            var bank = new MobileBankModel
-                            {
-                                MobileBankingTypeId = reader.GetInt32(reader.GetOrdinal("MobileBankingTypeId")),
-                                MobileBankingType = reader.GetString(reader.GetOrdinal("MobileBankingType")) 
-                            };
-                            mobileBanks.Add(bank);
-                        }
-                    }
-                }
+       
 
-                if (mobileBanks.Count == 0)
-                {
-                    return NotFound("No mobile banks found.");
-                }
-
-                return Ok(mobileBanks);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception here
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-
-        //========================  GetPaymentMethodType =================
-        [HttpGet]
-        [Route("PaymentMethodType")]
-        public async Task<IActionResult> GetPaymentMethodType()
-        {
-            try
-            {
-                var paymentMethod = new List<PaymentMethodType>();
-                using (var con = new SqlConnection(_healthCareConnection))
-                {
-                    await con.OpenAsync();
-                    string query = @"SELECT * FROM PaymentMethodType WHERE IsActive = 1";
-
-                    using (var cmd = new SqlCommand(query, con))
-                    using (var reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            var bank = new PaymentMethodType
-                            {
-                                PaymentMethodId = reader.GetInt32(reader.GetOrdinal("PaymentMethodId")),
-                                PaymentMethod = reader.GetString(reader.GetOrdinal("PaymentMethod"))
-                            };
-                            paymentMethod.Add(bank);
-                        }
-                    }
-                }
-
-                if (paymentMethod.Count == 0)
-                {
-                    return NotFound("No Payment Method found.");
-                }
-
-                return Ok(paymentMethod);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception here
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+      
 
 
 
