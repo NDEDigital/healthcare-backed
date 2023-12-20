@@ -36,14 +36,14 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpPost("CreateProductGroups")]
-        public async Task<IActionResult> CreateProductGroupsAsync([FromForm] ProductGroupsDto productGroupsDto)
+        public async Task<IActionResult> CreateProductGroupsAsync(ProductGroupsDto productGroupsDto)
         {
             try
             {
                 Boolean check = await ProductGroupsNameCheck(productGroupsDto.ProductGroupName);
                 if (check)
                 {
-                    return Ok("ProductGroupName already exect.");
+                    return BadRequest(new { message = "Product GroupName already exists!" });
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace NDE_Digital_Market.Controllers
                     cmd.Parameters.AddWithValue("@ProductGroupCode", ProductGroupsCode);
                     cmd.Parameters.AddWithValue("@ProductGroupName", productGroupsDto.ProductGroupName);
                     cmd.Parameters.AddWithValue("@ProductGroupPrefix", productGroupsDto.ProductGroupPrefix);
-                    cmd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails);
+                    cmd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails ?? string.Empty);
                     cmd.Parameters.AddWithValue("@IsActive", 1);
                     cmd.Parameters.AddWithValue("@AddedBy", productGroupsDto.AddedBy);
                     cmd.Parameters.AddWithValue("@DateAdded", DateTime.Now);
@@ -85,7 +85,7 @@ namespace NDE_Digital_Market.Controllers
                     await cmd.ExecuteNonQueryAsync();
                     await con.CloseAsync();
 
-                    return Ok("Product Group Create successfully.");
+                    return Ok(new { message = "Product Group Create successfully." });
                 }
 
 
