@@ -3,6 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using NDE_Digital_Market.Services.CompanyRegistrationServices;
+using NDE_Digital_Market.Services.HK_GetsServices;
+using NDE_Digital_Market.Data_Access_Layer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,20 @@ builder.Services.AddCors(options =>
 });
 // Add services to the container.
 builder.Services.AddControllers();
+
+//injecting user uservices
+builder.Services.AddScoped<IHK_Gets, HK_Gets>();
+builder.Services.AddScoped<HK_Gets_DAL>();
+
+builder.Services.AddScoped<ICompanyRegistration, CompanyRegistration>();
+builder.Services.AddScoped<CompanyRegistration_DAL>();
+
+builder.Services.AddScoped<NDE_Digital_Market.Controllers.UserController>();
+builder.Services.AddScoped<NDE_Digital_Market.Services.CompanyRegistrationServices.ICompanyRegistration, NDE_Digital_Market.Services.CompanyRegistrationServices.CompanyRegistration>();
+builder.Services.AddScoped<NDE_Digital_Market.Data_Access_Layer.CompanyRegistration_DAL>();
+
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

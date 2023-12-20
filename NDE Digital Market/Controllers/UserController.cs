@@ -87,7 +87,6 @@ namespace NDE_Digital_Market.Controllers
             UserModel userModel = new UserModel();
             userModel.UserId = int.Parse(systemCode.Split('%')[0]);
             userModel.UserCode = systemCode.Split('%')[1];
-            userModel.CountryRegion = user.CountryRegion;
             userModel.IsBuyer = user.IsBuyer;
             userModel.IsSeller = user.IsSeller;
             userModel.IsAdmin = user.IsAdmin;
@@ -116,14 +115,14 @@ namespace NDE_Digital_Market.Controllers
 
             string query = @"
                             INSERT INTO UserRegistration (
-                                UserId, UserCode, CountryRegion, IsBuyer, IsSeller, IsAdmin, 
+                                UserId, UserCode, IsBuyer, IsSeller, IsAdmin, 
                                 FullName, PhoneNumber, Email, PasswordHash, PasswordSalt, Address, 
                                 CompanyName, Website, ProductCategory, CompanyFoundedDate, 
                                 BusinessRegistrationNumber, TaxIdNumber, PaymentMethodId, TimeStamp, 
                                 IsActive, AccountNo, AccountHolderName, BankId, MobileBankingTypeId, 
                                 MobileBankingNo, AddedDate
                             ) VALUES (
-                                @UserID, @UserCode, @CountryRegion, @IsBuyer, @IsSeller, @IsAdmin, 
+                                @UserID, @UserCode,  @IsBuyer, @IsSeller, @IsAdmin, 
                                 @FullName, @PhoneNumber, @Email, @PasswordHash, @PasswordSalt, @Address, 
                                 @CompanyName, @Website, @ProductCategory, @CompanyFoundedDate, 
                                 @BusinessRegistrationNumber, @TaxIdNumber, @PaymentMethodId, @TimeStamp, 
@@ -136,7 +135,6 @@ namespace NDE_Digital_Market.Controllers
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@UserID", userModel.UserId);
             cmd.Parameters.AddWithValue("@UserCode", userModel.UserCode ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@CountryRegion", userModel.CountryRegion ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@IsBuyer", userModel.IsBuyer.HasValue ? (object)userModel.IsBuyer.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@IsSeller", userModel.IsSeller.HasValue ? (object)userModel.IsSeller.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@IsAdmin", userModel.IsAdmin.HasValue ? (object)userModel.IsAdmin.Value : DBNull.Value);
