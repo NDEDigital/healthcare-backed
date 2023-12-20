@@ -183,7 +183,7 @@ namespace NDE_Digital_Market.SharedServices
         private static string GetUniqueFileName(string fileName, string fileNameWithExtension)
         {
             //string fileNameWE = Path.GetFileNameWithoutExtension(fileName, );
-            return $"{fileName}_{DateTime.Now.Ticks}{Path.GetExtension(fileName)}";
+            return $"{fileName}_{DateTime.Now.Ticks}{Path.GetExtension(fileNameWithExtension)}";
         }
 
 
