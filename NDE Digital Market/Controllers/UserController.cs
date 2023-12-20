@@ -226,6 +226,7 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
         [HttpPost]
         [Route("GenerateRefreshToken")]
         public async Task<IActionResult> GenerateRefreshToken([FromForm] string token)
