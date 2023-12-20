@@ -6,8 +6,10 @@
         public string ProductName { get; set; }
         public int ProductGroupId { get; set; }
         public string Specification { get; set; }
+        public string UnitId { get; set; }
         public string Unit { get; set; }
         public Decimal Price { get; set; }
+        public Decimal AvailableQty { get; set; }
 
     }
 }
