@@ -104,7 +104,7 @@ namespace NDE_Digital_Market.Controllers
 
             if (!string.IsNullOrEmpty(user.CompanyCode))
             {
-                if (await CompanyExistAsync(user.CompanyCode) == false)
+                if (await CompanyExistAsync(user.CompanyCode) == true)
                 {
                     return BadRequest(new
                     {
