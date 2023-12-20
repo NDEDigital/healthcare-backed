@@ -144,6 +144,45 @@ namespace NDE_Digital_Market.SharedServices
         }
 
 
+        public static string UploadFiles(string foldername, string filename, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return "Invalid file";
+            }
+
+
+            // Generate a unique file name
+            var uniqueFileName = GetUniqueFileName(filename);
+
+            // Combine the unique file name with the upload path
+            var filePath = Path.Combine(foldername, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyToAsync(fileStream);
+            }
+            return filePath;
+
+        }
+
+        public static byte[] GetFiles(string filepath)
+        {
+            if (!System.IO.File.Exists(filepath))
+            {
+                return null;
+            }
+
+            return System.IO.File.ReadAllBytes(filepath);
+        }
+
+
+        // Generate a unique file name to avoid overwriting existing files
+        private static string GetUniqueFileName(string fileName)
+        {
+            string fileNameWE = Path.GetFileNameWithoutExtension(fileName);
+            return $"{fileNameWE}_{DateTime.Now.Ticks}{Path.GetExtension(fileName)}";
+        }
 
 
 
