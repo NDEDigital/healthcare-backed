@@ -151,9 +151,11 @@ namespace NDE_Digital_Market.SharedServices
                 return "Invalid file";
             }
 
+            // Get the original file name with extension
+            string fileNameWithExtension = file.FileName;
 
             // Generate a unique file name
-            var uniqueFileName = GetUniqueFileName(filename);
+            var uniqueFileName = GetUniqueFileName(filename, fileNameWithExtension);
 
             // Combine the unique file name with the upload path
             var filePath = Path.Combine(foldername, uniqueFileName);
@@ -178,10 +180,10 @@ namespace NDE_Digital_Market.SharedServices
 
 
         // Generate a unique file name to avoid overwriting existing files
-        private static string GetUniqueFileName(string fileName)
+        private static string GetUniqueFileName(string fileName, string fileNameWithExtension)
         {
-            string fileNameWE = Path.GetFileNameWithoutExtension(fileName);
-            return $"{fileNameWE}_{DateTime.Now.Ticks}{Path.GetExtension(fileName)}";
+            //string fileNameWE = Path.GetFileNameWithoutExtension(fileName, );
+            return $"{fileName}_{DateTime.Now.Ticks}{Path.GetExtension(fileName)}";
         }
 
 
