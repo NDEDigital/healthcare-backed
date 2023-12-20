@@ -11,13 +11,13 @@ namespace NDE_Digital_Market.Data_Access_Layer;
 public class CompanyRegistration_DAL
 {
     private readonly IConfiguration _configuration;
-    private readonly UserController _UserController;
     private readonly SqlConnection connection;
-    public CompanyRegistration_DAL(IConfiguration configuration, UserController userController)
+    private readonly string foldername = "F:/Projects/Health Care/healthcare-frontend/src/assets/images/CompanyFiles";
+    private readonly string filename = "companyfiles";
+    public CompanyRegistration_DAL(IConfiguration configuration)
     {
         _configuration = configuration;
         connection = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
-        _UserController = userController;
     }
     public async Task<Boolean> CompanyExistAsync(CompanyDto companyDto)
     {
@@ -73,6 +73,8 @@ public class CompanyRegistration_DAL
                 await connection.CloseAsync();
             }
 
+            string CompanyImage = CommonServices.UploadFiles(foldername, filename, companyDto.CompanyImageFile);
+            string TradeLicense = CommonServices.UploadFiles(foldername, filename, companyDto.TradeLicenseFile);
             int CompanyID = int.Parse(systemCode.Split('%')[0]);
             string CompanyCode = systemCode.Split('%')[1];
             //SP END
@@ -89,11 +91,11 @@ public class CompanyRegistration_DAL
             cmd.Parameters.AddWithValue("@CompanyID", CompanyID);
             cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
             cmd.Parameters.AddWithValue("@CompanyName", companyDto.CompanyName);
-            cmd.Parameters.AddWithValue("@CompanyImage", companyDto.CompanyImage);
+            cmd.Parameters.AddWithValue("@CompanyImage", CompanyImage);
             cmd.Parameters.AddWithValue("@CompanyFoundationDate", companyDto.CompanyFoundationDate);
             cmd.Parameters.AddWithValue("@BusinessRegistrationNumber", companyDto.BusinessRegistrationNumber);
             cmd.Parameters.AddWithValue("@TaxIdentificationNumber", companyDto.TaxIdentificationNumber);
-            cmd.Parameters.AddWithValue("@TradeLicense", companyDto.TradeLicense);
+            cmd.Parameters.AddWithValue("@TradeLicense", TradeLicense);
             cmd.Parameters.AddWithValue("@PreferredPaymentMethodID", companyDto.PreferredPaymentMethodID);
             cmd.Parameters.AddWithValue("@BankNameID", companyDto.BankNameID);
             cmd.Parameters.AddWithValue("@AccountNumber", companyDto.AccountNumber);

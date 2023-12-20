@@ -31,9 +31,9 @@ builder.Services.AddScoped<HK_Gets_DAL>();
 builder.Services.AddScoped<ICompanyRegistration, CompanyRegistration>();
 builder.Services.AddScoped<CompanyRegistration_DAL>();
 
-builder.Services.AddScoped<NDE_Digital_Market.Controllers.UserController>();
-builder.Services.AddScoped<NDE_Digital_Market.Services.CompanyRegistrationServices.ICompanyRegistration, NDE_Digital_Market.Services.CompanyRegistrationServices.CompanyRegistration>();
-builder.Services.AddScoped<NDE_Digital_Market.Data_Access_Layer.CompanyRegistration_DAL>();
+//builder.Services.AddScoped<NDE_Digital_Market.Controllers.UserController>();
+//builder.Services.AddScoped<NDE_Digital_Market.Services.CompanyRegistrationServices.ICompanyRegistration, NDE_Digital_Market.Services.CompanyRegistrationServices.CompanyRegistration>();
+//builder.Services.AddScoped<NDE_Digital_Market.Data_Access_Layer.CompanyRegistration_DAL>();
 
 
 
