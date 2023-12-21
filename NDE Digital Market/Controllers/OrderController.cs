@@ -297,14 +297,6 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-
-
-
-
-
-
-
-
         [HttpPost, Authorize(Roles = "admin")]
        // [HttpPost ]
         [Route("GetOrderDataByDate/{pageNumber}/{pageSize}/{status}/{searchby}/{searchValue}")]
