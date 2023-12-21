@@ -412,10 +412,10 @@ VALUES
                     }
                 }
 
-                if (products.Count == 0)
-                {
-                    return NotFound("No products found for the given status.");
-                }
+                //if (products.Count == 0)
+                //{
+                //    return NotFound("No products found for the given status.");
+                //}
 
                 return Ok(products);
             }
