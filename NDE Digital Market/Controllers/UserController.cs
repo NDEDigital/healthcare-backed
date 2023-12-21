@@ -55,15 +55,15 @@ namespace NDE_Digital_Market.Controllers
             //   return BadRequest(new { message = "User does not exist" , userExist });
         }
 
-        private async Task<bool> CompanyExistAsync(string CompanyCode)
+        private async Task<int?> CompanyExistAsync(string CompanyCode)
         {
             string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 1 ELSE 0 END AS UserCount
-                                FROM UserRegistration UR
-                                JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
-	                                WHERE UR.CompanyCode=CR.CompanyCode
-	                                AND UR.IsActive=1
-                                And CR.CompanyCode=@CompanyCode
-                                GROUP BY CR.MaxUser";
+                     FROM UserRegistration UR
+                     JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
+                     WHERE UR.CompanyCode = CR.CompanyCode
+                        AND UR.IsActive = 1
+                        AND CR.CompanyCode = @CompanyCode
+                     GROUP BY CR.MaxUser";
 
             try
             {
@@ -76,24 +76,19 @@ namespace NDE_Digital_Market.Controllers
 
                     // Execute the query and store the result in the 'userCount' variable
                     var result = await cmd.ExecuteScalarAsync();
+
                     await _healthCareConnection.CloseAsync();
 
-                    // Check if result is not null and cast to int
-                    int userCount = result != null ? Convert.ToInt32(result) : 0;
-                    if (userCount == 0)
-                    {
-                        return false;
-                    }
+                    // Check if the result is not null and cast it to int
+                    return result != null ? Convert.ToInt32(result) : (int?)null;
                 }
-
             }
-
             catch (Exception ex)
             {
-                return false;
+                // Log the exception or handle it appropriately
+                // Returning null in case of an exception
+                return null;
             }
-
-            return true;
         }
 
 
@@ -102,21 +97,21 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
             bool companyExist = false;
-            //if (user.CompanyCode != null)
-            //{
-            //    companyExist = await CompanyExistAsync(user.CompanyCode);
-            //    if (companyExist == false)
-            //    {
-            //        return BadRequest("Company Code problem");
-            //    }
 
             if (!string.IsNullOrEmpty(user.CompanyCode))
             {
-                if (await CompanyExistAsync(user.CompanyCode) == true)
+                if (await CompanyExistAsync(user.CompanyCode)==null)
                 {
                     return BadRequest(new
                     {
                         message = "No Campany Found with this ID"
+                    });
+                }
+                else if(await CompanyExistAsync(user.CompanyCode) == 0)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Max user count exited for this company!"
                     });
                 }
 

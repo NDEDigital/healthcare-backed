@@ -49,7 +49,7 @@ public class CompanyRegistration_DAL
 
         if (companyNameExist)
         {
-            return "company is exists";
+            return null;
         }
         else
         {
@@ -115,7 +115,7 @@ public class CompanyRegistration_DAL
             await cmd.ExecuteNonQueryAsync();
             await connection.CloseAsync();
 
-            return "Company Registration successfully.";
+            return "Company Registration successfull!.";
         }
 
 
