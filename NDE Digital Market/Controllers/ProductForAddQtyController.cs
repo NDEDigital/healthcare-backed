@@ -103,34 +103,43 @@ namespace NDE_Digital_Market.Controllers
                     await con.CloseAsync();
                 }
 
-                //int CompanyID = int.Parse(systemCode.Split('%')[0]);
-                //string CompanyCode = systemCode.Split('%')[1];
-                ////SP END
+                int PortalReceivedId = int.Parse(systemCode.Split('%')[0]);
+                string PortalReceivedCode = systemCode.Split('%')[1];
+                //SP END
 
-                //SqlCommand cmd = new SqlCommand("InsertPortalReceivedMaster", con);
-                //cmd.CommandType = CommandType.Text;
-                //cmd.Parameters.AddWithValue("@CompanyID", CompanyID);
-                //cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
-                //cmd.Parameters.AddWithValue("@CompanyName", companyDto.CompanyName);
-                //cmd.Parameters.AddWithValue("@CompanyImage", CompanyImage);
-                //cmd.Parameters.AddWithValue("@CompanyFoundationDate", companyDto.CompanyFoundationDate);
-                //cmd.Parameters.AddWithValue("@BusinessRegistrationNumber", companyDto.BusinessRegistrationNumber);
-                //cmd.Parameters.AddWithValue("@TaxIdentificationNumber", companyDto.TaxIdentificationNumber);
-                //cmd.Parameters.AddWithValue("@TradeLicense", TradeLicense);
-                //cmd.Parameters.AddWithValue("@PreferredPaymentMethodID", companyDto.PreferredPaymentMethodID);
-                //cmd.Parameters.AddWithValue("@BankNameID", companyDto.BankNameID ?? 0);
-                //cmd.Parameters.AddWithValue("@AccountNumber", companyDto.AccountNumber ?? string.Empty);
-                //cmd.Parameters.AddWithValue("@AccountHolderName", companyDto.AccountHolderName ?? string.Empty);
-                //cmd.Parameters.AddWithValue("@MaxUser", 3);
-                //cmd.Parameters.AddWithValue("@IsActive", -1);
-                //cmd.Parameters.AddWithValue("@AddedBy", companyDto.AddedBy);
-                //cmd.Parameters.AddWithValue("@DateAdded", DateTime.Now);
-                //cmd.Parameters.AddWithValue("@AddedPC", companyDto.AddedPC);
+                SqlCommand cmd = new SqlCommand("InsertPortalReceivedMaster", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
+                cmd.Parameters.AddWithValue("@PortalReceivedCode", PortalReceivedCode);
+                cmd.Parameters.AddWithValue("@MaterialReceivedDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@ChallanNo", portaldata.ChallanNo ?? String.Empty);
 
-                //await connection.OpenAsync();
-                //await cmd.ExecuteNonQueryAsync();
-                //await connection.CloseAsync();
+                //cmd.Parameters.AddWithValue("@ChallanNo", (object)portaldata.ChallanNo ?? DBNull.Value);
+                //cmd.Parameters.AddWithValue("@ChallanNo", (object)portaldata.ChallanNo ?? DBNull.Value);
 
+
+                cmd.Parameters.AddWithValue("@ChallanDate", portaldata.ChallanDate ?? (object)DBNull.Value);
+
+
+                cmd.Parameters.AddWithValue("@Remarks", portaldata.Remarks ?? String.Empty);
+                cmd.Parameters.AddWithValue("@UserId", portaldata.UserId);
+                cmd.Parameters.AddWithValue("@CompanyCode", portaldata.CompanyCode);
+ 
+                cmd.Parameters.AddWithValue("@AddedBy", portaldata.AddedBy);
+                cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@AddedPC", portaldata.AddedPC);
+
+                await con.OpenAsync();
+                int a = await cmd.ExecuteNonQueryAsync();
+                await con.CloseAsync();
+                if(a > 0)
+                {
+                    await InsertPortalReceivedAsync(PortalReceivedId, portaldata.PortalReceivedDetailslist);
+                }
+                else
+                {
+                    return BadRequest(new { message = "Portal Master data isn't Inserted Successfully." });
+                }
                 return Ok(new {message = "Portal data Inserted Successfully."});
             }
             catch (Exception ex)
@@ -139,11 +148,43 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
-        private async Task<IActionResult> InsertPortalReceivedAsync()
+        private async Task<IActionResult> InsertPortalReceivedAsync(int PortalReceivedId, List<PortalReceivedDetailsDto> PortalReceivedDetailsList)
         {
             try 
             {
+                for (int i = 0; i < PortalReceivedDetailsList.Count; i++)
+                {
+                    string query = "InsertPortalReceivedDetails";
+                    //checking if user already exect for not.
+                    SqlCommand CheckCMD = new SqlCommand(query, con);
+                    CheckCMD.CommandType = CommandType.StoredProcedure;
 
+                    CheckCMD.Parameters.Clear();
+                    CheckCMD.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
+                    CheckCMD.Parameters.AddWithValue("@ProductGroupID", PortalReceivedDetailsList[i].ProductGroupId);
+                    CheckCMD.Parameters.AddWithValue("@ProductId", PortalReceivedDetailsList[i].ProductId);
+                    CheckCMD.Parameters.AddWithValue("@Specification", PortalReceivedDetailsList[i].Specification);
+                    CheckCMD.Parameters.AddWithValue("@ReceivedQty", PortalReceivedDetailsList[i].ReceivedQty);
+                    CheckCMD.Parameters.AddWithValue("@UnitId", PortalReceivedDetailsList[i].UnitId);
+                    CheckCMD.Parameters.AddWithValue("@Price", PortalReceivedDetailsList[i].Price);
+                    CheckCMD.Parameters.AddWithValue("@TotalPrice", PortalReceivedDetailsList[i].TotalPrice);
+                    CheckCMD.Parameters.AddWithValue("@UserId", PortalReceivedDetailsList[i].UserId);
+                    CheckCMD.Parameters.AddWithValue("@Remarks", PortalReceivedDetailsList[i].Remarks ?? String.Empty);
+
+
+                    CheckCMD.Parameters.AddWithValue("@AddedBy", PortalReceivedDetailsList[i].AddedBy);
+                    CheckCMD.Parameters.AddWithValue("@DateAdded", DateTime.Now);
+                    CheckCMD.Parameters.AddWithValue("@AddedPC", PortalReceivedDetailsList[i].AddedPC);
+                    //cmd.Parameters.AddWithValue("@UpdatedBy", "UpdatedBy");
+                    //cmd.Parameters.AddWithValue("@UpdatedDate", (object)groups.UpdatedDate ?? DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@UpdatedPC", "Default UpdatedPC");
+                    con.Open();
+                    CheckCMD.ExecuteNonQuery();
+                    con.Close();
+
+
+
+                }
             } 
             catch(Exception ex) 
             {
