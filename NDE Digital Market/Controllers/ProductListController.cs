@@ -75,8 +75,8 @@ namespace NDE_Digital_Market.Controllers
                     //string ProductGroupsCode = systemCode.Split('%')[1];
 
                     //SP END
-                    string query = "INSERT INTO ProductList (ProductId, ProductName, ProductGroupID,Specification,UnitId, ImagePath, ProductSubName, IsActive, AddedDate, AddedBy, AddedPc)" +
-                        "VALUES (@ProductId, @ProductName, @ProductGroupID, @Specification, @UnitId, @ImagePath, @ProductSubName, @IsActive, @AddedDate, @AddedBy, @AddedPc)";
+                    string query = "INSERT INTO ProductList (ProductId, ProductName, ProductGroupID,Specification,UnitId, ImagePath, ProductSubName, IsActive, AddedDate, AddedBy, AddedPC)" +
+                        "VALUES (@ProductId, @ProductName, @ProductGroupID, @Specification, @UnitId, @ImagePath, @ProductSubName, @IsActive, @AddedDate, @AddedBy, @AddedPC)";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@ProductId", ProductID);
