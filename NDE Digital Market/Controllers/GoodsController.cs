@@ -175,7 +175,7 @@ namespace NDE_Digital_Market.Controllers
         [Route("GetProductCompany/{ProductGroupCode}")]
         public async Task<IActionResult> GetProductCompany(string ProductGroupCode)
         {
-            var companiesByProductGroup = new List<CompanyList>();
+            var companiesByProductGroup = new List<CompanyListDto>();
             try
             {
                 using (var connection = new SqlConnection(_healthCareConnection))
@@ -189,7 +189,7 @@ namespace NDE_Digital_Market.Controllers
                         {
                             while (await reader.ReadAsync())
                             {
-                                var companiesByProduct = new CompanyList
+                                var companiesByProduct = new CompanyListDto
                                 {
                                     CompanyName = reader["CompanyName"].ToString(),
                                     CompanyCode = reader["CompanyCode"].ToString(),
@@ -216,117 +216,123 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("GetProductCompany")]
-        //public List<ProductCompanyModel> GetProductCompany(string GroupCode, string GroupName)
-        //{
-
-        //    //  string GroupName = HttpUtility.UrlDecode(EncodedGroupName);
-        //    List<ProductCompanyModel> res = new List<ProductCompanyModel>();
-        //    using (SqlConnection connection = new SqlConnection(_prominentConnection))
-        //    {
-
-        //        connection.Open();
-
-        //        string query = @"SELECT 
-        //                                  MAX(UR.CompanyName) AS CompanyName,  -- Using MAX() to get one CompanyName per CompanyCode
-        //                                  UR.CompanyCode
-        //                                FROM ProductList
-        //                                LEFT JOIN UserRegistration AS UR ON ProductList.SellerCode = UR.UserCode
-        //                                WHERE ProductList.GroupCode = @GroupCode
-        //                                  AND ProductList.GroupName = @GroupName
-        //                                  AND ProductList.Status = 'approved'
-        //                                GROUP BY UR.CompanyCode;";
-
-        //        using (SqlCommand command = new SqlCommand(query, connection))
-        //        {
-
-        //            command.Parameters.AddWithValue("@GroupName", GroupName);
-        //            command.Parameters.AddWithValue("@GroupCode", GroupCode);
-        //            SqlDataAdapter adapter = new SqlDataAdapter(command);
-        //            DataTable dt = new DataTable();
-
-        //            adapter.Fill(dt);
-        //            connection.Close();
-        //            for (int i = 0; i < dt.Rows.Count; i++)
-        //            {
-        //                ProductCompanyModel obj = new ProductCompanyModel();
-        //                obj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-        //                obj.CompanyCode = dt.Rows[i]["CompanyCode"].ToString();
-        //                res.Add(obj);
-        //            }
-
-
-        //        }
-        //    }
-
-        //    return res;
-        //}
-
         [HttpGet]
         [Route("GetProductList")]
-        public List<GoodsQuantityModel> GetProductList(string CompanyCode, string GroupName)
+        public async Task<IActionResult> GetProductList(string CompanyCode, string ProductGroupCode)
         {
-            List<GoodsQuantityModel> res = new List<GoodsQuantityModel>();
-          
-                SqlConnection con = new SqlConnection(_prominentConnection);
-                con.Open();
-                string query = @"SELECT 
-                            ProductList.GoodsId, 
-                            ProductList.GoodsName, 
-                            ProductList.GroupCode,
-                            ProductList.GroupName,
-                            ProductList.Specification,
-                            ProductList.Price,
-                            ProductList.SellerCode,
-                            ProductList.ImagePath,
-                            ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
-                            ProductList.QuantityUnit,  
-	                        UserRegistration.CompanyName
-                        FROM 
-                            ProductList
-                        LEFT JOIN 
-                            UserRegistration
-                        ON 
-                            ProductList.SellerCode = UserRegistration.UserCode
-                        LEFT JOIN
-                        MaterialStockQty
-                        ON 
-                           MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
-                        WHERE 
-                            ProductList.Status = 'approved' AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
-
-                SqlCommand cmd = new SqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@GroupName", GroupName);
-                cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-
-                adapter.Fill(dt);
-                //Console.WriteLine(dt);
-                con.Close();
-                for (int i = 0; i < dt.Rows.Count; i++)
+            var goodsQuantitys = new List<CompanyProductListDto>();
+            try
+            {
+                using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                    modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-                    modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                    modelObj.GoodsId = dt.Rows[i]["GoodsId"].ToString();
-                    modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-                    modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-                    modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                    modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-                    modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-                    modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-                    modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-                    modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
-
-                    res.Add(modelObj);
+                    using (var command = new SqlCommand("GetProductDetailsByCompanyAndGroup", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@CompanyCode", CompanyCode));
+                        command.Parameters.Add(new SqlParameter("@ProductGroupCode", ProductGroupCode));
+                        await connection.OpenAsync();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var goodsQuantity = new CompanyProductListDto
+                                {
+                                    CompanyName = reader["CompanyName"].ToString(),
+                                    ProductId = Convert.ToInt32(reader["ProductId"]),
+                                    ProductName = reader["ProductName"].ToString(),
+                                    ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]),
+                                    ProductGroupName = reader["ProductGroupName"].ToString(),
+                                    Specification = reader["Specification"].ToString(),
+                                    UnitId = Convert.ToInt32(reader["UnitId"]),
+                                    Unit = reader["Unit"].ToString(),
+                                    Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0,
+                                    DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountAmount"]) : 0,
+                                    DiscountPct = reader["DiscountPct"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountPct"]) : 0,
+                                    ImagePath = reader["ImagePath"].ToString(),
+                                    TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0,
+                                    SellerId = Convert.ToInt32(reader["SellerId"]),
+                                    AvailableQty = Convert.ToInt32(reader["AvailableQty"])
+                                };
+                                goodsQuantitys.Add(goodsQuantity);
+                            }
+                        }
+                    }
                 }
+               
+                return Ok(goodsQuantitys);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
+            }
+        }
+
+
+
+        //[HttpGet]
+        //[Route("GetProductList")]
+        //public List<GoodsQuantityModel> GetProductList(string CompanyCode, string GroupName)
+        //{
+        //    List<GoodsQuantityModel> res = new List<GoodsQuantityModel>();
+          
+        //        SqlConnection con = new SqlConnection(_prominentConnection);
+        //        con.Open();
+        //        string query = @"SELECT 
+        //                    ProductList.GoodsId, 
+        //                    ProductList.GoodsName, 
+        //                    ProductList.GroupCode,
+        //                    ProductList.GroupName,
+        //                    ProductList.Specification,
+        //                    ProductList.Price,
+        //                    ProductList.SellerCode,
+        //                    ProductList.ImagePath,
+        //                    ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
+        //                    ProductList.QuantityUnit,  
+	       //                 UserRegistration.CompanyName
+        //                FROM 
+        //                    ProductList
+        //                LEFT JOIN 
+        //                    UserRegistration
+        //                ON 
+        //                    ProductList.SellerCode = UserRegistration.UserCode
+        //                LEFT JOIN
+        //                MaterialStockQty
+        //                ON 
+        //                   MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
+        //                WHERE 
+        //                    ProductList.Status = 'approved' AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
+
+        //        SqlCommand cmd = new SqlCommand(query, con);
+        //        cmd.Parameters.AddWithValue("@GroupName", GroupName);
+        //        cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
+        //    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+        //        DataTable dt = new DataTable();
+
+        //        adapter.Fill(dt);
+        //        //Console.WriteLine(dt);
+        //        con.Close();
+        //        for (int i = 0; i < dt.Rows.Count; i++)
+        //        {
+        //            GoodsQuantityModel modelObj = new GoodsQuantityModel();
+        //            modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+        //            modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+        //            modelObj.GoodsId = dt.Rows[i]["GoodsId"].ToString();
+        //            modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
+        //            modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+        //            modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+        //            modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+        //            modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+        //            modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+        //            modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+        //            modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+
+        //            res.Add(modelObj);
+        //        }
             
           
      
-            return res;
-        }
+        //    return res;
+        //}
 
 
        

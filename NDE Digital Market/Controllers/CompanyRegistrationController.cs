@@ -30,14 +30,20 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> CompanyRegistrationPostAsync([FromForm] CompanyDto companyDto)
         {
             var res = await _CompanyRegistration.CompanyRegistrationPostAsync(companyDto);
-            return Ok(new { message = res });
+            if (res != null)
+            {
+                return Ok(new { message = res });
+
+            }
+
+            return BadRequest(new { message = "Company already exists!" });
         }
 
         [HttpGet("GetCompaniesBasedOnStatus")]
         public async Task<IActionResult> GetCompaniesAsync(int status)
         {
             var res = await _CompanyRegistration.GetCompaniesAsync(status);
-            return Ok(new { message = res });
+            return Ok(res);
         }
 
         [HttpPut("UpdateCompany")]

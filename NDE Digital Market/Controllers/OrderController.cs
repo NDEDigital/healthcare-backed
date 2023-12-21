@@ -25,6 +25,7 @@ namespace NDE_Digital_Market.Controllers
         private readonly IConfiguration configuration;
         private readonly SqlConnection con;
 
+        private readonly string _healthCareConnection;
         public OrderController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
@@ -35,6 +36,7 @@ namespace NDE_Digital_Market.Controllers
             configuration = config;
             con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
 
+            _healthCareConnection = config.GetConnectionString("HealthCare");
         }
 
         //transaction: if an exception occurs during the insertion process, the transaction is rolled back to maintain data consistency.
@@ -757,17 +759,14 @@ namespace NDE_Digital_Market.Controllers
 
         //================================== Added By Rey ==============================
         //  getOrderUserInfo
-        [HttpGet ]
-        [Route("getOrderUserInfo")]
-        public IActionResult getUserInfo(string userCode)
+        [HttpGet("getOrderUserInfo")]
+        public IActionResult getUserInfo(string UserId)
         {
             UserModel user = new UserModel();
-            string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-            SqlConnection con = new SqlConnection(_prominentConnection);
-            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserCode = @userCode ", con);
+            SqlConnection con = new SqlConnection(_healthCareConnection);
+            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", con);
             cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
-            //Console.WriteLine(decryptedUserCode);
+            cmd.Parameters.AddWithValue("@UserId", UserId);
             con.Open();
             SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
@@ -777,13 +776,12 @@ namespace NDE_Digital_Market.Controllers
                 user.Email = reader["Email"].ToString();
                 user.Address = reader["Address"].ToString();
                 con.Close();
-                // Return the user object as a response
                 return Ok(new { message = "GET single data successful", user });
             }
             else
             {
                 con.Close();
-                return BadRequest(new { message = "Invalid Inforamtion" });
+                return BadRequest(new { message = "NO data Available" });
             }
         }
 
