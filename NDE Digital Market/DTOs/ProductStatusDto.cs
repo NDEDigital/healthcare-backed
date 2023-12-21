@@ -11,6 +11,7 @@
         public string? DiscountPct { get; set; }
         public DateTime? EffectivateDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public string? Status { get; set; }
 
         public string? ImagePath { get; set; }
         public decimal? TotalPrice { get; set; }
