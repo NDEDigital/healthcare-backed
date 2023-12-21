@@ -427,7 +427,7 @@ VALUES
 
             // ======================= DELETE Product ==================
 
-            [HttpDelete, Authorize(Roles = "seller")]
+        [HttpDelete, Authorize(Roles = "seller")]
         [Route("DeleteProduct")]
         public IActionResult DeleteProcuct(string sellerCode, int ProductId)
         {
@@ -447,108 +447,144 @@ VALUES
 
         }
 
-  
 
-
-        [HttpPut]
-        [Route("UpdateProductStatus")]
-        public IActionResult UpdateProductStatus([FromForm] UpdateProductStatusModel Obj)
+        //================== SellerProductPriceAndOffer status Update by Tushar ==================
+        [HttpPut("SellerProductStatusUpdate")]
+        public async Task<IActionResult> UpdateSellerProductStatusAsync(ProductStatusDto productStatus)
         {
-           
-            string decryptedSupplierCode = CommonServices.DecryptPassword(Obj.userCode);
-            bool cancelEdited = false;
-            List<EditedUserInfoModel> users = new List<EditedUserInfoModel>();
-            string UpdatedBy = decryptedSupplierCode;
-            DateTime UpdateDate = DateTime.Now;
-            //Console.WriteLine(Obj.productIDs);
-            int statusBit = 1;
-            if (Obj.status == "approved")
+            try
             {
-                statusBit = 2;
-            }
-            if (Obj.status == "rejected") 
-            {
-                statusBit = 3; 
-            }
-
-            if (Obj.statusBefore == "edited")
-            {
-                StringBuilder queryEdited = new StringBuilder();
-                if (Obj.status == "rejected")
+                string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode";
+                using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    cancelEdited = true;
-                    queryEdited = queryEdited.Append($"UPDATE ProductList  SET Status = 'approved', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})");
-                    //queryEdited = queryEdited.Append($"SELECT SupplierCode,email,full_name FROM ProductList LEFT JOIN UserRegistration ON SupplierCode=UserCode WHERE ProductID IN ({Obj.productIDs})");
-                }
-                else
-                {
-                    // Split the product IDs into an array
-
-                    string[] productIDsArray = Obj.productIDs.Split(',');
-
-                    // Loop through each product ID
-                    foreach (string productId in productIDsArray)
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
+                        command.Parameters.AddWithValue("@Status", productStatus.Status);
+                        command.Parameters.AddWithValue("@UserId", productStatus.UserId);
+                        command.Parameters.AddWithValue("@CompanyCode", productStatus.CompanyCode);
+                        command.Parameters.AddWithValue("@ProductId", productStatus.ProductId);
 
-                        queryEdited.Append($"UPDATE ProductList SET GoodsName = EPL.GoodsName, Specification = EPL.Specification, " +
-                        $"GroupCode = EPL.GroupCode,GroupName = EPL.GroupName," +
-                        $"Price = EPL.Price,Quantity = EPL.Quantity,QuantityUnit" +
-                        $" = EPL.QuantityUnit, ");
-
-                        queryEdited.Append($"Status = '{Obj.status}',  UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',updatedPc= '{Obj.updatedPC}'");
-                        queryEdited.Append($"FROM (SELECT * FROM EditedProductList WHERE GoodsId = {productId}) AS EPL ");
-                        queryEdited.Append($"WHERE ProductList.Goodsid = {productId} AND ProductList.SellerCode = EPL.SellerCode;");
-
-
+                        await connection.OpenAsync();
+                        // Execute the command
+                        await command.ExecuteNonQueryAsync();
+                        await connection.CloseAsync();
                     }
                 }
-
-                StringBuilder deleteQuery = new StringBuilder();
-                deleteQuery.Append($"DELETE FROM EditedProductList WHERE GoodsId IN ({Obj.productIDs})");
-                string combinedQuery = queryEdited.ToString() + deleteQuery.ToString();
-                SqlCommand cmdEdite = new SqlCommand(combinedQuery, con);
-                con.Open();
-                cmdEdite.CommandType = CommandType.Text;
-                cmdEdite.ExecuteNonQuery();
-
-                string selectQuery = $"SELECT SellerCode, Email, FullName,GoodsName FROM ProductList LEFT JOIN UserRegistration ON SellerCode=UserCode WHERE GoodsId IN ({Obj.productIDs})";
-                using (SqlCommand selectCmd = new SqlCommand(selectQuery, con))
-                {
-                    selectCmd.CommandType = CommandType.Text;
-
-                    using (SqlDataReader reader = selectCmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            EditedUserInfoModel user = new EditedUserInfoModel();
-                            user.SupplierCode = reader["SellerCode"].ToString();
-                            user.Email = reader["Email"].ToString();
-                            user.FullName = reader["FullName"].ToString();
-                            user.ProductName = reader["GoodsName"].ToString();
-                            users.Add(user);
-                        }
-                        // Now you can use the 'users' list with the retrieved data.
-                    }
-
-                }
-                con.Close();
-
-
-
+                return Ok(new { message = "SellerProduct status Changed successfully." });
             }
-            else
+            catch (Exception ex)
             {
-                string query = $"UPDATE ProductList  SET Status = '{Obj.status}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})";
-                SqlCommand cmd = new SqlCommand(query, con);
-
-                con.Open();
-                cmd.CommandType = CommandType.Text;
-                cmd.ExecuteNonQuery();
-                con.Close();
+                return BadRequest(new { message = ex.Message });
             }
-
-            return Ok(new { message = "Product status updated successfully", cancelEdited, users });
         }
+
+        //[HttpPut]
+        //[Route("UpdateProductStatus")]
+        //public IActionResult UpdateProductStatus([FromForm] UpdateProductStatusModel Obj)
+        //{
+
+        //    string decryptedSupplierCode = CommonServices.DecryptPassword(Obj.userCode);
+        //    bool cancelEdited = false;
+        //    List<EditedUserInfoModel> users = new List<EditedUserInfoModel>();
+        //    string UpdatedBy = decryptedSupplierCode;
+        //    DateTime UpdateDate = DateTime.Now;
+        //    //Console.WriteLine(Obj.productIDs);
+        //    int statusBit = 1;
+        //    if (Obj.status == "approved")
+        //    {
+        //        statusBit = 2;
+        //    }
+        //    if (Obj.status == "rejected") 
+        //    {
+        //        statusBit = 3; 
+        //    }
+
+        //    if (Obj.statusBefore == "edited")
+        //    {
+        //        StringBuilder queryEdited = new StringBuilder();
+        //        if (Obj.status == "rejected")
+        //        {
+        //            cancelEdited = true;
+        //            queryEdited = queryEdited.Append($"UPDATE ProductList  SET Status = 'approved', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})");
+        //            //queryEdited = queryEdited.Append($"SELECT SupplierCode,email,full_name FROM ProductList LEFT JOIN UserRegistration ON SupplierCode=UserCode WHERE ProductID IN ({Obj.productIDs})");
+        //        }
+        //        else
+        //        {
+        //            // Split the product IDs into an array
+
+        //            string[] productIDsArray = Obj.productIDs.Split(',');
+
+        //            // Loop through each product ID
+        //            foreach (string productId in productIDsArray)
+        //            {
+
+        //                queryEdited.Append($"UPDATE ProductList SET GoodsName = EPL.GoodsName, Specification = EPL.Specification, " +
+        //                $"GroupCode = EPL.GroupCode,GroupName = EPL.GroupName," +
+        //                $"Price = EPL.Price,Quantity = EPL.Quantity,QuantityUnit" +
+        //                $" = EPL.QuantityUnit, ");
+
+        //                queryEdited.Append($"Status = '{Obj.status}',  UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',updatedPc= '{Obj.updatedPC}'");
+        //                queryEdited.Append($"FROM (SELECT * FROM EditedProductList WHERE GoodsId = {productId}) AS EPL ");
+        //                queryEdited.Append($"WHERE ProductList.Goodsid = {productId} AND ProductList.SellerCode = EPL.SellerCode;");
+
+
+        //            }
+        //        }
+
+        //        StringBuilder deleteQuery = new StringBuilder();
+        //        deleteQuery.Append($"DELETE FROM EditedProductList WHERE GoodsId IN ({Obj.productIDs})");
+        //        string combinedQuery = queryEdited.ToString() + deleteQuery.ToString();
+        //        SqlCommand cmdEdite = new SqlCommand(combinedQuery, con);
+        //        con.Open();
+        //        cmdEdite.CommandType = CommandType.Text;
+        //        cmdEdite.ExecuteNonQuery();
+
+        //        string selectQuery = $"SELECT SellerCode, Email, FullName,GoodsName FROM ProductList LEFT JOIN UserRegistration ON SellerCode=UserCode WHERE GoodsId IN ({Obj.productIDs})";
+        //        using (SqlCommand selectCmd = new SqlCommand(selectQuery, con))
+        //        {
+        //            selectCmd.CommandType = CommandType.Text;
+
+        //            using (SqlDataReader reader = selectCmd.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    EditedUserInfoModel user = new EditedUserInfoModel();
+        //                    user.SupplierCode = reader["SellerCode"].ToString();
+        //                    user.Email = reader["Email"].ToString();
+        //                    user.FullName = reader["FullName"].ToString();
+        //                    user.ProductName = reader["GoodsName"].ToString();
+        //                    users.Add(user);
+        //                }
+        //                // Now you can use the 'users' list with the retrieved data.
+        //            }
+
+        //        }
+        //        con.Close();
+
+
+
+        //    }
+        //    else
+        //    {
+        //        string query = $"UPDATE ProductList  SET Status = '{Obj.status}', UpdatedBy = '{UpdatedBy}', UpdatedDate = '{UpdateDate}',UpdatedPc= '{Obj.updatedPC}'  WHERE GoodsId IN ({Obj.productIDs})";
+        //        SqlCommand cmd = new SqlCommand(query, con);
+
+        //        con.Open();
+        //        cmd.CommandType = CommandType.Text;
+        //        cmd.ExecuteNonQuery();
+        //        con.Close();
+        //    }
+
+        //    return Ok(new { message = "Product status updated successfully", cancelEdited, users });
+        //}
+
+
+
+
+
+
+
+
 
         public class EditedUserInfoModel
         {
