@@ -38,27 +38,26 @@ namespace NDE_Digital_Market.Controllers
         //===================================== Create User ================================
         [HttpPost]
         [Route("UserExist")]
-        public IActionResult UserExist(UserModel user)
+        public async Task<bool> UserExist(CreateUserDto user)
         {
-            SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber", con);
+            SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber", _healthCareConnection);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
-            con.Open();
-            int count = (int)cmd.ExecuteScalar();
-            con.Close();
+            await _healthCareConnection.OpenAsync();
+            int count = (int)await cmd.ExecuteScalarAsync();
+            await _healthCareConnection.CloseAsync();
             Boolean userExist = false;
             if (count > 0)
             {
                 userExist = true;
             }
-            return Ok(new { message = "User  exists check", userExist });
+            return userExist;
             //   return BadRequest(new { message = "User does not exist" , userExist });
         }
 
-
         private async Task<bool> CompanyExistAsync(string CompanyCode)
         {
-            string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 0 ELSE 1 END AS UserCount
+            string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 1 ELSE 0 END AS UserCount
                                 FROM UserRegistration UR
                                 JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
 	                                WHERE UR.CompanyCode=CR.CompanyCode
@@ -111,8 +110,22 @@ namespace NDE_Digital_Market.Controllers
             //        return BadRequest("Company Code problem");
             //    }
 
-            //}
+            if (!string.IsNullOrEmpty(user.CompanyCode))
+            {
+                if (await CompanyExistAsync(user.CompanyCode) == true)
+                {
+                    return BadRequest(new
+                    {
+                        message = "No Campany Found with this ID"
+                    });
+                }
 
+            }
+            var userExistResult = await UserExist(user);
+            if (userExistResult)
+            {
+                return BadRequest(new { message = "User already exists" });
+            }
             string systemCode = string.Empty;
 
             // Execute the stored procedure to generate the system code
@@ -163,7 +176,7 @@ namespace NDE_Digital_Market.Controllers
             userModel.PasswordSalt = passwordSalt;
             userModel.Address = user.Address;
             userModel.AddedDate = DateTime.UtcNow;
-            userModel.CompanyCode = user.CompanyCode;
+            userModel.CompanyCode = user.CompanyCode ?? string.Empty;
 
             string query = @"
                             INSERT INTO UserRegistration (
@@ -193,7 +206,7 @@ namespace NDE_Digital_Market.Controllers
             cmd.Parameters.AddWithValue("@AddedDate", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@TimeStamp", userModel.AddedDate.HasValue ? (object)userModel.AddedDate.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@CompanyCode", userModel.CompanyCode);
-            cmd.Parameters.AddWithValue("@IsActive", true);
+            cmd.Parameters.AddWithValue("@IsActive",true);
 
             await _healthCareConnection.OpenAsync();
             await cmd.ExecuteNonQueryAsync();
