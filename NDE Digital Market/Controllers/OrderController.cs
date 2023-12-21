@@ -5,6 +5,7 @@ using NDE_Digital_Market.Model;
 using NDE_Digital_Market.Model.MaterialStock;
 using NDE_Digital_Market.Model.OrderModel;
 using NDE_Digital_Market.SharedServices;
+using NDE_Digital_Market.DTOs;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.Metrics;
@@ -21,158 +22,286 @@ namespace NDE_Digital_Market.Controllers
         private readonly string _prominentConnection;
         private readonly string _connectionDigitalMarket;
         private CommonServices _commonServices;
-        private readonly string _healthCareConnection;
+        private readonly IConfiguration configuration;
+        private readonly SqlConnection con;
+
         public OrderController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
             _connectionSteel = config.GetConnectionString("DefaultConnection");
             _prominentConnection = config.GetConnectionString("ProminentConnection");
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
-            _healthCareConnection = config.GetConnectionString("HealthCare");
+            _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
+            configuration = config;
+            con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
+
         }
 
         //transaction: if an exception occurs during the insertion process, the transaction is rolled back to maintain data consistency.
 
-        //---------Added by Uthsow -----------------
-        [HttpPost ]
 
-        public IActionResult Order([FromBody] MasterDetailModel orderData)
+        ////---------Added by Uthsow -----------------
+        //[HttpPost ]
+        //public IActionResult Order([FromBody] MasterDetailModel orderData)
+        //{
+        //    List<MaterialStockUpdate> stocks = new List<MaterialStockUpdate>();
+
+        //    try
+        //    {
+        //        // Your database connection logic here
+        //        using (SqlConnection connection = new SqlConnection(_prominentConnection))
+        //        {
+        //            connection.Open();
+
+        //            // Begin a transaction (optional)
+        //            //using (SqlTransaction transaction = connection.BeginTransaction())
+        //            //{
+        //            try
+        //            {
+        //                int masterId = 0;
+        //                // Insert the master data
+        //                foreach (var masterItem in orderData.master)
+        //                {
+        //                    SqlCommand getLastMasterIdCmd = new SqlCommand("SELECT ISNULL(MAX(OrderMasterId), 0) FROM OrderMaster;", connection);
+
+        //                    masterId = Convert.ToInt32(getLastMasterIdCmd.ExecuteScalar()) + 1;
+        //                    masterItem.BuyerCode = CommonServices.DecryptPassword(masterItem.BuyerCode);
+
+        //                    string systemCode = "";
+
+        //                    SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", connection);
+        //                    {
+        //                        cmdSP.CommandType = CommandType.StoredProcedure;
+        //                        cmdSP.Parameters.AddWithValue("@TableName", "OrderMaster");
+        //                        cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+        //                        cmdSP.Parameters.AddWithValue("@AddNumber", 1);
+        //                        systemCode = cmdSP.ExecuteScalar().ToString();
+
+        //                    }
+
+        //                    if (!string.IsNullOrEmpty(systemCode))
+        //                    {
+        //                        masterItem.OrderNo = systemCode.Split('%')[1];
+        //                    }
+
+
+        //                    string masterInsertSql = "INSERT INTO OrderMaster (OrderMasterId, OrderNo, OrderDate," +
+        //                        "BuyerCode, Address, PaymentMethod, NumberOfItem, TotalPrice, Status, PhoneNumber,DeliveryCharge) " +
+        //                        "VALUES (@OrderMasterId,@OrderNo, @OrderDate, @BuyerCode, @Address, @PaymentMethod, @NumberOfItem, @TotalPrice, @Status, @PhoneNumber,@DeliveryCharge)";
+
+        //                    using (SqlCommand masterCommand = new SqlCommand(masterInsertSql, connection))
+        //                    {
+        //                        masterCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
+        //                        masterCommand.Parameters.AddWithValue("@OrderNo", masterItem.OrderNo);
+        //                        masterCommand.Parameters.AddWithValue("@OrderDate", DateTime.Parse(masterItem.OrderDate));
+        //                        masterCommand.Parameters.AddWithValue("@BuyerCode", masterItem.BuyerCode);
+        //                        masterCommand.Parameters.AddWithValue("@Address", masterItem.Address);
+        //                        masterCommand.Parameters.AddWithValue("@PaymentMethod", masterItem.PaymentMethod);
+        //                        masterCommand.Parameters.AddWithValue("@NumberOfItem", masterItem.NumberOfItem);
+        //                        masterCommand.Parameters.AddWithValue("@TotalPrice", masterItem.TotalPrice);
+        //                        masterCommand.Parameters.AddWithValue("@Status", masterItem.Status);
+        //                        masterCommand.Parameters.AddWithValue("@PhoneNumber", masterItem.phoneNumber);
+        //                        masterCommand.Parameters.AddWithValue("@DeliveryCharge", masterItem.DeliveryCharge);
+
+
+        //                        masterCommand.ExecuteNonQuery();
+        //                    }
+        //                }
+
+
+
+
+        //                // Insert the detail data
+
+        //                int detailsId = 0;
+        //                foreach (var detailItem in orderData.detail)
+        //                {
+
+
+        //                    SqlCommand getLastDetailsIdCmd = new SqlCommand("SELECT ISNULL(MAX(OrderDetailId), 0) FROM OrderDetails;", connection);
+
+        //                    detailsId = Convert.ToInt32(getLastDetailsIdCmd.ExecuteScalar()) + 1;
+
+        //                    string detailInsertSql = "INSERT INTO OrderDetails (OrderDetailId,OrderMasterId,GoodsId,GoodsName,Quantity, Discount, Price,DeliveryCharge,DeliveryDate,Specification, GroupCode, SellerCode, Status) " +
+        //                        "VALUES (" + detailsId + ",@OrderMasterId, @GoodsId,@GoodsName, @Quantity, @Discount, @Price,@DeliveryCharge, @DeliveryDate, @Specification," +
+        //                        "@GroupCode,@SellerCode,@Status)";
+
+        //                    using (SqlCommand detailCommand = new SqlCommand(detailInsertSql, connection))
+        //                    {
+        //                        //     detailCommand.Parameters.AddWithValue("@OrderDetailId", detailsId);
+        //                        detailCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
+        //                        detailCommand.Parameters.AddWithValue("@GoodsId", detailItem.GoodsId);
+        //                        detailCommand.Parameters.AddWithValue("@GoodsName", detailItem.GoodsName);
+        //                        detailCommand.Parameters.AddWithValue("@Quantity", detailItem.Quantity);
+        //                        detailCommand.Parameters.AddWithValue("@Discount", detailItem.Discount);
+        //                        detailCommand.Parameters.AddWithValue("@Price", detailItem.Price);
+        //                        detailCommand.Parameters.AddWithValue("@DeliveryCharge", detailItem.DeliveryCharge);
+        //                        detailCommand.Parameters.AddWithValue("@DeliveryDate", DateTime.Parse(detailItem.DeliveryDate));
+        //                        detailCommand.Parameters.AddWithValue("@Specification", detailItem.Specification);
+        //                        detailCommand.Parameters.AddWithValue("@GroupCode", detailItem.GroupCode);
+        //                        detailCommand.Parameters.AddWithValue("@SellerCode", detailItem.SellerCode  );
+        //                        detailCommand.Parameters.AddWithValue("@Status", detailItem.Status);
+        //                        detailCommand.ExecuteNonQuery();
+
+        //                        MaterialStockUpdate obj = new MaterialStockUpdate();
+        //                        obj.GroupCode = detailItem.GroupCode;
+        //                        obj.GoodsId = detailItem.GoodsId;
+        //                        obj.SellerCode = detailItem.SellerCode;
+        //                        obj.SalesQty = detailItem.Quantity;
+        //                        stocks.Add(obj);
+        //                    }
+        //                }
+
+        //                // Commit the transaction (if used)
+        //                //transaction.Commit();
+        //                string result = _commonServices.UpdateStockQt(stocks);
+
+        //                return Ok(new { message = "Data inserted successfully." });
+
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                // Rollback the transaction in case of an exception
+        //                //transaction.Rollback();
+
+        //                // Handle the exception
+        //                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
+
+        //            }
+        //        }
+        //        //}
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Handle any exceptions here
+        //        return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
+
+        //    }
+        //}
+
+
+
+
+        [HttpPost("InsertOrderDate")]
+        public async Task<IActionResult> InsertOrderDateAsync(OrderMasterDto orderdata)
         {
-            List<MaterialStockUpdate> stocks = new List<MaterialStockUpdate>();
-
             try
             {
-                // Your database connection logic here
-                using (SqlConnection connection = new SqlConnection(_prominentConnection))
+                string systemCode = string.Empty;
+
+                // Execute the stored procedure to generate the system code
+                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con);
                 {
-                    connection.Open();
+                    cmdSP.CommandType = CommandType.StoredProcedure;
+                    cmdSP.Parameters.AddWithValue("@TableName", "OrderMaster");
+                    cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+                    cmdSP.Parameters.AddWithValue("@AddNumber", 1);
 
-                    // Begin a transaction (optional)
-                    //using (SqlTransaction transaction = connection.BeginTransaction())
-                    //{
-                    try
-                    {
-                        int masterId = 0;
-                        // Insert the master data
-                        foreach (var masterItem in orderData.master)
-                        {
-                            SqlCommand getLastMasterIdCmd = new SqlCommand("SELECT ISNULL(MAX(OrderMasterId), 0) FROM OrderMaster;", connection);
-
-                            masterId = Convert.ToInt32(getLastMasterIdCmd.ExecuteScalar()) + 1;
-                            masterItem.BuyerCode = CommonServices.DecryptPassword(masterItem.BuyerCode);
-
-                            string systemCode = "";
-
-                            SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", connection);
-                            {
-                                cmdSP.CommandType = CommandType.StoredProcedure;
-                                cmdSP.Parameters.AddWithValue("@TableName", "OrderMaster");
-                                cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
-                                cmdSP.Parameters.AddWithValue("@AddNumber", 1);
-                                systemCode = cmdSP.ExecuteScalar().ToString();
-
-                            }
-
-                            if (!string.IsNullOrEmpty(systemCode))
-                            {
-                                masterItem.OrderNo = systemCode.Split('%')[1];
-                            }
-
-
-                            string masterInsertSql = "INSERT INTO OrderMaster (OrderMasterId, OrderNo, OrderDate," +
-                                "BuyerCode, Address, PaymentMethod, NumberOfItem, TotalPrice, Status, PhoneNumber,DeliveryCharge) " +
-                                "VALUES (@OrderMasterId,@OrderNo, @OrderDate, @BuyerCode, @Address, @PaymentMethod, @NumberOfItem, @TotalPrice, @Status, @PhoneNumber,@DeliveryCharge)";
-
-                            using (SqlCommand masterCommand = new SqlCommand(masterInsertSql, connection))
-                            {
-                                masterCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
-                                masterCommand.Parameters.AddWithValue("@OrderNo", masterItem.OrderNo);
-                                masterCommand.Parameters.AddWithValue("@OrderDate", DateTime.Parse(masterItem.OrderDate));
-                                masterCommand.Parameters.AddWithValue("@BuyerCode", masterItem.BuyerCode);
-                                masterCommand.Parameters.AddWithValue("@Address", masterItem.Address);
-                                masterCommand.Parameters.AddWithValue("@PaymentMethod", masterItem.PaymentMethod);
-                                masterCommand.Parameters.AddWithValue("@NumberOfItem", masterItem.NumberOfItem);
-                                masterCommand.Parameters.AddWithValue("@TotalPrice", masterItem.TotalPrice);
-                                masterCommand.Parameters.AddWithValue("@Status", masterItem.Status);
-                                masterCommand.Parameters.AddWithValue("@PhoneNumber", masterItem.phoneNumber);
-                                masterCommand.Parameters.AddWithValue("@DeliveryCharge", masterItem.DeliveryCharge);
-
-                               
-                                masterCommand.ExecuteNonQuery();
-                            }
-                        }
-
-
-
-
-                        // Insert the detail data
-
-                        int detailsId = 0;
-                        foreach (var detailItem in orderData.detail)
-                        {
-
-
-                            SqlCommand getLastDetailsIdCmd = new SqlCommand("SELECT ISNULL(MAX(OrderDetailId), 0) FROM OrderDetails;", connection);
-
-                            detailsId = Convert.ToInt32(getLastDetailsIdCmd.ExecuteScalar()) + 1;
-
-                            string detailInsertSql = "INSERT INTO OrderDetails (OrderDetailId,OrderMasterId,GoodsId,GoodsName,Quantity, Discount, Price,DeliveryCharge,DeliveryDate,Specification, GroupCode, SellerCode, Status) " +
-                                "VALUES (" + detailsId + ",@OrderMasterId, @GoodsId,@GoodsName, @Quantity, @Discount, @Price,@DeliveryCharge, @DeliveryDate, @Specification," +
-                                "@GroupCode,@SellerCode,@Status)";
-
-                            using (SqlCommand detailCommand = new SqlCommand(detailInsertSql, connection))
-                            {
-                                //     detailCommand.Parameters.AddWithValue("@OrderDetailId", detailsId);
-                                detailCommand.Parameters.AddWithValue("@OrderMasterId", masterId);
-                                detailCommand.Parameters.AddWithValue("@GoodsId", detailItem.GoodsId);
-                                detailCommand.Parameters.AddWithValue("@GoodsName", detailItem.GoodsName);
-                                detailCommand.Parameters.AddWithValue("@Quantity", detailItem.Quantity);
-                                detailCommand.Parameters.AddWithValue("@Discount", detailItem.Discount);
-                                detailCommand.Parameters.AddWithValue("@Price", detailItem.Price);
-                                detailCommand.Parameters.AddWithValue("@DeliveryCharge", detailItem.DeliveryCharge);
-                                detailCommand.Parameters.AddWithValue("@DeliveryDate", DateTime.Parse(detailItem.DeliveryDate));
-                                detailCommand.Parameters.AddWithValue("@Specification", detailItem.Specification);
-                                detailCommand.Parameters.AddWithValue("@GroupCode", detailItem.GroupCode);
-                                detailCommand.Parameters.AddWithValue("@SellerCode", detailItem.SellerCode  );
-                                detailCommand.Parameters.AddWithValue("@Status", detailItem.Status);
-                                detailCommand.ExecuteNonQuery();
-
-                                MaterialStockUpdate obj = new MaterialStockUpdate();
-                                obj.GroupCode = detailItem.GroupCode;
-                                obj.GoodsId = detailItem.GoodsId;
-                                obj.SellerCode = detailItem.SellerCode;
-                                obj.SalesQty = detailItem.Quantity;
-                                stocks.Add(obj);
-                            }
-                        }
-
-                        // Commit the transaction (if used)
-                        //transaction.Commit();
-                        string result = _commonServices.UpdateStockQt(stocks);
-
-                        return Ok(new { message = "Data inserted successfully." });
-
-                    }
-                    catch (Exception ex)
-                    {
-                        // Rollback the transaction in case of an exception
-                        //transaction.Rollback();
-
-                        // Handle the exception
-                        return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
-
-                    }
+                    await con.OpenAsync();
+                    var tempSystem = await cmdSP.ExecuteScalarAsync();
+                    systemCode = tempSystem?.ToString() ?? string.Empty;
+                    await con.CloseAsync();
                 }
-                //}
+
+                int OrderMasterId = int.Parse(systemCode.Split('%')[0]);
+                string OrderNo = systemCode.Split('%')[1];
+                //SP END
+
+                SqlCommand cmd = new SqlCommand("InsertOrderMaster", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
+                cmd.Parameters.AddWithValue("@OrderNo", OrderNo);
+                cmd.Parameters.AddWithValue("@OrderDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@Address", orderdata.Address);
+                cmd.Parameters.AddWithValue("@UserId", orderdata.UserId);
+                cmd.Parameters.AddWithValue("@PaymentMethod", orderdata.PaymentMethod ?? String.Empty);
+                cmd.Parameters.AddWithValue("@NumberOfItem", orderdata.NumberOfItem);
+                cmd.Parameters.AddWithValue("@TotalPrice", orderdata.TotalPrice);
+                cmd.Parameters.AddWithValue("@PhoneNumber", orderdata.PhoneNumber);
+                cmd.Parameters.AddWithValue("@DeliveryCharge", orderdata.DeliveryCharge);
+                cmd.Parameters.AddWithValue("@Status", "new");
+
+                cmd.Parameters.AddWithValue("@AddedBy", orderdata.AddedBy);
+                cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@AddedPC", orderdata.AddedPC);
+
+                await con.OpenAsync();
+                int a = await cmd.ExecuteNonQueryAsync();
+                await con.CloseAsync();
+                if (a > 0)
+                {
+                    await InsertOrderDateDetailsAsync(OrderMasterId, orderdata.OrderDetailsList);
+                }
+                else
+                {
+                    return BadRequest(new { message = "Order Master data isn't Inserted Successfully." });
+                }
+                return Ok(new { message = "Order data Inserted Successfully." });
             }
             catch (Exception ex)
             {
-                // Handle any exceptions here
-                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
-
+                return BadRequest(new { message = ex.Message });
             }
         }
-      
+
+        private async Task<IActionResult> InsertOrderDateDetailsAsync(int OrderMasterId, List<OrderDetailsDto> OrderDetailsList)
+        {
+            try
+            {
+                for (int i = 0; i < OrderDetailsList.Count; i++)
+                {
+                    string query = "InsertOrderDetails";
+                    //checking if user already exect for not.
+                    SqlCommand CheckCMD = new SqlCommand(query, con);
+                    CheckCMD.CommandType = CommandType.StoredProcedure;
+
+                    CheckCMD.Parameters.Clear();
+                    CheckCMD.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
+                    CheckCMD.Parameters.AddWithValue("@UserId", OrderDetailsList[i].UserId);
+                    CheckCMD.Parameters.AddWithValue("@ProductId", OrderDetailsList[i].ProductId);
+                    CheckCMD.Parameters.AddWithValue("@ProductGroupCode", OrderDetailsList[i].ProductGroupCode);
+                    CheckCMD.Parameters.AddWithValue("@Specification", OrderDetailsList[i].Specification);
+                    CheckCMD.Parameters.AddWithValue("@Qty", OrderDetailsList[i].Qty);
+                    CheckCMD.Parameters.AddWithValue("@UnitId", OrderDetailsList[i].UnitId);
+                    CheckCMD.Parameters.AddWithValue("@DiscountAmount", OrderDetailsList[i].DiscountAmount != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
+                    CheckCMD.Parameters.AddWithValue("@Price", OrderDetailsList[i].Price);
+                    CheckCMD.Parameters.AddWithValue("@Status", "new");
+                    CheckCMD.Parameters.AddWithValue("@DeliveryCharge", OrderDetailsList[i].DeliveryCharge);
+                    CheckCMD.Parameters.AddWithValue("@DeliveryDate", OrderDetailsList[i].DeliveryDate);
+                    CheckCMD.Parameters.AddWithValue("@DiscountPct",OrderDetailsList[i].DiscountPct != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
+                    //CheckCMD.Parameters.AddWithValue("@DiscountPct", OrderDetailsList[i].DiscountPct ?? (object)DBNull.Value);
+                    CheckCMD.Parameters.AddWithValue("@NetPrice", OrderDetailsList[i].NetPrice );
+
+                    CheckCMD.Parameters.AddWithValue("@AddedBy", OrderDetailsList[i].AddedBy);
+                    CheckCMD.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                    CheckCMD.Parameters.AddWithValue("@AddedPC", OrderDetailsList[i].AddedPC);
+
+                    con.Open();
+                    await CheckCMD.ExecuteNonQueryAsync();
+                    con.Close();
+
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return Ok(new { message = "Order Details data Inserted Successfully." });
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         [HttpPost, Authorize(Roles = "admin")]
        // [HttpPost ]
@@ -628,31 +757,31 @@ namespace NDE_Digital_Market.Controllers
 
         //================================== Added By Rey ==============================
         //  getOrderUserInfo
-        [HttpGet("getOrderUserInfo")]
-        public IActionResult getUserInfo(string UserId)
-        {
-            UserModel user = new UserModel();
-            SqlConnection con = new SqlConnection(_healthCareConnection);
-            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", con);
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@UserId", UserId);
-            con.Open();
-            SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                user.FullName = reader["FullName"].ToString();
-                user.PhoneNumber = reader["PhoneNumber"].ToString();
-                user.Email = reader["Email"].ToString();
-                user.Address = reader["Address"].ToString();
-                con.Close();
-                return Ok(new { message = "GET single data successful", user });
-            }
-            else
-            {
-                con.Close();
-                return BadRequest(new { message = "NO data Available" });
-            }
-        }
+        //[HttpGet("getOrderUserInfo")]
+        //public IActionResult getUserInfo(string UserId)
+        //{
+        //    UserModel user = new UserModel();
+        //    SqlConnection con = new SqlConnection(_he);
+        //    SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", con);
+        //    cmd.CommandType = CommandType.Text;
+        //    cmd.Parameters.AddWithValue("@UserId", UserId);
+        //    con.Open();
+        //    SqlDataReader reader = cmd.ExecuteReader();
+        //    if (reader.Read())
+        //    {
+        //        user.FullName = reader["FullName"].ToString();
+        //        user.PhoneNumber = reader["PhoneNumber"].ToString();
+        //        user.Email = reader["Email"].ToString();
+        //        user.Address = reader["Address"].ToString();
+        //        con.Close();
+        //        return Ok(new { message = "GET single data successful", user });
+        //    }
+        //    else
+        //    {
+        //        con.Close();
+        //        return BadRequest(new { message = "NO data Available" });
+        //    }
+        //}
 
         //  getOrdersForSeller
         //[HttpGet]
@@ -1054,6 +1183,10 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
+
+
+
+
     }
 }
 
@@ -1065,3 +1198,8 @@ public class ShortendUserModel
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
 }
+
+
+
+
+
