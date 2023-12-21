@@ -107,36 +107,38 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
-        //[HttpGet]
-        //[Route("GetProductGroupsList")]
-        //public async Task<List<ProductGroupsModel>> GetProductGroupsListAsync()
-        //{
-        //    List<ProductGroupsModel> lst = new List<ProductGroupsModel>();
-        //    await con.OpenAsync();
-        //    string query = "SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails]," +
-        //        " [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
+        [HttpGet]
+        [Route("GetProductList")]
+        public async Task<IActionResult> GetProductGroupsListAsync()
+        {
+            try
+            {
+                List<GetProductListDto> lst = new List<GetProductListDto>();
+                await con.OpenAsync();
+                string query = "select ProductId, ProductName from ProductList where IsActive = 1 ORDER BY ProductId DESC;";
 
-        //    using (SqlCommand cmd = new SqlCommand(query, con))
-        //    {
-        //        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-        //        {
-        //            while (await reader.ReadAsync())
-        //            {
-        //                ProductGroupsModel modelObj = new ProductGroupsModel();
-        //                modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
-        //                modelObj.ProductGroupCode = reader["ProductGroupCode"].ToString();
-        //                modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
-        //                modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
-        //                modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
-        //                modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            GetProductListDto modelObj = new GetProductListDto();
+                            modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
+                            modelObj.ProductName = reader["ProductName"].ToString();
 
-        //                lst.Add(modelObj);
-        //            }
-        //        }
-        //    }
+                            lst.Add(modelObj);
+                        }
+                    }
+                }
 
+                return Ok(lst);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
 
-        //    return lst;
-        //}
+        }
     }
 }
