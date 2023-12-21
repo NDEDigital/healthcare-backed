@@ -24,7 +24,9 @@ namespace NDE_Digital_Market.Controllers
 
         private async Task<Boolean> ProductNameCheck(string ProductName,string Specification)
         {
-            SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM ProductList WHERE ProductName = @ProductName AND Specification = @Specification; ", con);
+
+            string query = @"SELECT COUNT(*) FROM ProductList WHERE ProductName = @ProductName AND Specification = @Specification;";
+            SqlCommand cmd = new SqlCommand(query, con);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@ProductName", ProductName);
             cmd.Parameters.AddWithValue("@Specification", Specification);

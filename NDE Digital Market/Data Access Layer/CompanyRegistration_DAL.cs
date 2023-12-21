@@ -117,12 +117,12 @@ public class CompanyRegistration_DAL
 
     }
 
-    public async Task<List<CompanyModel>> GetCompaniesAsync()
+    public async Task<List<CompanyModel>> GetCompaniesAsync(int status)
     {
         List<CompanyModel> companies = new List<CompanyModel>();
-        SqlCommand command = new SqlCommand("GetCompanies", connection);
+        SqlCommand command = new SqlCommand("GetCompaniesByStatus", connection);
         command.CommandType = CommandType.StoredProcedure;
-
+        command.Parameters.AddWithValue("@IsActive",status);
         await connection.OpenAsync();
         SqlDataReader reader = await command.ExecuteReaderAsync();
 

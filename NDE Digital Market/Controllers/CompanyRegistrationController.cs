@@ -32,10 +32,10 @@ namespace NDE_Digital_Market.Controllers
             return Ok(res);
         }
 
-        [HttpGet("GetCompanies")]
-        public async Task<IActionResult> GetCompaniesAsync()
+        [HttpGet("GetCompaniesBasedOnStatus")]
+        public async Task<IActionResult> GetCompaniesAsync(int status)
         {
-            var res = await _CompanyRegistration.GetCompaniesAsync();
+            var res = await _CompanyRegistration.GetCompaniesAsync(status);
             return Ok(res);
         }
 

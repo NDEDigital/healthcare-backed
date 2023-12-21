@@ -21,7 +21,8 @@ namespace NDE_Digital_Market.Controllers
 
         private async Task<Boolean> ProductGroupsNameCheck(string productgoodsname)
         {
-            SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM  [ProductGroups] WHERE ProductGroupName = @productgoodsname", con);
+            string query = @"SELECT COUNT(*) FROM  [ProductGroups] WHERE ProductGroupName = @productgoodsname";
+            SqlCommand cmd = new SqlCommand(query, con);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@productgoodsname", productgoodsname);
             await con.OpenAsync();
@@ -67,8 +68,8 @@ namespace NDE_Digital_Market.Controllers
                     string ProductGroupsCode = systemCode.Split('%')[1];
 
                     //SP END
-                    string query = "INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC) " +
-                        " VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
+                    string query = @"INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC)
+                        VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@ProductGroupID", ProductGroupsID);
@@ -103,8 +104,8 @@ namespace NDE_Digital_Market.Controllers
         {
             List<ProductGroupsModel> lst = new List<ProductGroupsModel>();
             await con.OpenAsync();
-            string query = "SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails],"+
-                " [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
+            string query = @"SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails],
+                [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
 
             using (SqlCommand cmd = new SqlCommand(query, con))
             {

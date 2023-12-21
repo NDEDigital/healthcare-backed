@@ -9,7 +9,7 @@ public interface ICompanyRegistration
     Task<string> CompanyRegistrationPostAsync(CompanyDto companyDto);
     Task<Boolean> CompanyexistsCheckAsync(CompanyDto companyDto);
 
-    Task<List<CompanyModel>> GetCompaniesAsync();
+    Task<List<CompanyModel>> GetCompaniesAsync(int status);
 
     Task<string> UpdateCompanyAsync(CompanyDto companyDto);
 

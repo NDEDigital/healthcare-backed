@@ -29,9 +29,9 @@ public class CompanyRegistration : ICompanyRegistration
         return res;
     }
 
-    public async Task<List<CompanyModel>> GetCompaniesAsync()
+    public async Task<List<CompanyModel>> GetCompaniesAsync(int status)
     {
-        var res = await _CompanyRegistration_DAL.GetCompaniesAsync();
+        var res = await _CompanyRegistration_DAL.GetCompaniesAsync(status);
         return res;
     }
     public async Task<string> UpdateCompanyAsync(CompanyDto companyDto)
