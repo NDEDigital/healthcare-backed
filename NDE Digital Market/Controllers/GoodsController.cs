@@ -1,4 +1,5 @@
 ﻿using NDE_Digital_Market.Model;
+using NDE_Digital_Market.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
@@ -62,72 +63,112 @@ namespace NDE_Digital_Market.Controllers
 
         //================================== Get Slider GoodsList ================
 
-        [HttpGet ]
+        //[HttpGet ]
+        //[Route("GetGoodsList")]
+        //public async Task<List<GoodsQuantityModel>> GetGoodsList()
+        //{
+        //    List<GoodsQuantityModel> Lst = new List<GoodsQuantityModel>();
+        //    SqlConnection con = new SqlConnection(_prominentConnection);
+
+        //    string query = @"SELECT 
+        //                    ProductList.GoodsId, 
+        //                    ProductList.GoodsName, 
+        //                    ProductList.GroupCode,
+        //                    ProductList.GroupName,
+        //                    ProductList.Specification,
+        //                    ProductList.Price,
+        //                    ProductList.SellerCode,
+        //                    ProductList.ImagePath,
+        //                    ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
+        //                    ProductList.QuantityUnit,  
+        //                 UserRegistration.CompanyName
+        //                FROM 
+        //                    ProductList
+        //                LEFT JOIN 
+        //                    UserRegistration
+        //                ON 
+        //                    ProductList.SellerCode = UserRegistration.UserCode
+        //                LEFT JOIN
+        //                MaterialStockQty
+        //                ON 
+        //                   MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
+        //                WHERE 
+        //                    ProductList.Status = 'approved';";
+
+        //    SqlCommand cmd = new SqlCommand(query, con);
+        //    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+        //    DataTable dt = new DataTable();
+        //    con.Open();
+        //    adapter.Fill(dt);
+        //    //Console.WriteLine(dt);
+        //    con.Close();
+        //    for (int i = 0; i < dt.Rows.Count; i++)
+        //    {
+        //        GoodsQuantityModel modelObj = new GoodsQuantityModel();
+        //        modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+        //        modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+        //        modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
+        //        modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
+        //        modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+        //        modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+        //        modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+        //        modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+        //        modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+        //        modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+        //        modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+
+
+        //        Lst.Add(modelObj);
+        //    }
+
+
+
+        //    return Lst;
+        //}
+
+        [HttpGet]
         [Route("GetGoodsList")]
-        public async Task<List<GoodsQuantityModel>> GetGoodsList()
+        public async Task<List<AllProductDto>> GetGoodsList()
         {
-            List<GoodsQuantityModel> Lst = new List<GoodsQuantityModel>();
-            SqlConnection con = new SqlConnection(_prominentConnection);
-         
-            string query = @"SELECT 
-                            ProductList.GoodsId, 
-                            ProductList.GoodsName, 
-                            ProductList.GroupCode,
-                            ProductList.GroupName,
-                            ProductList.Specification,
-                            ProductList.Price,
-                            ProductList.SellerCode,
-                            ProductList.ImagePath,
-                            ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
-                            ProductList.QuantityUnit,  
-	                        UserRegistration.CompanyName
-                        FROM 
-                            ProductList
-                        LEFT JOIN 
-                            UserRegistration
-                        ON 
-                            ProductList.SellerCode = UserRegistration.UserCode
-                        LEFT JOIN
-                        MaterialStockQty
-                        ON 
-                           MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
-                        WHERE 
-                            ProductList.Status = 'approved';";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            con.Open();
-            adapter.Fill(dt);
-            //Console.WriteLine(dt);
-            con.Close();
-            for (int i = 0; i < dt.Rows.Count; i++)
+            List<AllProductDto> lst = new List<AllProductDto>();
+            using (SqlConnection con = new SqlConnection(_healthCareConnection))
             {
-                GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-                modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
-                modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-                modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-                modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-                modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-                modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-                modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-                modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
-
-
-                Lst.Add(modelObj);
+                await con.OpenAsync();
+                string query = "GetAllProductListWithAvailableQty";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            AllProductDto modelObj = new AllProductDto();
+                            modelObj.CompanyName = reader["CompanyName"].ToString();
+                            modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
+                            modelObj.ProductName = reader["ProductName"].ToString();
+                            modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                            modelObj.Specification = reader["Specification"].ToString();
+                            modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
+                            modelObj.Unit = reader["Unit"].ToString();
+                            modelObj.Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0;
+                            modelObj.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountAmount"]) : 0;
+                            modelObj.DiscountPct = reader["DiscountPct"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountPct"]) : 0;
+                            modelObj.ImagePath = reader["ImagePath"].ToString();
+                            modelObj.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
+                            modelObj.SellerId = Convert.ToInt32(reader["SellerId"]);
+                            modelObj.AvailableQty = Convert.ToInt32(reader["AvailableQty"]);
+                            lst.Add(modelObj);
+                        }
+                    }
+                }
             }
-
-          
-
-            return Lst;
+            return lst;
         }
+
+
 
         //====================== ProductCompany =================
 
-      
+
         [HttpPost]
         [Route("GetProductCompany")]
         public List<ProductCompanyModel> GetProductCompany(string GroupCode, string GroupName)
