@@ -232,16 +232,16 @@ namespace NDE_Digital_Market.Controllers
         //public IActionResult LoginUser(string phone, string pass)
         {
             //UserModel user = new UserModel();
-            string encryptedPassword = CommonServices.EncryptPassword(user.Password);
+            //string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             SqlCommand cmd = new SqlCommand("SELECT * FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber ", _healthCareConnection);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
-            cmd.Parameters.AddWithValue("@Password", encryptedPassword);
+            //cmd.Parameters.AddWithValue("@Password", user.Password);
            await _healthCareConnection.OpenAsync();
             SqlDataReader reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                string encryptedUserCode = CommonServices.EncryptPassword(reader["UserCode"].ToString());
+                int userId =(int) reader["UserId"];
      
                 bool IsBuyer = (bool)reader["IsBuyer"];
                 bool IsSeller = (bool)reader["IsSeller"];
@@ -253,7 +253,7 @@ namespace NDE_Digital_Market.Controllers
               
                 string role = IsAdmin ? "admin" : IsSeller ? "seller" : IsBuyer ? "buyer" : "";
                 string token = CreateToken(role);
-                var newRefreshToken = CreateRefreshToken(encryptedUserCode);
+                var newRefreshToken = CreateRefreshToken(userId.ToString());
 
                 if (!VerifyPasswordHash(user.Password, storedPasswordHash, storedPasswordSalt))
                 {
@@ -261,7 +261,7 @@ namespace NDE_Digital_Market.Controllers
                 }
                 //await SetRefreshToken(newRefreshToken, encryptedUserCode);
                 // Return the user object as a response
-                return Ok(new { message = "Login successful", encryptedUserCode, role, token, newRefreshToken });
+                return Ok(new { message = "Login successful", userId, role, token, newRefreshToken });
             }
             else
             {
