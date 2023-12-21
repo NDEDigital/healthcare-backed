@@ -108,7 +108,7 @@ namespace NDE_Digital_Market.Controllers
                 //SP END
 
                 SqlCommand cmd = new SqlCommand("InsertPortalReceivedMaster", con);
-                cmd.CommandType = CommandType.Text;
+                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
                 cmd.Parameters.AddWithValue("@PortalReceivedCode", PortalReceivedCode);
                 cmd.Parameters.AddWithValue("@MaterialReceivedDate", DateTime.Now);
@@ -157,6 +157,7 @@ namespace NDE_Digital_Market.Controllers
                     string query = "InsertPortalReceivedDetails";
                     //checking if user already exect for not.
                     SqlCommand CheckCMD = new SqlCommand(query, con);
+                    CheckCMD.CommandType = CommandType.StoredProcedure;
 
                     CheckCMD.Parameters.Clear();
                     CheckCMD.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
@@ -172,7 +173,7 @@ namespace NDE_Digital_Market.Controllers
 
 
                     CheckCMD.Parameters.AddWithValue("@AddedBy", PortalReceivedDetailsList[i].AddedBy);
-                    CheckCMD.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                    CheckCMD.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                     CheckCMD.Parameters.AddWithValue("@AddedPC", PortalReceivedDetailsList[i].AddedPC);
                     //cmd.Parameters.AddWithValue("@UpdatedBy", "UpdatedBy");
                     //cmd.Parameters.AddWithValue("@UpdatedDate", (object)groups.UpdatedDate ?? DBNull.Value);
