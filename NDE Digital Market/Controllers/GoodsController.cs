@@ -171,52 +171,97 @@ namespace NDE_Digital_Market.Controllers
         //====================== ProductCompany =================
 
 
-        [HttpPost]
-        [Route("GetProductCompany")]
-        public List<ProductCompanyModel> GetProductCompany(string GroupCode, string GroupName)
+        [HttpGet]
+        [Route("GetProductCompany/{ProductGroupCode}")]
+        public async Task<IActionResult> GetProductCompany(string ProductGroupCode)
         {
-
-          //  string GroupName = HttpUtility.UrlDecode(EncodedGroupName);
-            List<ProductCompanyModel> res = new List<ProductCompanyModel>();
-            using (SqlConnection connection = new SqlConnection(_prominentConnection))
+            var companiesByProductGroup = new List<CompanyList>();
+            try
             {
-             
-                connection.Open();
-
-                string query = @"SELECT 
-                                          MAX(UR.CompanyName) AS CompanyName,  -- Using MAX() to get one CompanyName per CompanyCode
-                                          UR.CompanyCode
-                                        FROM ProductList
-                                        LEFT JOIN UserRegistration AS UR ON ProductList.SellerCode = UR.UserCode
-                                        WHERE ProductList.GroupCode = @GroupCode
-                                          AND ProductList.GroupName = @GroupName
-                                          AND ProductList.Status = 'approved'
-                                        GROUP BY UR.CompanyCode;";
-
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    
-                    command.Parameters.AddWithValue("@GroupName", GroupName);
-                    command.Parameters.AddWithValue("@GroupCode", GroupCode);
-                    SqlDataAdapter adapter = new SqlDataAdapter(command);
-                    DataTable dt = new DataTable();
-
-                    adapter.Fill(dt);
-                    connection.Close();
-                    for (int i = 0; i < dt.Rows.Count; i++)
+                    using (var command = new SqlCommand("GetCompaniesByProductGroupCode", connection))
                     {
-                        ProductCompanyModel obj = new ProductCompanyModel();
-                        obj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-                        obj.CompanyCode = dt.Rows[i]["CompanyCode"].ToString();
-                        res.Add(obj);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@ProductGroupCode", ProductGroupCode));
+                        await connection.OpenAsync();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var companiesByProduct = new CompanyList
+                                {
+                                    CompanyName = reader["CompanyName"].ToString(),
+                                    CompanyCode = reader["CompanyCode"].ToString(),
+                                    CompanyImage = reader["CompanyImage"].ToString()
+                                };
+                                companiesByProductGroup.Add(companiesByProduct);
+                            }
+                        }
                     }
-
-                    
-                }        
+                }
+                //if (companiesByProductGroup.Count == 0)
+                //{
+                //    return BadRequest(new {
+                //        message = "No companies found for the given product group code."}
+                //    );
+                //}
+                return Ok(companiesByProductGroup);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
             }
 
-            return res;
         }
+
+
+        //[HttpPost]
+        //[Route("GetProductCompany")]
+        //public List<ProductCompanyModel> GetProductCompany(string GroupCode, string GroupName)
+        //{
+
+        //    //  string GroupName = HttpUtility.UrlDecode(EncodedGroupName);
+        //    List<ProductCompanyModel> res = new List<ProductCompanyModel>();
+        //    using (SqlConnection connection = new SqlConnection(_prominentConnection))
+        //    {
+
+        //        connection.Open();
+
+        //        string query = @"SELECT 
+        //                                  MAX(UR.CompanyName) AS CompanyName,  -- Using MAX() to get one CompanyName per CompanyCode
+        //                                  UR.CompanyCode
+        //                                FROM ProductList
+        //                                LEFT JOIN UserRegistration AS UR ON ProductList.SellerCode = UR.UserCode
+        //                                WHERE ProductList.GroupCode = @GroupCode
+        //                                  AND ProductList.GroupName = @GroupName
+        //                                  AND ProductList.Status = 'approved'
+        //                                GROUP BY UR.CompanyCode;";
+
+        //        using (SqlCommand command = new SqlCommand(query, connection))
+        //        {
+
+        //            command.Parameters.AddWithValue("@GroupName", GroupName);
+        //            command.Parameters.AddWithValue("@GroupCode", GroupCode);
+        //            SqlDataAdapter adapter = new SqlDataAdapter(command);
+        //            DataTable dt = new DataTable();
+
+        //            adapter.Fill(dt);
+        //            connection.Close();
+        //            for (int i = 0; i < dt.Rows.Count; i++)
+        //            {
+        //                ProductCompanyModel obj = new ProductCompanyModel();
+        //                obj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+        //                obj.CompanyCode = dt.Rows[i]["CompanyCode"].ToString();
+        //                res.Add(obj);
+        //            }
+
+
+        //        }
+        //    }
+
+        //    return res;
+        //}
 
         [HttpGet]
         [Route("GetProductList")]
