@@ -39,7 +39,7 @@ namespace NDE_Digital_Market.Controllers
             return check;
         }
 
-        [HttpPost("CreateProductGroups")]
+        [HttpPost("CreateProductList")]
         public async Task<IActionResult> CreateProductGroupsAsync([FromForm] ProductListDto productListDto)
         {
             try
@@ -105,36 +105,36 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
-        [HttpGet]
-        [Route("GetProductGroupsList")]
-        public async Task<List<ProductGroupsModel>> GetProductGroupsListAsync()
-        {
-            List<ProductGroupsModel> lst = new List<ProductGroupsModel>();
-            await con.OpenAsync();
-            string query = "SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails]," +
-                " [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
+        //[HttpGet]
+        //[Route("GetProductGroupsList")]
+        //public async Task<List<ProductGroupsModel>> GetProductGroupsListAsync()
+        //{
+        //    List<ProductGroupsModel> lst = new List<ProductGroupsModel>();
+        //    await con.OpenAsync();
+        //    string query = "SELECT [ProductGroupID],[ProductGroupCode],[ProductGroupName],[ProductGroupPrefix],[ProductGroupDetails]," +
+        //        " [IsActive] FROM ProductGroups WHERE IsActive = 1 ORDER BY [ProductGroupID] DESC;";
 
-            using (SqlCommand cmd = new SqlCommand(query, con))
-            {
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        ProductGroupsModel modelObj = new ProductGroupsModel();
-                        modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
-                        modelObj.ProductGroupCode = reader["ProductGroupCode"].ToString();
-                        modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
-                        modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
-                        modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
-                        modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+        //    using (SqlCommand cmd = new SqlCommand(query, con))
+        //    {
+        //        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+        //        {
+        //            while (await reader.ReadAsync())
+        //            {
+        //                ProductGroupsModel modelObj = new ProductGroupsModel();
+        //                modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+        //                modelObj.ProductGroupCode = reader["ProductGroupCode"].ToString();
+        //                modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+        //                modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
+        //                modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
+        //                modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
 
-                        lst.Add(modelObj);
-                    }
-                }
-            }
+        //                lst.Add(modelObj);
+        //            }
+        //        }
+        //    }
 
 
-            return lst;
-        }
+        //    return lst;
+        //}
     }
 }
