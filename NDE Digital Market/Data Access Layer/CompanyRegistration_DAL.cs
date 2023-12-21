@@ -10,14 +10,19 @@ namespace NDE_Digital_Market.Data_Access_Layer;
 
 public class CompanyRegistration_DAL
 {
+    //CommonServices commonServices = new CommonServices(_configuration);
+    //string foldername = commonServices.FilesPath + "CompanyFiles";
+
     private readonly IConfiguration _configuration;
     private readonly SqlConnection connection;
-    private readonly string foldername = @"D:\HealthCare\healthcare-frontend\src\assets\images\CompanyFiles";
+    private readonly string foldername;
     private readonly string filename = "companyfiles";
     public CompanyRegistration_DAL(IConfiguration configuration)
     {
         _configuration = configuration;
         connection = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+        CommonServices commonServices = new CommonServices(_configuration);
+        foldername = commonServices.FilesPath + "CompanyFiles";
     }
     public async Task<Boolean> CompanyExistAsync(CompanyDto companyDto)
     {

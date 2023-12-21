@@ -8,14 +8,17 @@ namespace NDE_Digital_Market.SharedServices
 {
     public class CommonServices
     {
-        
+        //public readonly string FilesPath = @"F:\Projects\Health Care\healthcare-frontend\src\assets\images\";
+        //public static string FilesPath { get; } = @"F:\Projects\Health Care\healthcare-frontend\src\assets\images\";
+
+        public string FilesPath { get; set; }
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
        
         public CommonServices(IConfiguration configuration)
         {
             _configuration = configuration;
-          
+            FilesPath = _configuration["FilesPaths:filepath"];
             con = new SqlConnection(_configuration.GetConnectionString("DigitalMarketConnection"));
            
         }
@@ -162,7 +165,7 @@ namespace NDE_Digital_Market.SharedServices
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                file.CopyToAsync(fileStream);
+                file.CopyTo(fileStream);
             }
             return filePath;
 
