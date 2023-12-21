@@ -43,7 +43,7 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> GetCompaniesAsync(int status)
         {
             var res = await _CompanyRegistration.GetCompaniesAsync(status);
-            return Ok(new { message = res });
+            return Ok(res);
         }
 
         [HttpPut("UpdateCompany")]

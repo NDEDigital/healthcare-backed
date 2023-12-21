@@ -6,6 +6,8 @@ using System.Data.SqlClient;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using NDE_Digital_Market.Model.MaterialStock;
+using static Org.BouncyCastle.Math.EC.ECCurve;
+using NDE_Digital_Market.DTOs;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -15,6 +17,7 @@ namespace NDE_Digital_Market.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
+        private readonly string _healthCareConnection;
         //private readonly IWebHostEnvironment _hostingEnvironment;
         //public ProductsController(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         private CommonServices _commonServices;
@@ -24,6 +27,8 @@ namespace NDE_Digital_Market.Controllers
             _commonServices = new CommonServices(configuration);
             //_hostingEnvironment = hostingEnvironment;
             con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
+            _healthCareConnection = _configuration.GetConnectionString("HealthCare");
+
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
         }
@@ -278,7 +283,7 @@ VALUES
             else
             {
                 isAdmin = false;
-                Products = GetSellerProduct(sellerCode);
+                //Products = GetSellerProduct(sellerCode);
             }
 
             //return Tuple.Create(Products, (object)isAdmin);
@@ -288,76 +293,141 @@ VALUES
 
         // ======================= GET Product ==================
 
-        [HttpGet]
-        [Route("GetProduct")]
-        public List<GoodsQuantityModel>GetSellerProduct(string sellerCode)
+        //[HttpGet]
+        //[Route("GetProduct")]
+        //public List<GoodsQuantityModel>GetSellerProduct(string sellerCode)
+        //{
+        //    Console.WriteLine(sellerCode, "sellerCode");
+        //    string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
+
+        //    string query = @"SELECT 
+        //                    ProductList.GoodsId, 
+        //                    ProductList.GoodsName, 
+        //                    ProductList.GroupCode,
+        //                    ProductList.GroupName,
+        //                    ProductList.Specification,
+        //                    ProductList.Price,
+        //                    ProductList.SellerCode,
+        //                    ProductList.ImagePath,
+        //                    ISNULL(MaterialStockQty.PresentQty, 0) AS Quantity,
+        //                    ProductList.QuantityUnit,  
+        //                 UserRegistration.CompanyName
+
+        //                 FROM ProductList
+        //                LEFT JOIN
+        //                UserRegistration
+        //                ON
+        //                ProductList.SellerCode = UserRegistration.UserCode
+        //                LEFT JOIN
+        //                                        MaterialStockQty
+        //                                        ON
+        //                                           MaterialStockQty.GroupCode = ProductList.GroupCode AND MaterialStockQty.GoodsId = ProductList.GoodsId
+        //                WHERE ProductList.SellerCode = @DecryptedSupplierCode  ORDER BY ProductList.UpdatedDate DESC; ";
+        //    SqlCommand cmd = new SqlCommand(query, con);
+        //    cmd.Parameters.AddWithValue("@DecryptedSupplierCode", decryptedSupplierCode);
+
+        //    con.Open();
+        //    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+        //    DataTable dt = new DataTable();
+
+        //    adapter.Fill(dt);
+
+        //    con.Close();
+
+        //    List<GoodsQuantityModel> sellerProducts = new List<GoodsQuantityModel>();
+
+        //    for (int i = 0; i < dt.Rows.Count; i++)
+        //    {
+        //        GoodsQuantityModel modelObj = new GoodsQuantityModel();
+
+
+        //        modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
+        //        modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
+        //        modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
+        //        modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
+        //        modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
+        //        modelObj.Specification = dt.Rows[i]["Specification"].ToString();
+        //        modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
+        //        modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
+        //        modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
+        //        modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
+        //        modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+
+        //        sellerProducts.Add(modelObj);
+
+        //    }
+        //    return sellerProducts;
+
+        //}
+
+
+
+        // ====================== new GET Product ==========================
+
+
+
+        [HttpGet("GetSellerProductForAdminApproval")]
+        public async Task<IActionResult> GetSellerProductForAdminApproval(string status)
         {
-            Console.WriteLine(sellerCode, "sellerCode");
-            string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
+            //string DecryptId = CommonServices.DecryptPassword(companyCode);
+            var products = new List<ProductStatusDto>();
 
-            string query = @"SELECT 
-                            ProductList.GoodsId, 
-                            ProductList.GoodsName, 
-                            ProductList.GroupCode,
-                            ProductList.GroupName,
-                            ProductList.Specification,
-                            ProductList.Price,
-                            ProductList.SellerCode,
-                            ProductList.ImagePath,
-                            ISNULL(MaterialStockQty.PresentQty, 0) AS Quantity,
-                            ProductList.QuantityUnit,  
-	                        UserRegistration.CompanyName
-
-                         FROM ProductList
-                        LEFT JOIN
-                        UserRegistration
-                        ON
-                        ProductList.SellerCode = UserRegistration.UserCode
-                        LEFT JOIN
-                                                MaterialStockQty
-                                                ON
-                                                   MaterialStockQty.GroupCode = ProductList.GroupCode AND MaterialStockQty.GoodsId = ProductList.GoodsId
-                        WHERE ProductList.SellerCode = @DecryptedSupplierCode  ORDER BY ProductList.UpdatedDate DESC; ";
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@DecryptedSupplierCode", decryptedSupplierCode);
-          
-            con.Open();
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-
-            adapter.Fill(dt);
-
-            con.Close();
-
-            List<GoodsQuantityModel> sellerProducts = new List<GoodsQuantityModel>();
-
-            for (int i = 0; i < dt.Rows.Count; i++)
+            try
             {
-                GoodsQuantityModel modelObj = new GoodsQuantityModel();
+                using (var connection = new SqlConnection(_healthCareConnection))
+                {
+                    using (var command = new SqlCommand("SellerProductStatus", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@Status", status));
+
+                        await connection.OpenAsync();
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                               
+                                    var product = new ProductStatusDto
+                                {
+                                        ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                        ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                        FullName = reader.GetString(reader.GetOrdinal("FullName")),
+                                        Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price")),
+                                        DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
+                                        DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? null : reader.GetString(reader.GetOrdinal("DiscountPct")),
+                                        EffectivateDate = reader.IsDBNull(reader.GetOrdinal("EffectivateDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EffectivateDate")),
+                                        EndDate = reader.IsDBNull(reader.GetOrdinal("EndDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                                        ImagePath = reader.IsDBNull(reader.GetOrdinal("ImagePath")) ? null : reader.GetString(reader.GetOrdinal("ImagePath")),
+                                        TotalPrice = reader.IsDBNull(reader.GetOrdinal("TotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("TotalPrice")),
+                                        CompanyCode = reader.IsDBNull(reader.GetOrdinal("CompanyCode")) ? null : reader.GetString(reader.GetOrdinal("CompanyCode")),
+                                        CompanyName = reader.IsDBNull(reader.GetOrdinal("CompanyName")) ? null : reader.GetString(reader.GetOrdinal("CompanyName"))
 
 
-                modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-                modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-                modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
-                modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-                modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-                modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-                modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-                modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-                modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-                modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-                modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
+                                    };
+                                products.Add(product);
+                            }
+                        }
+                    }
+                }
 
-                sellerProducts.Add(modelObj);
+                if (products.Count == 0)
+                {
+                    return NotFound("No products found for the given status.");
+                }
 
+                return Ok(products);
             }
-            return sellerProducts;
-
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving products: " + ex.Message);
+            }
         }
 
-        // ======================= DELETE Product ==================
+            // ======================= DELETE Product ==================
 
-        [HttpDelete, Authorize(Roles = "seller")]
+            [HttpDelete, Authorize(Roles = "seller")]
         [Route("DeleteProduct")]
         public IActionResult DeleteProcuct(string sellerCode, int ProductId)
         {
