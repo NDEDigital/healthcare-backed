@@ -22,21 +22,22 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> CompanyexistsCheckAsync(CompanyDto companyDto)
         {
             var res = await _CompanyRegistration.CompanyexistsCheckAsync(companyDto);
-            return Ok(res);
+            //return Ok(res);
+            return Ok(new { message = res });
         }
 
         [HttpPost("CreateCompany")]
         public async Task<IActionResult> CompanyRegistrationPostAsync([FromForm] CompanyDto companyDto)
         {
             var res = await _CompanyRegistration.CompanyRegistrationPostAsync(companyDto);
-            return Ok(res);
+            return Ok(new { message = res });
         }
 
         [HttpGet("GetCompaniesBasedOnStatus")]
         public async Task<IActionResult> GetCompaniesAsync(int status)
         {
             var res = await _CompanyRegistration.GetCompaniesAsync(status);
-            return Ok(res);
+            return Ok(new { message = res });
         }
 
         [HttpPut("UpdateCompany")]
@@ -44,7 +45,7 @@ namespace NDE_Digital_Market.Controllers
         {
             //CompanyModel companyModel = JsonConvert.DeserializeObject<CompanyModel>(data);
             var res = await _CompanyRegistration.UpdateCompanyAsync(companyDto);
-            return Ok(res);
+            return Ok(new { message = res });
         }
 
     }

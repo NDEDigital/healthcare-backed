@@ -41,11 +41,11 @@ namespace NDE_Digital_Market.Controllers
             List<PaymentMethodModel> res = await _HKGets.BankNameGetAsync(preferredPM);
             if (res.Count > 0)
             {
-                return Ok(res);
+                return Ok(new { message = res });
             }
             else
             {
-                return BadRequest("No Payment method found.");
+                return BadRequest(new { message = "No Payment method found." });
             }
         }
 
@@ -53,6 +53,7 @@ namespace NDE_Digital_Market.Controllers
         [Route("GetUnitList")]
         public async Task<List<UnitModel>> GetUnitListAsync()
         {
+            
             List<UnitModel> lst = new List<UnitModel>();
             await con.OpenAsync();
             string query = "select UnitId, Name from Units;";
