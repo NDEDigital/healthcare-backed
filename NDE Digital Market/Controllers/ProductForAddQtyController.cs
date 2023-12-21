@@ -11,6 +11,9 @@ namespace NDE_Digital_Market.Controllers
     [Route("[controller]")]
     public class ProductQuantityController : Controller
     {
+
+        private readonly string foldername;
+        private readonly string filename = "SellerProductPriceAndOffer";
         private CommonServices _commonServices;
         private readonly string _healthCareConnection;
         private readonly IConfiguration configuration;
@@ -22,6 +25,8 @@ namespace NDE_Digital_Market.Controllers
             _healthCareConnection = config.GetConnectionString("HealthCare");
             configuration = config;
             con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
+            CommonServices commonServices = new CommonServices(configuration);
+            foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }
 
 
@@ -192,6 +197,91 @@ namespace NDE_Digital_Market.Controllers
             }
 
             return Ok(new { message = "Portal Details data Inserted Successfully." });
+        }
+
+
+
+
+
+
+        private async Task<Boolean> SellerProductPriceAndOfferCheck(int ProductName, string companycode)
+        {
+
+            string query = @"SELECT COUNT(*) AS ProductCount FROM SellerProductPriceAndOffer WHERE ProductId = @ProductId AND CompanyCode = @CompanyCode";
+            SqlCommand cmd = new SqlCommand(query, con);
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@ProductId", ProductName);
+            cmd.Parameters.AddWithValue("@CompanyCode", companycode);
+            await con.OpenAsync();
+            int count = (int)await cmd.ExecuteScalarAsync();
+            await con.CloseAsync();
+            Boolean check = false;
+            if (count > 0)
+            {
+                check = true;
+            }
+            return check;
+        }
+
+        [HttpPost("CreateSellerProductPriceAndOffer")]
+        public async Task<IActionResult> CreateSellerProductPriceAndOfferAsync([FromForm] SellerProductPriceAndOfferDto sellerproductdata)
+        {
+            try
+            {
+                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId, sellerproductdata.CompanyCode);
+                if (ProductPriceAndOfferExist)
+                {
+                    return BadRequest(new { message = "ProductPriceAndOffer Allready Added." });
+                }
+                else
+                {
+                    string ImagePath = CommonServices.UploadFiles(foldername, filename, sellerproductdata.ImageFile);
+
+                    //SP END
+                    string query = @"INSERT INTO SellerProductPriceAndOffer(ProductId, UserId, Price,DiscountAmount,DiscountPct,EffectivateDate,
+                    EndDate,ImagePath,Status,IsActive, AddedDate,AddedBy,AddedPC,TotalPrice,CompanyCode) 
+                    VALUES (@ProductId,@UserId,@Price,@DiscountAmount,@DiscountPct,@EffectivateDate,@EndDate, @ImagePath,
+                    @Status, @IsActive, @AddedDate,@AddedBy, @AddedPC,@TotalPrice, @CompanyCode);";
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.AddWithValue("@ProductId", sellerproductdata.ProductId);
+                    cmd.Parameters.AddWithValue("@UserId", sellerproductdata.UserId);
+                    cmd.Parameters.AddWithValue("@Price", sellerproductdata.Price);
+                    cmd.Parameters.AddWithValue("@DiscountAmount", sellerproductdata.DiscountAmount ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DiscountPct", sellerproductdata.DiscountPct ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@EffectivateDate", sellerproductdata.EffectivateDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@EndDate", sellerproductdata.EndDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ImagePath", ImagePath);
+                    cmd.Parameters.AddWithValue("@Status", "Pending");
+                    cmd.Parameters.AddWithValue("@IsActive", 1);
+                    cmd.Parameters.AddWithValue("@TotalPrice", sellerproductdata.TotalPrice);
+                    cmd.Parameters.AddWithValue("@CompanyCode", sellerproductdata.CompanyCode);
+
+
+                    cmd.Parameters.AddWithValue("@AddedBy", sellerproductdata.AddedBy);
+                    cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@AddedPC", sellerproductdata.AddedPC);
+
+                    await con.OpenAsync();
+                    int res = await cmd.ExecuteNonQueryAsync();
+                    await con.CloseAsync();
+                    if (res > 0)
+                    {
+                        return Ok(new { message = "SellerProductPriceAndOffer Added Successfully." });
+                    }
+                    else
+                    {
+                        return BadRequest(new { message = "SellerProductPriceAndOffer Add Unsuccessfull." });
+                    }
+                }
+
+
+                
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
     }

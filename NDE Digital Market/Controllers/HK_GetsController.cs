@@ -41,7 +41,7 @@ namespace NDE_Digital_Market.Controllers
             List<PaymentMethodModel> res = await _HKGets.BankNameGetAsync(preferredPM);
             if (res.Count > 0)
             {
-                return Ok(new { message = res });
+                return Ok(res);
             }
             else
             {
