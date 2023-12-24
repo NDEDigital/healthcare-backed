@@ -184,7 +184,7 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-        [HttpPost("InsertOrderDate")]
+        [HttpPost("InsertOrderData")]
         public async Task<IActionResult> InsertOrderDateAsync(OrderMasterDto orderdata)
         {
             try
