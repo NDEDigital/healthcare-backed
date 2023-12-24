@@ -146,7 +146,7 @@ namespace NDE_Digital_Market.Controllers
 
             }
             else
-             query = @"SELECT * FROM ProductGroups WHERE DateAdded=GETDATE() ORDER BY ProductGroupID  DESC";
+             query = @"SELECT * FROM ProductGroups WHERE CONVERT(DATE, DateAdded) = CONVERT(DATE, GETDATE()) ORDER BY ProductGroupID  DESC";
             {
 
             }
