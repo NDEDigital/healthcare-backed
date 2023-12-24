@@ -300,8 +300,8 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-        [HttpGet("GetOrderBaseOnStatus")]
-        public async Task<IActionResult> GetOrderBaseOnStatusAsync(string? status)
+        [HttpGet("GetOrderMasterData")]
+        public async Task<IActionResult> GetOrderMasterData(string? status)
         {
             //string DecryptId = CommonServices.DecryptPassword(companyCode);
             var products = new List<OrderDataBaseOnStatusDto>();
@@ -310,7 +310,7 @@ namespace NDE_Digital_Market.Controllers
             {
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    using (var command = new SqlCommand("OrderApprovedStatus", connection))
+                    using (var command = new SqlCommand("GetOrderMasterByStatus", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         if(status != null)
@@ -355,13 +355,71 @@ namespace NDE_Digital_Market.Controllers
                 // Log the exception here
                 return StatusCode(500, "An error occurred while retrieving products: " + ex.Message);
             }
-
-
-            return Ok();
         }
+        [HttpGet("GetOrderDetailData")]
+        public async Task<IActionResult> GetOrderDetailData(int? OrderMasterId, string? status = null)
+        {
+            var orderDetails = new List<OrderDetailStatusDto>();
 
+            try
+            {
+                using (var connection = new SqlConnection(_healthCareConnection))
+                {
+                    using (var command = new SqlCommand("GetOrderDetailStatus", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        if (status != null)
+                        {
+                            command.Parameters.Add(new SqlParameter("@Status", status));
+                        }
+                        command.Parameters.Add(new SqlParameter("@OrderMasterId", OrderMasterId));
 
+                        await connection.OpenAsync();
 
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var orderDetail = new OrderDetailStatusDto();
+
+                                orderDetail.OrderDetailId = reader.IsDBNull(reader.GetOrdinal("OrderDetailId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("OrderDetailId"));
+                                orderDetail.OrderMasterId = reader.IsDBNull(reader.GetOrdinal("OrderMasterId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("OrderMasterId"));
+                                orderDetail.UserId = reader.IsDBNull(reader.GetOrdinal("UserId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("UserId"));
+                                orderDetail.ProductId = reader.IsDBNull(reader.GetOrdinal("ProductId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("ProductId"));
+                                orderDetail.ProductGroupCode = reader.IsDBNull(reader.GetOrdinal("ProductGroupCode")) ? null : reader.GetString(reader.GetOrdinal("ProductGroupCode"));
+                                orderDetail.FullName = reader.IsDBNull(reader.GetOrdinal("FullName")) ? null : reader.GetString(reader.GetOrdinal("FullName"));
+                                orderDetail.ProductName = reader.IsDBNull(reader.GetOrdinal("ProductName")) ? null : reader.GetString(reader.GetOrdinal("ProductName"));
+                                orderDetail.Specification = reader.IsDBNull(reader.GetOrdinal("Specification")) ? null : reader.GetString(reader.GetOrdinal("Specification"));
+                                orderDetail.Unit = reader.IsDBNull(reader.GetOrdinal("Unit")) ? null : reader.GetString(reader.GetOrdinal("Unit"));
+                                orderDetail.Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status"));
+                                orderDetail.Qty = reader.IsDBNull(reader.GetOrdinal("Qty")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Qty"));
+                                orderDetail.UnitId = reader.IsDBNull(reader.GetOrdinal("UnitId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("UnitId"));
+                                orderDetail.DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("DiscountAmount"));
+                                orderDetail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("Price"));
+                                orderDetail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                                orderDetail.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
+                                orderDetail.DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("DiscountPct"));
+                                orderDetail.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+
+                                orderDetails.Add(orderDetail);
+                            }
+                        }
+                    }
+                }
+
+                if (orderDetails.Count == 0)
+                {
+                    return NotFound(new { message = "No Order details found for the given parameters." });
+                }
+
+                return Ok(orderDetails);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return StatusCode(500, "An error occurred while retrieving order details: " + ex.Message);
+            }
+        }
 
 
 
