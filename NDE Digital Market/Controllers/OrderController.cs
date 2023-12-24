@@ -25,6 +25,7 @@ namespace NDE_Digital_Market.Controllers
         private readonly IConfiguration configuration;
         private readonly SqlConnection con;
 
+        private readonly string _healthCareConnection;
         public OrderController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
@@ -35,6 +36,7 @@ namespace NDE_Digital_Market.Controllers
             configuration = config;
             con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
 
+            _healthCareConnection = config.GetConnectionString("HealthCare");
         }
 
         //transaction: if an exception occurs during the insertion process, the transaction is rolled back to maintain data consistency.
@@ -291,14 +293,6 @@ namespace NDE_Digital_Market.Controllers
 
             return Ok(new { message = "Order Details data Inserted Successfully." });
         }
-
-
-
-
-
-
-
-
 
 
 
