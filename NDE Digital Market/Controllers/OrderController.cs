@@ -343,10 +343,10 @@ namespace NDE_Digital_Market.Controllers
                     }
                 }
 
-                if (products.Count == 0)
-                {
-                    return NotFound(new { message = "No Order found for the given Status." });
-                }
+                //if (products.Count == 0)
+                //{
+                //    return NotFound(new { message = "No Order found for the given Status." });
+                //}
 
                 return Ok(products);
             }
@@ -407,10 +407,10 @@ namespace NDE_Digital_Market.Controllers
                     }
                 }
 
-                if (orderDetails.Count == 0)
-                {
-                    return NotFound(new { message = "No Order details found for the given parameters." });
-                }
+                //if (orderDetails.Count == 0)
+                //{
+                //    return NotFound(new { message = "No Order details found for the given parameters." });
+                //}
 
                 return Ok(orderDetails);
             }
