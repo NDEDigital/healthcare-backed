@@ -821,32 +821,31 @@ namespace NDE_Digital_Market.Controllers
 
 
         //================================== Added By Rey ==============================
-        //  getOrderUserInfo
-        //[HttpGet("getOrderUserInfo")]
-        //public IActionResult getUserInfo(string UserId)
-        //{
-        //    UserModel user = new UserModel();
-        //    SqlConnection con = new SqlConnection(_he);
-        //    SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", con);
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.Parameters.AddWithValue("@UserId", UserId);
-        //    con.Open();
-        //    SqlDataReader reader = cmd.ExecuteReader();
-        //    if (reader.Read())
-        //    {
-        //        user.FullName = reader["FullName"].ToString();
-        //        user.PhoneNumber = reader["PhoneNumber"].ToString();
-        //        user.Email = reader["Email"].ToString();
-        //        user.Address = reader["Address"].ToString();
-        //        con.Close();
-        //        return Ok(new { message = "GET single data successful", user });
-        //    }
-        //    else
-        //    {
-        //        con.Close();
-        //        return BadRequest(new { message = "NO data Available" });
-        //    }
-        //}
+        [HttpGet("getOrderUserInfo")]
+        public IActionResult getUserInfo(string UserId)
+        {
+            UserModel user = new UserModel();
+            SqlConnection con = new SqlConnection(_healthCareConnection);
+            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", con);
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@UserId", UserId);
+            con.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                user.FullName = reader["FullName"].ToString();
+                user.PhoneNumber = reader["PhoneNumber"].ToString();
+                user.Email = reader["Email"].ToString();
+                user.Address = reader["Address"].ToString();
+                con.Close();
+                return Ok(new { message = "GET single data successful", user });
+            }
+            else
+            {
+                con.Close();
+                return BadRequest(new { message = "NO data Available" });
+            }
+        }
 
         //  getOrdersForSeller
         //[HttpGet]
