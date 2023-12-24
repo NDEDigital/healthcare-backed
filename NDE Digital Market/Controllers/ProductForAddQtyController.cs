@@ -29,9 +29,9 @@ namespace NDE_Digital_Market.Controllers
             foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }
 
-
-        [HttpGet("GetProductForAddQtyByUserId/{companyCode}")]
-        public async Task<IActionResult> GetProductForAddQtyByUserId(string companyCode)
+ 
+        [HttpGet("GetProductForAddQtyByUserId/{UserId}")]
+        public async Task<IActionResult> GetProductForAddQtyByUserId(int UserId)
         {
             //string DecryptId = CommonServices.DecryptPassword(companyCode);
             var products = new List<SellerPoductListModel>();
@@ -40,11 +40,10 @@ namespace NDE_Digital_Market.Controllers
             {
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    using (var command = new SqlCommand("GetProductForAddQtyByCompanyCode", connection))
+                    using (var command = new SqlCommand("GetProductForAddQtyByUserId", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.Add(new SqlParameter("@CompanyCode", companyCode));
-
+                        command.Parameters.Add(new SqlParameter("@UserId", UserId));
                         await connection.OpenAsync();
 
                         using (var reader = await command.ExecuteReaderAsync())
@@ -57,7 +56,8 @@ namespace NDE_Digital_Market.Controllers
                                     ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
                                     ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupID")),
                                     Specification = reader.IsDBNull(reader.GetOrdinal("Specification")) ? null : reader.GetString(reader.GetOrdinal("Specification")),
-                                    UnitId = reader.IsDBNull(reader.GetOrdinal("UnitId")) ? null : reader.GetString(reader.GetOrdinal("UnitId")),
+                                    UnitId = reader.IsDBNull(reader.GetOrdinal("UnitId")) ? 0 : reader.GetInt32(reader.GetOrdinal("UnitId")),
+
                                     Unit = reader.IsDBNull(reader.GetOrdinal("Unit")) ? null : reader.GetString(reader.GetOrdinal("Unit")),
                                     Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Price")),
                                     AvailableQty = reader.IsDBNull(reader.GetOrdinal("AvailableQty")) ? 0 : reader.GetDecimal(reader.GetOrdinal("AvailableQty"))
