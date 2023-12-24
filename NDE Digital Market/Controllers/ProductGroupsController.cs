@@ -98,6 +98,9 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
+
+
+
         [HttpGet]
         [Route("GetProductGroupsList")]
         public async Task<List<ProductGroupsModel>> GetProductGroupsListAsync()
@@ -120,6 +123,53 @@ namespace NDE_Digital_Market.Controllers
                         modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
                         modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
                         modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+
+                        lst.Add(modelObj);
+                    }
+                }
+            }
+
+
+            return lst;
+        } 
+        [HttpGet]
+        [Route("GetProductGroupsListByStatus")]
+        public async Task<List<ProductGroupByStatusDTO>> GetProductGroupsListByStatus( Int32? status=null)
+        {
+            List<ProductGroupByStatusDTO> lst = new List<ProductGroupByStatusDTO>();
+            await con.OpenAsync();
+
+            string query = "";
+            if (status != null)
+            {
+                query = @"SELECT * FROM ProductGroups WHERE IsActive= @IsActive ORDER BY ProductGroupID  DESC;";
+
+            }
+            else
+             query = @"SELECT * FROM ProductGroups WHERE DateAdded=GETDATE() ORDER BY ProductGroupID  DESC";
+            {
+
+            }
+
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                if (status != null)
+                {
+                    cmd.Parameters.Add(new SqlParameter("@IsActive", status));
+
+                }
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        ProductGroupByStatusDTO modelObj = new ProductGroupByStatusDTO();
+                        modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                        modelObj.ProductGroupCode = reader["ProductGroupCode"].ToString();
+                        modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+                        modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
+                        modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
+                        modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                        modelObj.DateAdded = reader.IsDBNull(reader.GetOrdinal("DateAdded")) ? (DateTime?)null : (DateTime?)reader["DateAdded"];
 
                         lst.Add(modelObj);
                     }
