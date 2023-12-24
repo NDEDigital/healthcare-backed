@@ -297,171 +297,242 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-        [HttpPost, Authorize(Roles = "admin")]
-       // [HttpPost ]
-        [Route("GetOrderDataByDate/{pageNumber}/{pageSize}/{status}/{searchby}/{searchValue}")]
-        public IActionResult GetDataByDate(int pageNumber, int pageSize, string status, string searchby, string searchValue, [FromForm] string? fromDate = null, [FromForm] string? toDate = null)
+
+
+
+        [HttpGet("GetOrderBaseOnStatus")]
+        public async Task<IActionResult> GetOrderBaseOnStatusAsync(string? status)
         {
+            //string DecryptId = CommonServices.DecryptPassword(companyCode);
+            var products = new List<OrderDataBaseOnStatusDto>();
 
-            int PendingCount = 0, ApprovedCount = 0, DeliveredCount = 0, ReturnedCount = 0, CancelledCount = 0, TotalRowCount = 0 , ToReturnCount = 0;
-            using SqlConnection con = new SqlConnection(_prominentConnection);
-            con.Open();
-            string condition = "";
-
-            if (status != "All")
+            try
             {
-                condition = " WHERE Status = @status";
-            }
-
-            if (searchValue != "All")
-            {
-                if (!string.IsNullOrEmpty(condition))
+                using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    condition += " AND";
-                }
-                else
-                {
-                    condition = " WHERE";
-                }
-
-                if (searchby == "OrderNo")
-                {
-                    condition += " OrderNo LIKE @searchValue";
-                }
-                else if (searchby == "TotalPrice")
-                {
-                    condition += " TotalPrice LIKE @searchValue";
-                }
-                else if (searchby == "OrderDate")
-                {
-                    condition += " OrderDate LIKE @searchValue";
-                }
-                else if (searchby == "Status")
-                {
-                    condition += " Status LIKE @searchValue";
-                }
-            }
-
-            if (!string.IsNullOrEmpty(fromDate))
-            {
-                if (!string.IsNullOrEmpty(condition))
-                {
-                    condition += " AND";
-                }
-                else
-                {
-                    condition = " WHERE";
-                }
-
-                condition += " CONVERT(date, TRY_CONVERT(datetime, REPLACE([OrderDate], ',', ''), 101)) BETWEEN @FromDate AND @ToDate";
-            }
-
-            string query = $@"
-        DECLARE @TotalRow AS INT;
-        SET @TotalRow = (SELECT COUNT(*) FROM  OrderMaster);
-
-        SELECT 
-            @TotalRow AS TotalRowCount,
-            (SELECT COUNT(*) FROM OrderMaster WHERE Status = 'Pending') AS PendingCount,
-            (SELECT COUNT(*) FROM OrderMaster WHERE Status = 'Approved') AS ApprovedCount,
-            (SELECT COUNT(*) FROM  OrderDetails WHERE Status = 'Returned') AS ReturnedCount,
-    (SELECT COUNT(*) FROM  OrderDetails WHERE Status = 'to Return') AS ToReturnCount,
-            (SELECT COUNT(*) FROM  OrderMaster WHERE Status = 'Cancelled') AS CancelledCount,
-            (SELECT COUNT(*) FROM  OrderMaster WHERE Status = 'Delivered') AS DeliveredCount
- 
-        FROM  OrderMaster;
-
-        SELECT 
-            OrderMasterId, 
-            OrderNo, 
-            OrderDate, 
-            Address, 
-            PaymentMethod, 
-            NumberOfItem, 
-            TotalPrice, 
-            Status,
-            (SELECT COUNT(*) FROM  OrderMaster {condition}) AS TotalCount
-        FROM  OrderMaster {condition}
-        ORDER BY  OrderNo DESC
-        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            if (!string.IsNullOrEmpty(fromDate))
-            {
-                cmd.Parameters.AddWithValue("@FromDate", fromDate);
-                cmd.Parameters.AddWithValue("@ToDate", toDate);
-            }
-
-            cmd.Parameters.AddWithValue("@PageSize", pageSize);
-            cmd.Parameters.AddWithValue("@Offset", (pageNumber - 1) * pageSize);
-
-            if (status != "All")
-            {
-                cmd.Parameters.AddWithValue("@status", status);
-            }
-
-            if (!string.IsNullOrEmpty(searchValue))
-            {
-                cmd.Parameters.AddWithValue("@searchValue", "%" + searchValue + "%");
-            }
-
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataSet ds = new DataSet();
-            adapter.Fill(ds);
-
-            // Check if the dataset contains the tables you need
-            if (ds.Tables.Count >= 1)
-            {
-                DataTable dataTable1st = ds.Tables[0]; // Get the 1st table from the dataset
-                DataTable dataTable = ds.Tables[1]; // Get the 2nd table from the dataset
-                foreach (DataRow row in dataTable1st.Rows)
-                {
-                    PendingCount = int.Parse(row["PendingCount"].ToString());
-                    ApprovedCount = int.Parse(row["ApprovedCount"].ToString());
-                    DeliveredCount = int.Parse(row["DeliveredCount"].ToString());
-                    ReturnedCount = int.Parse(row["ReturnedCount"].ToString());
-                    TotalRowCount = int.Parse(row["TotalRowCount"].ToString());
-                    CancelledCount = int.Parse(row["CancelledCount"].ToString());
-                    ToReturnCount = int.Parse(row["ToReturnCount"].ToString());
-                    // Other status counts...
-                }
-                List<AdminOrderMaster> ordersData = new List<AdminOrderMaster>();
-                foreach (DataRow row in dataTable.Rows)
-                {
-                    AdminOrderMaster modelObj = new AdminOrderMaster();
-                    modelObj.OrderMasterId = row["OrderMasterId"].ToString();
-                    modelObj.OrderNo = row["OrderNo"].ToString();
-                    modelObj.OrderDate = row["OrderDate"].ToString();
-                    modelObj.Address = row["Address"].ToString();
-                    modelObj.PaymentMethod = row["PaymentMethod"].ToString();
-                    modelObj.NumberOfItem = row["NumberOfItem"].ToString();
-                    modelObj.TotalPrice = row["TotalPrice"].ToString();
-                    modelObj.Status = row["Status"].ToString();
-                    modelObj.TotalRowsCount = int.Parse(row["TotalCount"].ToString());
-                    // Add other properties here...
-                    ordersData.Add(modelObj);
-                }
-                // Create an anonymous object to hold the data in the desired format
-                var result = new
-                {
-                    statusCount = new
+                    using (var command = new SqlCommand("OrderApprovedStatus", connection))
                     {
-                        PendingCount,
-                        ApprovedCount,
-                        CancelledCount,
-                        ReturnedCount,
-                        DeliveredCount,
-                        TotalRowCount,
-                        ToReturnCount
-                    },
-                    ordersData
-                };
-                return Ok(result);
+                        command.CommandType = CommandType.StoredProcedure;
+                        if(status != null)
+                        {
+                            command.Parameters.Add(new SqlParameter("@Status", status));
+                        }
+
+                        await connection.OpenAsync();
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var product = new OrderDataBaseOnStatusDto();
+
+                                product.OrderMasterId = Convert.ToInt32(reader["OrderMasterId"]);
+                                product.OrderNo = reader["OrderNo"].ToString();
+                                product.OrderDate = Convert.ToDateTime(reader["OrderDate"]);
+                                product.Address = reader["Address"].ToString();
+                                product.UserId = Convert.ToInt32(reader["UserId"]);
+                                product.PaymentMethod = reader["PaymentMethod"].ToString();
+                                product.NumberOfItem = Convert.ToInt32(reader["NumberOfItem"]);
+                                product.TotalPrice = Convert.ToInt32(reader["TotalPrice"]);
+                                product.PhoneNumber = reader["PhoneNumber"].ToString();
+                                product.DeliveryCharge = Convert.ToDecimal(reader["DeliveryCharge"]);
+                                product.Status = reader["Status"].ToString();
+                                products.Add(product);
+                            }
+                        }
+                    }
+                }
+
+                if (products.Count == 0)
+                {
+                    return NotFound(new { message = "No Order found for the given Status." });
+                }
+
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return StatusCode(500, "An error occurred while retrieving products: " + ex.Message);
             }
 
-            return null;
+
+            return Ok();
         }
+
+
+
+
+
+
+        //    [HttpPost, Authorize(Roles = "admin")]
+        //   // [HttpPost ]
+        //    [Route("GetOrderDataByDate/{pageNumber}/{pageSize}/{status}/{searchby}/{searchValue}")]
+        //    public IActionResult GetDataByDate(int pageNumber, int pageSize, string status, string searchby, string searchValue, [FromForm] string? fromDate = null, [FromForm] string? toDate = null)
+        //    {
+
+        //        int PendingCount = 0, ApprovedCount = 0, DeliveredCount = 0, ReturnedCount = 0, CancelledCount = 0, TotalRowCount = 0 , ToReturnCount = 0;
+        //        using SqlConnection con = new SqlConnection(_prominentConnection);
+        //        con.Open();
+        //        string condition = "";
+
+        //        if (status != "All")
+        //        {
+        //            condition = " WHERE Status = @status";
+        //        }
+
+        //        if (searchValue != "All")
+        //        {
+        //            if (!string.IsNullOrEmpty(condition))
+        //            {
+        //                condition += " AND";
+        //            }
+        //            else
+        //            {
+        //                condition = " WHERE";
+        //            }
+
+        //            if (searchby == "OrderNo")
+        //            {
+        //                condition += " OrderNo LIKE @searchValue";
+        //            }
+        //            else if (searchby == "TotalPrice")
+        //            {
+        //                condition += " TotalPrice LIKE @searchValue";
+        //            }
+        //            else if (searchby == "OrderDate")
+        //            {
+        //                condition += " OrderDate LIKE @searchValue";
+        //            }
+        //            else if (searchby == "Status")
+        //            {
+        //                condition += " Status LIKE @searchValue";
+        //            }
+        //        }
+
+        //        if (!string.IsNullOrEmpty(fromDate))
+        //        {
+        //            if (!string.IsNullOrEmpty(condition))
+        //            {
+        //                condition += " AND";
+        //            }
+        //            else
+        //            {
+        //                condition = " WHERE";
+        //            }
+
+        //            condition += " CONVERT(date, TRY_CONVERT(datetime, REPLACE([OrderDate], ',', ''), 101)) BETWEEN @FromDate AND @ToDate";
+        //        }
+
+        //        string query = $@"
+        //    DECLARE @TotalRow AS INT;
+        //    SET @TotalRow = (SELECT COUNT(*) FROM  OrderMaster);
+
+        //    SELECT 
+        //        @TotalRow AS TotalRowCount,
+        //        (SELECT COUNT(*) FROM OrderMaster WHERE Status = 'Pending') AS PendingCount,
+        //        (SELECT COUNT(*) FROM OrderMaster WHERE Status = 'Approved') AS ApprovedCount,
+        //        (SELECT COUNT(*) FROM  OrderDetails WHERE Status = 'Returned') AS ReturnedCount,
+        //(SELECT COUNT(*) FROM  OrderDetails WHERE Status = 'to Return') AS ToReturnCount,
+        //        (SELECT COUNT(*) FROM  OrderMaster WHERE Status = 'Cancelled') AS CancelledCount,
+        //        (SELECT COUNT(*) FROM  OrderMaster WHERE Status = 'Delivered') AS DeliveredCount
+
+        //    FROM  OrderMaster;
+
+        //    SELECT 
+        //        OrderMasterId, 
+        //        OrderNo, 
+        //        OrderDate, 
+        //        Address, 
+        //        PaymentMethod, 
+        //        NumberOfItem, 
+        //        TotalPrice, 
+        //        Status,
+        //        (SELECT COUNT(*) FROM  OrderMaster {condition}) AS TotalCount
+        //    FROM  OrderMaster {condition}
+        //    ORDER BY  OrderNo DESC
+        //    OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
+
+        //        SqlCommand cmd = new SqlCommand(query, con);
+
+        //        if (!string.IsNullOrEmpty(fromDate))
+        //        {
+        //            cmd.Parameters.AddWithValue("@FromDate", fromDate);
+        //            cmd.Parameters.AddWithValue("@ToDate", toDate);
+        //        }
+
+        //        cmd.Parameters.AddWithValue("@PageSize", pageSize);
+        //        cmd.Parameters.AddWithValue("@Offset", (pageNumber - 1) * pageSize);
+
+        //        if (status != "All")
+        //        {
+        //            cmd.Parameters.AddWithValue("@status", status);
+        //        }
+
+        //        if (!string.IsNullOrEmpty(searchValue))
+        //        {
+        //            cmd.Parameters.AddWithValue("@searchValue", "%" + searchValue + "%");
+        //        }
+
+        //        SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+        //        DataSet ds = new DataSet();
+        //        adapter.Fill(ds);
+
+        //        // Check if the dataset contains the tables you need
+        //        if (ds.Tables.Count >= 1)
+        //        {
+        //            DataTable dataTable1st = ds.Tables[0]; // Get the 1st table from the dataset
+        //            DataTable dataTable = ds.Tables[1]; // Get the 2nd table from the dataset
+        //            foreach (DataRow row in dataTable1st.Rows)
+        //            {
+        //                PendingCount = int.Parse(row["PendingCount"].ToString());
+        //                ApprovedCount = int.Parse(row["ApprovedCount"].ToString());
+        //                DeliveredCount = int.Parse(row["DeliveredCount"].ToString());
+        //                ReturnedCount = int.Parse(row["ReturnedCount"].ToString());
+        //                TotalRowCount = int.Parse(row["TotalRowCount"].ToString());
+        //                CancelledCount = int.Parse(row["CancelledCount"].ToString());
+        //                ToReturnCount = int.Parse(row["ToReturnCount"].ToString());
+        //                // Other status counts...
+        //            }
+        //            List<AdminOrderMaster> ordersData = new List<AdminOrderMaster>();
+        //            foreach (DataRow row in dataTable.Rows)
+        //            {
+        //                AdminOrderMaster modelObj = new AdminOrderMaster();
+        //                modelObj.OrderMasterId = row["OrderMasterId"].ToString();
+        //                modelObj.OrderNo = row["OrderNo"].ToString();
+        //                modelObj.OrderDate = row["OrderDate"].ToString();
+        //                modelObj.Address = row["Address"].ToString();
+        //                modelObj.PaymentMethod = row["PaymentMethod"].ToString();
+        //                modelObj.NumberOfItem = row["NumberOfItem"].ToString();
+        //                modelObj.TotalPrice = row["TotalPrice"].ToString();
+        //                modelObj.Status = row["Status"].ToString();
+        //                modelObj.TotalRowsCount = int.Parse(row["TotalCount"].ToString());
+        //                // Add other properties here...
+        //                ordersData.Add(modelObj);
+        //            }
+        //            // Create an anonymous object to hold the data in the desired format
+        //            var result = new
+        //            {
+        //                statusCount = new
+        //                {
+        //                    PendingCount,
+        //                    ApprovedCount,
+        //                    CancelledCount,
+        //                    ReturnedCount,
+        //                    DeliveredCount,
+        //                    TotalRowCount,
+        //                    ToReturnCount
+        //                },
+        //                ordersData
+        //            };
+        //            return Ok(result);
+        //        }
+
+        //        return null;
+        //    }
+
+
+
 
 
 
