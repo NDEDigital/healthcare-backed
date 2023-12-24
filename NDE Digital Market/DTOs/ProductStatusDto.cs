@@ -8,7 +8,7 @@
         public string? FullName { get; set; }
         public decimal? Price { get; set; }
         public decimal? DiscountAmount { get; set; }
-        public string? DiscountPct { get; set; }
+        public decimal? DiscountPct { get; set; }
         public DateTime? EffectivateDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? Status { get; set; }

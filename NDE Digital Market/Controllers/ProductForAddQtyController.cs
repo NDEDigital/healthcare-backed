@@ -241,7 +241,7 @@ namespace NDE_Digital_Market.Controllers
                     string query = @"INSERT INTO SellerProductPriceAndOffer(ProductId, UserId, Price,DiscountAmount,DiscountPct,EffectivateDate,
                     EndDate,ImagePath,Status,IsActive, AddedDate,AddedBy,AddedPC,TotalPrice,CompanyCode) 
                     VALUES (@ProductId,@UserId,@Price,@DiscountAmount,@DiscountPct,@EffectivateDate,@EndDate, @ImagePath,
-                    @Status, @IsActive, @AddedDate,@AddedBy, @AddedPC,@TotalPrice,  (SELECT UPPER(CompanyCode) FROM UserRegistration WHERE UserId = @UserId));";
+                    @Status, @IsActive, @AddedDate,@AddedBy, @AddedPC,@TotalPrice, (SELECT UPPER(CompanyCode) FROM UserRegistration WHERE UserId = @UserId));";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@ProductId", sellerproductdata.ProductId);
@@ -256,7 +256,6 @@ namespace NDE_Digital_Market.Controllers
                     cmd.Parameters.AddWithValue("@IsActive", 1);
                     cmd.Parameters.AddWithValue("@TotalPrice", sellerproductdata.TotalPrice);
                     //cmd.Parameters.AddWithValue("@CompanyCode", sellerproductdata.CompanyCode);
-
 
                     cmd.Parameters.AddWithValue("@AddedBy", sellerproductdata.AddedBy);
                     cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
