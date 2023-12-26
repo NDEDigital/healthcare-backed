@@ -259,7 +259,7 @@ namespace NDE_Digital_Market.Controllers
                                 orderDetail.OrderMasterId = reader.IsDBNull(reader.GetOrdinal("OrderMasterId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("OrderMasterId"));
                                 orderDetail.UserId = reader.IsDBNull(reader.GetOrdinal("UserId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("UserId"));
                                 orderDetail.ProductId = reader.IsDBNull(reader.GetOrdinal("ProductId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("ProductId"));
-                                orderDetail.ProductGroupCode = reader.IsDBNull(reader.GetOrdinal("ProductGroupCode")) ? null : reader.GetString(reader.GetOrdinal("ProductGroupCode"));
+                               // orderDetail.ProductGroupCode = reader.IsDBNull(reader.GetOrdinal("ProductGroupCode")) ? null : reader.GetString(reader.GetOrdinal("ProductGroupCode"));
                                 orderDetail.FullName = reader.IsDBNull(reader.GetOrdinal("FullName")) ? null : reader.GetString(reader.GetOrdinal("FullName"));
                                 orderDetail.ProductName = reader.IsDBNull(reader.GetOrdinal("ProductName")) ? null : reader.GetString(reader.GetOrdinal("ProductName"));
                                 orderDetail.Specification = reader.IsDBNull(reader.GetOrdinal("Specification")) ? null : reader.GetString(reader.GetOrdinal("Specification"));
@@ -519,59 +519,6 @@ namespace NDE_Digital_Market.Controllers
         //        throw new Exception($"Error updating order details status: {ex.Message}");
         //    }
         //}
-
-        [HttpPut("UpdateSellerOrderDetailsStatus")]
-        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status)
-        {
-
-            try
-            {
-                using (SqlConnection con = new SqlConnection(_healthCareConnection))
-                {
-                    if (!string.IsNullOrEmpty(orderdetailsIds))
-                    {
-                        string orderdetailsIdString = "''";
-
-                        List<int> DetailsIds = orderdetailsIds.Split(',').Select(int.Parse).ToList();
-                        orderdetailsIdString = string.Join(",", DetailsIds);
-                        string masterStatusChangeQuery = "UPDATE OrderDetails SET Status = @value  WHERE OrderDetailId IN (" + orderdetailsIdString + ") ;";
-
-                        SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con);
-                        //cmd1.Parameters.AddWithValue("@orderMasterId", orderMasterId);
-                        cmd1.Parameters.AddWithValue("@value", status);
-                        await con.OpenAsync();
-                        int masteRES = await cmd1.ExecuteNonQueryAsync();
-                        await con.CloseAsync();
-                        if (masteRES > 0)
-                        {
-
-                            return Ok(new { message = "Order Status Changed Successfully." });
-                        }
-                        else
-                        {
-                            return BadRequest(new { message = "Order Details Status is not Changed." });
-                        }
-
-                    }
-                    else
-                    {
-                        return BadRequest(new { message = "Send A Valid OrderDetail Id." });
-
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-
-                return BadRequest(new { message = ex.Message });
-            }
-
-        }
-
-
-
-
 
 
         [HttpPost,Authorize(Roles = "admin")]
