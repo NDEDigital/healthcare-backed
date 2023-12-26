@@ -14,8 +14,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json.Linq;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -30,8 +29,9 @@ namespace NDE_Digital_Market.Controllers
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
+            CommonServices commonServices = new CommonServices(configuration);
             con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
-            _healthCareConnection = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            _healthCareConnection = new SqlConnection(commonServices.HealthCareConnection);
            
         }
 
@@ -57,13 +57,11 @@ namespace NDE_Digital_Market.Controllers
 
         private async Task<int?> CompanyExistAsync(string CompanyCode)
         {
-            string query = @"SELECT CASE WHEN COUNT(*) < cr.MaxUser THEN 1 ELSE 0 END AS UserCount
-                     FROM UserRegistration UR
-                     JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
-                     WHERE UR.CompanyCode = CR.CompanyCode
-                        AND UR.IsActive = 1
-                        AND CR.CompanyCode = @CompanyCode
-                     GROUP BY CR.MaxUser";
+            string query = @"SELECT COALESCE(CASE WHEN COUNT(UR.CompanyCode) < CR.MaxUser THEN 1 ELSE 0 END, 0) AS UserCount
+FROM CompanyRegistration CR
+LEFT JOIN UserRegistration UR ON UR.CompanyCode = CR.CompanyCode AND UR.IsActive = 1
+WHERE CR.CompanyCode = @CompanyCode
+GROUP BY CR.MaxUser;";
 
             try
             {
@@ -96,18 +94,19 @@ namespace NDE_Digital_Market.Controllers
         [Route("CreateUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
-            bool companyExist = false;
+            int? companyExist = 0;
 
             if (!string.IsNullOrEmpty(user.CompanyCode))
             {
-                if (await CompanyExistAsync(user.CompanyCode)==null)
+                companyExist = await CompanyExistAsync(user.CompanyCode);
+                if (companyExist == null)
                 {
                     return BadRequest(new
                     {
                         message = "No Campany Found with this ID"
                     });
                 }
-                else if(await CompanyExistAsync(user.CompanyCode) == 0)
+                else if(companyExist == 0)
                 {
                     return BadRequest(new
                     {
@@ -136,26 +135,30 @@ namespace NDE_Digital_Market.Controllers
                 systemCode = cmdSP.ExecuteScalar()?.ToString();
                 await _healthCareConnection.CloseAsync();
             }
+            //SP END
 
-            if (companyExist == true)
+            if (companyExist == 1)
             {
                 string updateCompanyAdmin = @"
-                          UPDATE CompanyRegistration
-                            SET CompanyAdminCode = 'dsds'
-                            WHERE CompanyAdminCode IS NULL AND CompanyCode = @CompanyCode;
-                            ";
-                SqlCommand cmd1 = new SqlCommand(updateCompanyAdmin, _healthCareConnection);
-                cmd1.CommandType = CommandType.Text;
-                cmd1.Parameters.AddWithValue("@CompanyCode", user.CompanyCode);
+                      UPDATE CompanyRegistration
+                        SET CompanyAdminId = @CompanyAdminId
+                        WHERE CompanyAdminId IS NULL AND CompanyCode = @CompanyCode;
+                        ";
+                    SqlCommand cmd1 = new SqlCommand(updateCompanyAdmin, _healthCareConnection);
+                    cmd1.CommandType = CommandType.Text;
+                    cmd1.Parameters.AddWithValue("@CompanyCode", user.CompanyCode);
+                    cmd1.Parameters.AddWithValue("@CompanyAdminId", int.Parse(systemCode.Split('%')[0]));
 
-
+                    await _healthCareConnection.OpenAsync();
+                    int rowsAffected = cmd1.ExecuteNonQuery();
+                    await _healthCareConnection.CloseAsync();
             }
 
 
-            //SP END
+
 
             // Encrypt the Password
-            string encryptedPassword = CommonServices.EncryptPassword(user.Password);
+            //string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             createPasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             UserModel userModel = new UserModel();

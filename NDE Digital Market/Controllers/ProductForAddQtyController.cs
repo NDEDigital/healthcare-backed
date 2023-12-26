@@ -22,9 +22,9 @@ namespace NDE_Digital_Market.Controllers
         public ProductQuantityController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
-            _healthCareConnection = config.GetConnectionString("HealthCare");
+            _healthCareConnection = _commonServices.HealthCareConnection;
             configuration = config;
-            con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
+            con = new SqlConnection(_healthCareConnection);
             CommonServices commonServices = new CommonServices(configuration);
             foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }
@@ -90,29 +90,34 @@ namespace NDE_Digital_Market.Controllers
         [HttpPost("PortalReceivedPost")]
         public async Task<IActionResult> InsertPortalReceivedAsync(PortalReceivedMasterDto portaldata)
         {
+
+            // Start a transaction
+            SqlTransaction transaction = null;
             try
             {
                 string systemCode = string.Empty;
+                await con.OpenAsync();
+                transaction = con.BeginTransaction();
 
                 // Execute the stored procedure to generate the system code
-                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con);
+                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con, transaction);
                 {
                     cmdSP.CommandType = CommandType.StoredProcedure;
                     cmdSP.Parameters.AddWithValue("@TableName", "PortalReceivedMaster");
                     cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
                     cmdSP.Parameters.AddWithValue("@AddNumber", 1);
 
-                    await con.OpenAsync();
                     var tempSystem = await cmdSP.ExecuteScalarAsync();
                     systemCode = tempSystem?.ToString() ?? string.Empty;
-                    await con.CloseAsync();
                 }
 
                 int PortalReceivedId = int.Parse(systemCode.Split('%')[0]);
                 string PortalReceivedCode = systemCode.Split('%')[1];
                 //SP END
+                portaldata.PortalReceivedId = PortalReceivedId;
+                portaldata.PortalReceivedCode = PortalReceivedCode;
 
-                SqlCommand cmd = new SqlCommand("InsertPortalReceivedMaster", con);
+                SqlCommand cmd = new SqlCommand("InsertPortalReceivedMaster", con, transaction);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
                 cmd.Parameters.AddWithValue("@PortalReceivedCode", PortalReceivedCode);
@@ -134,34 +139,53 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@AddedPC", portaldata.AddedPC);
 
-                await con.OpenAsync();
                 int a = await cmd.ExecuteNonQueryAsync();
-                await con.CloseAsync();
+
                 if(a > 0)
                 {
-                    await InsertPortalReceivedAsync(PortalReceivedId, portaldata.PortalReceivedDetailslist);
+                    var detailsResult = await InsertPortalReceivedAsync(PortalReceivedId, portaldata.PortalReceivedDetailslist, transaction);
+                    if (detailsResult is BadRequestObjectResult)
+                    {
+                        throw new Exception((detailsResult as BadRequestObjectResult).Value.ToString());
+                    }
                 }
                 else
                 {
                     return BadRequest(new { message = "Portal Master data isn't Inserted Successfully." });
                 }
-                return Ok(new {message = "Portal data Inserted Successfully."});
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+                return Ok(portaldata);
             }
             catch (Exception ex)
             {
+                // If there is any error, rollback the transaction
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
                 return BadRequest(ex.Message);
+            }
+            finally
+            {
+                // Finally block to ensure the connection is always closed
+                if (con.State == ConnectionState.Open)
+                {
+                    await con.CloseAsync();
+                }
             }
         }
 
-        private async Task<IActionResult> InsertPortalReceivedAsync(int PortalReceivedId, List<PortalReceivedDetailsDto> PortalReceivedDetailsList)
+        private async Task<IActionResult> InsertPortalReceivedAsync(int PortalReceivedId, List<PortalReceivedDetailsDto> PortalReceivedDetailsList, SqlTransaction transaction)
         {
             try 
             {
                 for (int i = 0; i < PortalReceivedDetailsList.Count; i++)
                 {
+                    PortalReceivedDetailsList[i].PortalReceivedId = PortalReceivedId;
                     string query = "InsertPortalReceivedDetails";
                     //checking if user already exect for not.
-                    SqlCommand CheckCMD = new SqlCommand(query, con);
+                    SqlCommand CheckCMD = new SqlCommand(query, con, transaction);
                     CheckCMD.CommandType = CommandType.StoredProcedure;
 
                     CheckCMD.Parameters.Clear();
@@ -183,20 +207,16 @@ namespace NDE_Digital_Market.Controllers
                     //cmd.Parameters.AddWithValue("@UpdatedBy", "UpdatedBy");
                     //cmd.Parameters.AddWithValue("@UpdatedDate", (object)groups.UpdatedDate ?? DBNull.Value);
                     //cmd.Parameters.AddWithValue("@UpdatedPC", "Default UpdatedPC");
-                    con.Open();
-                    CheckCMD.ExecuteNonQuery();
-                    con.Close();
 
-
+                    await CheckCMD.ExecuteNonQueryAsync();
 
                 }
+                return Ok(new { message = "Portal Details data Inserted Successfully." });
             } 
             catch(Exception ex) 
             {
                 return BadRequest(ex.Message);
             }
-
-            return Ok(new { message = "Portal Details data Inserted Successfully." });
         }
 
 

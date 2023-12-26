@@ -4,6 +4,7 @@ using NDE_Digital_Market.Model;
 using NDE_Digital_Market.DTOs;
 using System.Data;
 using System.Data.SqlClient;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -15,8 +16,9 @@ namespace NDE_Digital_Market.Controllers
         private readonly SqlConnection con;
         public ProductGroupsController(IConfiguration configuration)
         {
+            CommonServices commonServices = new CommonServices(configuration);
             _configuration = configuration;
-            con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            con = new SqlConnection(commonServices.HealthCareConnection);
         }
 
         private async Task<Boolean> ProductGroupsNameCheck(string productgoodsname)

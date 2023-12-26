@@ -20,8 +20,9 @@ public class CompanyRegistration_DAL
     public CompanyRegistration_DAL(IConfiguration configuration)
     {
         _configuration = configuration;
-        connection = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
         CommonServices commonServices = new CommonServices(_configuration);
+        connection = new SqlConnection(commonServices.HealthCareConnection);
+       
         foldername = commonServices.FilesPath + "CompanyFiles";
     }
     public async Task<Boolean> CompanyExistAsync(CompanyDto companyDto)
@@ -140,7 +141,7 @@ public class CompanyRegistration_DAL
             company.CompanyCode = reader["CompanyCode"].ToString();
             company.CompanyName = reader["CompanyName"].ToString();
             company.Email = reader["Email"].ToString();
-            company.CompanyAdminCode = reader["CompanyAdminCode"].ToString();
+            company.CompanyAdminId = Convert.IsDBNull(reader["CompanyAdminId"]) ? (int?)null : Convert.ToInt32(reader["CompanyAdminId"]);
             company.CompanyImage = reader["CompanyImage"].ToString();
             company.CompanyFoundationDate = Convert.ToDateTime(reader["CompanyFoundationDate"]);
             company.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();

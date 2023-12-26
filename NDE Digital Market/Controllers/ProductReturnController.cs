@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
 
+
 namespace NDE_Digital_Market.Controllers
 {
     [Route("[controller]")]

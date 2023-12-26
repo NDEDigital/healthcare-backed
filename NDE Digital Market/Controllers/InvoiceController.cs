@@ -19,9 +19,10 @@ namespace NDE_Digital_Market.Controllers
         private readonly string connectionHealthCare;
         public InvoiceController(IConfiguration config)
         {
+            CommonServices commonServices = new CommonServices(config);
             _connectionSteel = config.GetConnectionString("DefaultConnection");
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
-            connectionHealthCare = config.GetConnectionString("HealthCare");
+            connectionHealthCare = commonServices.HealthCareConnection;
 
         }
 

@@ -5,7 +5,7 @@
         public string? CompanyCode { get; set; }
         public string? CompanyName { get; set; }
         public string? Email { get; set; }
-        public string? CompanyAdminCode { get; set; }
+        //public int? CompanyAdminId { get; set; }
         public IFormFile? CompanyImageFile { get; set; }
         //public string? CompanyImage { get; set; } // Assume byte[] for image data
         public DateTime? CompanyFoundationDate { get; set; } // Nullable for potentially missing values

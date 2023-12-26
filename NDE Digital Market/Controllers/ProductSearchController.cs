@@ -4,7 +4,7 @@ using NDE_Digital_Market.DTOs;
 using NDE_Digital_Market.Model;
 using System.Data;
 using System.Data.SqlClient;
-
+using NDE_Digital_Market.SharedServices;
 
 
 namespace NDE_Digital_Market.Controllers
@@ -20,9 +20,9 @@ namespace NDE_Digital_Market.Controllers
         public ProductSearchController(IConfiguration config)
         {
             _configuration = config;
-
+            CommonServices commonServices = new CommonServices(config);
             connectionDatabase = config.GetConnectionString("DigitalMarketConnection");
-            _healthCareConnection = _configuration.GetConnectionString("HealthCare");
+            _healthCareConnection = commonServices.HealthCareConnection;
 
         }
 
