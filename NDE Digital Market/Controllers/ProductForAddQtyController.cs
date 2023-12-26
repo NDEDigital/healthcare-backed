@@ -22,9 +22,9 @@ namespace NDE_Digital_Market.Controllers
         public ProductQuantityController(IConfiguration config)
         {
             _commonServices = new CommonServices(config);
-            _healthCareConnection = config.GetConnectionString("HealthCare");
+            _healthCareConnection = _commonServices.HealthCareConnection;
             configuration = config;
-            con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
+            con = new SqlConnection(_healthCareConnection);
             CommonServices commonServices = new CommonServices(configuration);
             foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }

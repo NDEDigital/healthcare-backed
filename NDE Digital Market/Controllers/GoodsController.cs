@@ -3,9 +3,7 @@ using NDE_Digital_Market.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
-using System.Web;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -18,7 +16,8 @@ namespace NDE_Digital_Market.Controllers
         private readonly string _healthCareConnection;
         public GoodsController(IConfiguration config)
         {
-            _healthCareConnection = config.GetConnectionString("HealthCare");
+            CommonServices commonServices = new CommonServices(config);
+            _healthCareConnection = commonServices.HealthCareConnection;
         }
 
         // ============ NavData ============================

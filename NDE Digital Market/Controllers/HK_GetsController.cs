@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NDE_Digital_Market.Services.HK_GetsServices;
 using NDE_Digital_Market.Model;
 using System.Data.SqlClient;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -16,9 +17,10 @@ namespace NDE_Digital_Market.Controllers
         private readonly IHK_Gets _HKGets;
         public HK_GetsController(IConfiguration configuration, IHK_Gets hK_Gets)
         {
+            CommonServices commonServices = new CommonServices(configuration);
             this._HKGets = hK_Gets;
             _configuration = configuration;
-            con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            con = new SqlConnection(commonServices.HealthCareConnection);
         }
 
         [HttpGet("PreferredPaymentMethods")]

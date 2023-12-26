@@ -34,9 +34,9 @@ namespace NDE_Digital_Market.Controllers
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
             _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
             configuration = config;
-            con = new SqlConnection(configuration.GetConnectionString("HealthCare"));
+            con = new SqlConnection(_commonServices.HealthCareConnection);
 
-            _healthCareConnection = config.GetConnectionString("HealthCare");
+            _healthCareConnection = _commonServices.HealthCareConnection;
         }
 
     
