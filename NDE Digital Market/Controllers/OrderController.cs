@@ -337,70 +337,188 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
-
+        //made by tushar
         // [HttpPut("AdminOrderUpdateStatus"), Authorize(Roles = "admin")]
         [HttpPut("AdminOrderUpdateStatus")]
-        public async Task<IActionResult> UpdateOrderStatusAsync(OrderMasterStatusUpdateDto orderMasterStatusUpdate)
+        public async Task<IActionResult> UpdateOrderStatusAsync(String orderMasterId, String? detailsCancelledId, string status)
         {
+            // Start a transaction
+            SqlTransaction transaction = null;
             try
             {
-                string orderMasterQuery = @"UPDATE OrderMaster SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId";
-                using (var connection = new SqlConnection(_healthCareConnection))
+                using SqlConnection con = new SqlConnection(_healthCareConnection);
+                await con.OpenAsync();
+                transaction = con.BeginTransaction();
+
+
+
+                if (!string.IsNullOrEmpty(orderMasterId))
                 {
-                    await connection.OpenAsync();
-                    using (SqlCommand orderMasterCommand = new SqlCommand(orderMasterQuery, connection))
+                    string MasterIdString = "''";
+
+                    List<int> MasterIds = orderMasterId.Split(',').Select(int.Parse).ToList();
+                    MasterIdString = string.Join(",", MasterIds);
+                    string masterStatusChangeQuery = "UPDATE OrderMaster SET Status = @value  WHERE OrderMasterId IN (" + MasterIdString + ") ;";
+
+                    SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con, transaction);
+                    //cmd1.Parameters.AddWithValue("@orderMasterId", orderMasterId);
+                    cmd1.Parameters.AddWithValue("@value", status);
+
+                    int masteRES = await cmd1.ExecuteNonQueryAsync();
+                    if(masteRES > 0)
                     {
-                        orderMasterCommand.Parameters.AddWithValue("@OrderMasterId", orderMasterStatusUpdate.OrderMasterId);
-                        orderMasterCommand.Parameters.AddWithValue("@Status", orderMasterStatusUpdate.Status);
-                        orderMasterCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
-                        orderMasterCommand.Parameters.AddWithValue("@UpdatedBy", orderMasterStatusUpdate.UpdatedBy);
-                        orderMasterCommand.Parameters.AddWithValue("@UpdatedPC", orderMasterStatusUpdate.UpdatedPC);
-                        int affectedRows = await orderMasterCommand.ExecuteNonQueryAsync();
-                        if (affectedRows > 0)
+                        string detailsStatusChangeQuery = "UPDATE OrderDetails SET Status = @value WHERE OrderMasterId  IN (" + MasterIdString + "); ";
+                        SqlCommand cmd2 = new SqlCommand(detailsStatusChangeQuery, con, transaction);
+                        cmd2.Parameters.AddWithValue("@value", status);
+
+                        int DetailRES = await cmd2.ExecuteNonQueryAsync();
+                        if (masteRES > 0)
                         {
-                            await UpdateOrderDetailsStatus(orderMasterStatusUpdate.OrderMasterId, orderMasterStatusUpdate.OrderDetailsStatusUpdatelist);
-                            return Ok(new { message = "Order status updated successfully." });
+
                         }
                         else
                         {
-                            return BadRequest(new { message = "Failed to update order status." });
+                            // If there is any error, rollback the transaction
+                            if (transaction != null)
+                            {
+                                transaction.Rollback();
+                            }
+                            return BadRequest(new { message = "Order Details Status is not Changed." });
                         }
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = $"An error occurred: {ex.Message}" });
-            }
-        }
-        private async Task UpdateOrderDetailsStatus(int OrderMasterId, List<OrderDetailsStatusUpdateDto> OrderDetailsStatusUpdatelist)
-        {
-            try
-            {
-                foreach (var orderDetailsUpdate in OrderDetailsStatusUpdatelist)
-                {
-                    string orderDetailsQuery = @"UPDATE OrderDetails SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId AND OrderDetailId = @OrderDetailId";
-                    using (var connection = new SqlConnection(_healthCareConnection))
+                    else
                     {
-                        await connection.OpenAsync();
-                        using (SqlCommand orderDetailsCommand = new SqlCommand(orderDetailsQuery, connection))
+                        // If there is any error, rollback the transaction
+                        if (transaction != null)
                         {
-                            orderDetailsCommand.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
-                            orderDetailsCommand.Parameters.AddWithValue("@OrderDetailId", orderDetailsUpdate.OrderDetailId);
-                            orderDetailsCommand.Parameters.AddWithValue("@Status", orderDetailsUpdate.Status);
-                            orderDetailsCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
-                            orderDetailsCommand.Parameters.AddWithValue("@UpdatedBy", orderDetailsUpdate.UpdatedBy);
-                            orderDetailsCommand.Parameters.AddWithValue("@UpdatedPC", orderDetailsUpdate.UpdatedPC);
-                            await orderDetailsCommand.ExecuteNonQueryAsync();
+                            transaction.Rollback();
                         }
+                        return BadRequest(new { message = "Order Master Status is not Changed." });
+                    }
+
+                }
+                else
+                {
+                    return BadRequest(new { message = "Send A Valid Order Id." });
+
+                }
+
+
+
+                string CancelledString = "''";
+                string detailsStatus = "Cancelled";
+                if (!string.IsNullOrEmpty(detailsCancelledId))
+                {
+                    List<int> CanncelledIds = detailsCancelledId.Split(',').Select(int.Parse).ToList();
+                    CancelledString = string.Join(",", CanncelledIds);
+                    string detailStatusChangeToCancelQuery = "UPDATE OrderDetails SET Status = 'Rejected' WHERE OrderDetailId IN (" + CancelledString + "); ";
+                    SqlCommand cmd3 = new SqlCommand(detailStatusChangeToCancelQuery, con, transaction);
+                    int cancelRES = await cmd3.ExecuteNonQueryAsync();
+                    if (cancelRES > 0)
+                    {
+
+                    }
+                    else
+                    {
+                        // If there is any error, rollback the transaction
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+                        return BadRequest(new { message = "Order Details Status cancel is not Inserted." });
                     }
                 }
+                else
+                {
+
+                }
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+                return Ok(new { message = "Order Status Changed Successfully." });
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                throw new Exception($"Error updating order details status: {ex.Message}");
+                // If there is any error, rollback the transaction
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+                return BadRequest(new { message = ex.Message });
             }
+            finally
+            {
+                // Finally block to ensure the connection is always closed
+                if (con.State == ConnectionState.Open)
+                {
+                    await con.CloseAsync();
+                }
+            }
+
         }
+        //older status change code
+        //public async Task<IActionResult> UpdateOrderStatusAsync(OrderMasterStatusUpdateDto orderMasterStatusUpdate)
+        //{
+        //    try
+        //    {
+        //        string orderMasterQuery = @"UPDATE OrderMaster SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId";
+        //        using (var connection = new SqlConnection(_healthCareConnection))
+        //        {
+        //            await connection.OpenAsync();
+        //            using (SqlCommand orderMasterCommand = new SqlCommand(orderMasterQuery, connection))
+        //            {
+        //                orderMasterCommand.Parameters.AddWithValue("@OrderMasterId", orderMasterStatusUpdate.OrderMasterId);
+        //                orderMasterCommand.Parameters.AddWithValue("@Status", orderMasterStatusUpdate.Status);
+        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedBy", orderMasterStatusUpdate.UpdatedBy);
+        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedPC", orderMasterStatusUpdate.UpdatedPC);
+        //                int affectedRows = await orderMasterCommand.ExecuteNonQueryAsync();
+        //                if (affectedRows > 0)
+        //                {
+        //                    await UpdateOrderDetailsStatus(orderMasterStatusUpdate.OrderMasterId, orderMasterStatusUpdate.OrderDetailsStatusUpdatelist);
+        //                    return Ok(new { message = "Order status updated successfully." });
+        //                }
+        //                else
+        //                {
+        //                    return BadRequest(new { message = "Failed to update order status." });
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { message = $"An error occurred: {ex.Message}" });
+        //    }
+        //}
+        //private async Task UpdateOrderDetailsStatus(int OrderMasterId, List<OrderDetailsStatusUpdateDto> OrderDetailsStatusUpdatelist)
+        //{
+        //    try
+        //    {
+        //        foreach (var orderDetailsUpdate in OrderDetailsStatusUpdatelist)
+        //        {
+        //            string orderDetailsQuery = @"UPDATE OrderDetails SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId AND OrderDetailId = @OrderDetailId";
+        //            using (var connection = new SqlConnection(_healthCareConnection))
+        //            {
+        //                await connection.OpenAsync();
+        //                using (SqlCommand orderDetailsCommand = new SqlCommand(orderDetailsQuery, connection))
+        //                {
+        //                    orderDetailsCommand.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
+        //                    orderDetailsCommand.Parameters.AddWithValue("@OrderDetailId", orderDetailsUpdate.OrderDetailId);
+        //                    orderDetailsCommand.Parameters.AddWithValue("@Status", orderDetailsUpdate.Status);
+        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedBy", orderDetailsUpdate.UpdatedBy);
+        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedPC", orderDetailsUpdate.UpdatedPC);
+        //                    await orderDetailsCommand.ExecuteNonQueryAsync();
+        //                }
+        //            }
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Error updating order details status: {ex.Message}");
+        //    }
+        //}
 
 
         [HttpPost,Authorize(Roles = "admin")]
