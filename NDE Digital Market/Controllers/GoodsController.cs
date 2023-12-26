@@ -14,13 +14,10 @@ namespace NDE_Digital_Market.Controllers
     public class GoodsController : ControllerBase
     {
       
-        private readonly string _prominentConnection;
-        private readonly string _connectionDigitalMarket;
+        
         private readonly string _healthCareConnection;
         public GoodsController(IConfiguration config)
         {
-            _prominentConnection = config.GetConnectionString("ProminentConnection");
-            _connectionDigitalMarket = config.GetConnectionString("DigitalMarketConnection");
             _healthCareConnection = config.GetConnectionString("HealthCare");
         }
 
@@ -61,70 +58,7 @@ namespace NDE_Digital_Market.Controllers
             return lst;
         }
 
-        //================================== Get Slider GoodsList ================
-
-        //[HttpGet ]
-        //[Route("GetGoodsList")]
-        //public async Task<List<GoodsQuantityModel>> GetGoodsList()
-        //{
-        //    List<GoodsQuantityModel> Lst = new List<GoodsQuantityModel>();
-        //    SqlConnection con = new SqlConnection(_prominentConnection);
-
-        //    string query = @"SELECT 
-        //                    ProductList.GoodsId, 
-        //                    ProductList.GoodsName, 
-        //                    ProductList.GroupCode,
-        //                    ProductList.GroupName,
-        //                    ProductList.Specification,
-        //                    ProductList.Price,
-        //                    ProductList.SellerCode,
-        //                    ProductList.ImagePath,
-        //                    ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
-        //                    ProductList.QuantityUnit,  
-        //                 UserRegistration.CompanyName
-        //                FROM 
-        //                    ProductList
-        //                LEFT JOIN 
-        //                    UserRegistration
-        //                ON 
-        //                    ProductList.SellerCode = UserRegistration.UserCode
-        //                LEFT JOIN
-        //                MaterialStockQty
-        //                ON 
-        //                   MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
-        //                WHERE 
-        //                    ProductList.Status = 'approved';";
-
-        //    SqlCommand cmd = new SqlCommand(query, con);
-        //    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-        //    DataTable dt = new DataTable();
-        //    con.Open();
-        //    adapter.Fill(dt);
-        //    //Console.WriteLine(dt);
-        //    con.Close();
-        //    for (int i = 0; i < dt.Rows.Count; i++)
-        //    {
-        //        GoodsQuantityModel modelObj = new GoodsQuantityModel();
-        //        modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-        //        modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-        //        modelObj.GoodsId = dt.Rows[i]["GoodsID"].ToString();
-        //        modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-        //        modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-        //        modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-        //        modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-        //        modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-        //        modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-        //        modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-        //        modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
-
-
-        //        Lst.Add(modelObj);
-        //    }
-
-
-
-        //    return Lst;
-        //}
+       
 
         [HttpGet]
         [Route("GetGoodsList")]
@@ -266,86 +200,6 @@ namespace NDE_Digital_Market.Controllers
                 return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
             }
         }
-
-
-
-        //[HttpGet]
-        //[Route("GetProductList")]
-        //public List<GoodsQuantityModel> GetProductList(string CompanyCode, string GroupName)
-        //{
-        //    List<GoodsQuantityModel> res = new List<GoodsQuantityModel>();
-          
-        //        SqlConnection con = new SqlConnection(_prominentConnection);
-        //        con.Open();
-        //        string query = @"SELECT 
-        //                    ProductList.GoodsId, 
-        //                    ProductList.GoodsName, 
-        //                    ProductList.GroupCode,
-        //                    ProductList.GroupName,
-        //                    ProductList.Specification,
-        //                    ProductList.Price,
-        //                    ProductList.SellerCode,
-        //                    ProductList.ImagePath,
-        //                    ISNULL(MaterialStockQty.PresentQty,0) AS Quantity,
-        //                    ProductList.QuantityUnit,  
-	       //                 UserRegistration.CompanyName
-        //                FROM 
-        //                    ProductList
-        //                LEFT JOIN 
-        //                    UserRegistration
-        //                ON 
-        //                    ProductList.SellerCode = UserRegistration.UserCode
-        //                LEFT JOIN
-        //                MaterialStockQty
-        //                ON 
-        //                   MaterialStockQty.GroupCode = ProductList.GroupCode AND  MaterialStockQty.GoodsId = ProductList.GoodsId
-        //                WHERE 
-        //                    ProductList.Status = 'approved' AND UserRegistration.CompanyCode = @CompanyCode AND ProductList.GroupName = @GroupName";
-
-        //        SqlCommand cmd = new SqlCommand(query, con);
-        //        cmd.Parameters.AddWithValue("@GroupName", GroupName);
-        //        cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
-        //    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-        //        DataTable dt = new DataTable();
-
-        //        adapter.Fill(dt);
-        //        //Console.WriteLine(dt);
-        //        con.Close();
-        //        for (int i = 0; i < dt.Rows.Count; i++)
-        //        {
-        //            GoodsQuantityModel modelObj = new GoodsQuantityModel();
-        //            modelObj.CompanyName = dt.Rows[i]["CompanyName"].ToString();
-        //            modelObj.GroupCode = dt.Rows[i]["GroupCode"].ToString();
-        //            modelObj.GoodsId = dt.Rows[i]["GoodsId"].ToString();
-        //            modelObj.GroupName = dt.Rows[i]["GroupName"].ToString();
-        //            modelObj.GoodsName = dt.Rows[i]["GoodsName"].ToString();
-        //            modelObj.Specification = dt.Rows[i]["Specification"].ToString();
-        //            modelObj.ApproveSalesQty = float.Parse(dt.Rows[i]["Quantity"].ToString());
-        //            modelObj.SellerCode = dt.Rows[i]["SellerCode"].ToString();
-        //            modelObj.Price = float.Parse(dt.Rows[i]["Price"].ToString());
-        //            modelObj.QuantityUnit = dt.Rows[i]["QuantityUnit"].ToString();
-        //            modelObj.ImagePath = dt.Rows[i]["ImagePath"].ToString();
-
-        //            res.Add(modelObj);
-        //        }
-            
-          
-     
-        //    return res;
-        //}
-
-
-       
-
-
-
-       
-
-      
-
-
-
-
 
 
 
