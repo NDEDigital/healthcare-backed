@@ -5,7 +5,7 @@
         public int? OrderMasterId { get; set; }
         public int? UserId { get; set; }
         public int? ProductId { get; set; }
-        public string? ProductGroupCode { get; set; }
+        public int? ProductGroupID { get; set; }
         public string? Specification { get; set; }
         public int? Qty { get; set; }
         public int? UnitId { get; set; }

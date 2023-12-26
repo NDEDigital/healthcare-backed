@@ -44,29 +44,29 @@ namespace NDE_Digital_Market.Controllers
         [HttpPost("InsertOrderData")]
         public async Task<IActionResult> InsertOrderDateAsync(OrderMasterDto orderdata)
         {
+            // Start a transaction
+            SqlTransaction transaction = null;
+
             try
             {
                 string systemCode = string.Empty;
-
+                await con.OpenAsync();
+                transaction = con.BeginTransaction();
                 // Execute the stored procedure to generate the system code
-                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con);
+                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con, transaction);
                 {
                     cmdSP.CommandType = CommandType.StoredProcedure;
                     cmdSP.Parameters.AddWithValue("@TableName", "OrderMaster");
                     cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
                     cmdSP.Parameters.AddWithValue("@AddNumber", 1);
-
-                    await con.OpenAsync();
                     var tempSystem = await cmdSP.ExecuteScalarAsync();
                     systemCode = tempSystem?.ToString() ?? string.Empty;
-                    await con.CloseAsync();
                 }
-
                 int OrderMasterId = int.Parse(systemCode.Split('%')[0]);
                 string OrderNo = systemCode.Split('%')[1];
-                //SP END
+                // SP END
 
-                SqlCommand cmd = new SqlCommand("InsertOrderMaster", con);
+                SqlCommand cmd = new SqlCommand("InsertOrderMaster", con, transaction);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
                 cmd.Parameters.AddWithValue("@OrderNo", OrderNo);
@@ -84,26 +84,43 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@AddedPC", orderdata.AddedPC);
 
-                await con.OpenAsync();
                 int a = await cmd.ExecuteNonQueryAsync();
-                await con.CloseAsync();
                 if (a > 0)
                 {
-                    await InsertOrderDateDetailsAsync(OrderMasterId, orderdata.OrderDetailsList);
+                    var detailsResult = await InsertOrderDateDetailsAsync(OrderMasterId, orderdata.OrderDetailsList, transaction);
+                    if (detailsResult is BadRequestObjectResult)
+                    {
+                        throw new Exception((detailsResult as BadRequestObjectResult).Value.ToString());
+                    }
                 }
                 else
                 {
                     return BadRequest(new { message = "Order Master data isn't Inserted Successfully." });
                 }
+                // If everything is fine, commit the transaction
+                transaction.Commit();
                 return Ok(new { message = "Order data Inserted Successfully." });
             }
             catch (Exception ex)
             {
+                // If there is any error, rollback the transaction
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
                 return BadRequest(new { message = ex.Message });
+            }
+            finally
+            {
+                // Finally block to ensure the connection is always closed
+                if (con.State == ConnectionState.Open)
+                {
+                    await con.CloseAsync();
+                }
             }
         }
 
-        private async Task<IActionResult> InsertOrderDateDetailsAsync(int OrderMasterId, List<OrderDetailsDto> OrderDetailsList)
+        private async Task<IActionResult> InsertOrderDateDetailsAsync(int OrderMasterId, List<OrderDetailsDto> OrderDetailsList, SqlTransaction transaction)
         {
             try
             {
@@ -111,14 +128,14 @@ namespace NDE_Digital_Market.Controllers
                 {
                     string query = "InsertOrderDetails";
                     //checking if user already exect for not.
-                    SqlCommand CheckCMD = new SqlCommand(query, con);
+                    SqlCommand CheckCMD = new SqlCommand(query, con, transaction);
                     CheckCMD.CommandType = CommandType.StoredProcedure;
 
                     CheckCMD.Parameters.Clear();
                     CheckCMD.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
                     CheckCMD.Parameters.AddWithValue("@UserId", OrderDetailsList[i].UserId);
                     CheckCMD.Parameters.AddWithValue("@ProductId", OrderDetailsList[i].ProductId);
-                    CheckCMD.Parameters.AddWithValue("@ProductGroupCode", OrderDetailsList[i].ProductGroupCode);
+                    CheckCMD.Parameters.AddWithValue("@ProductGroupCode", OrderDetailsList[i].ProductGroupID);
                     CheckCMD.Parameters.AddWithValue("@Specification", OrderDetailsList[i].Specification);
                     CheckCMD.Parameters.AddWithValue("@Qty", OrderDetailsList[i].Qty);
                     CheckCMD.Parameters.AddWithValue("@UnitId", OrderDetailsList[i].UnitId);
@@ -135,20 +152,19 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@AddedDate", DateTime.Now);
                     CheckCMD.Parameters.AddWithValue("@AddedPC", OrderDetailsList[i].AddedPC);
 
-                    con.Open();
+
                     await CheckCMD.ExecuteNonQueryAsync();
-                    con.Close();
-
-
 
                 }
+                return Ok(new { message = "Order Details data Inserted Successfully." });
+
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
 
-            return Ok(new { message = "Order Details data Inserted Successfully." });
+            //return Ok(new { message = "Order Details data Inserted Successfully." });
         }
 
 

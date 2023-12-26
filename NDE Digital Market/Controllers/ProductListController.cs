@@ -12,14 +12,26 @@ namespace NDE_Digital_Market.Controllers
     [ApiController]
     public class ProductListController : ControllerBase
     {
+
+
+ 
+
+
+
+
+
+
+        private readonly string foldername;
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
-        private readonly string foldername = "D:/HealthCare/healthcare-frontend/src/assets/images/Productfiles";
+        //private readonly string foldername = "D:/HealthCare/healthcare-frontend/src/assets/images/Productfiles";
         private readonly string filename = "Productfile";
         public ProductListController(IConfiguration configuration)
         {
             _configuration = configuration;
             con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            CommonServices commonServices = new CommonServices(_configuration);
+            foldername = commonServices.FilesPath + "Productfiles";
         }
 
         private async Task<Boolean> ProductNameCheck(string ProductName,string Specification)
