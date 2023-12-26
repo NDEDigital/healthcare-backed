@@ -84,11 +84,11 @@ public class CompanyRegistration_DAL
             string CompanyCode = systemCode.Split('%')[1];
             //SP END
 
-            SqlCommand cmd = new SqlCommand("INSERT INTO CompanyRegistration (CompanyID, CompanyCode, CompanyName, CompanyImage, " +
+            SqlCommand cmd = new SqlCommand("INSERT INTO CompanyRegistration (CompanyID, CompanyCode, CompanyName,Email, CompanyImage, " +
                            "CompanyFoundationDate, BusinessRegistrationNumber, TaxIdentificationNumber, " +
                            "TradeLicense, PreferredPaymentMethodID, BankNameID, AccountNumber, " +
                            "AccountHolderName,MaxUser,IsActive, AddedBy, DateAdded, AddedPC) " +
-                           "VALUES (@CompanyID, @CompanyCode, @CompanyName, @CompanyImage, " +
+                           "VALUES (@CompanyID, @CompanyCode, @CompanyName,@Email, @CompanyImage, " +
                            "@CompanyFoundationDate, @BusinessRegistrationNumber, @TaxIdentificationNumber, " +
                            "@TradeLicense, @PreferredPaymentMethodID, @BankNameID, @AccountNumber, " +
                            "@AccountHolderName, @MaxUser, @IsActive, @AddedBy, @DateAdded, @AddedPC);", connection);
@@ -96,6 +96,7 @@ public class CompanyRegistration_DAL
             cmd.Parameters.AddWithValue("@CompanyID", CompanyID);
             cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
             cmd.Parameters.AddWithValue("@CompanyName", companyDto.CompanyName);
+            cmd.Parameters.AddWithValue("@Email", companyDto.Email);
             cmd.Parameters.AddWithValue("@CompanyImage", CompanyImage);
             cmd.Parameters.AddWithValue("@CompanyFoundationDate", companyDto.CompanyFoundationDate);
             cmd.Parameters.AddWithValue("@BusinessRegistrationNumber", companyDto.BusinessRegistrationNumber);
