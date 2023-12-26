@@ -520,6 +520,59 @@ namespace NDE_Digital_Market.Controllers
         //    }
         //}
 
+        [HttpPut("UpdateSellerOrderDetailsStatus")]
+        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status)
+        {
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_healthCareConnection))
+                {
+                    if (!string.IsNullOrEmpty(orderdetailsIds))
+                    {
+                        string orderdetailsIdString = "''";
+
+                        List<int> DetailsIds = orderdetailsIds.Split(',').Select(int.Parse).ToList();
+                        orderdetailsIdString = string.Join(",", DetailsIds);
+                        string masterStatusChangeQuery = "UPDATE OrderDetails SET Status = @value  WHERE OrderDetailId IN (" + orderdetailsIdString + ") ;";
+
+                        SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con);
+                        //cmd1.Parameters.AddWithValue("@orderMasterId", orderMasterId);
+                        cmd1.Parameters.AddWithValue("@value", status);
+                        await con.OpenAsync();
+                        int masteRES = await cmd1.ExecuteNonQueryAsync();
+                        await con.CloseAsync();
+                        if (masteRES > 0)
+                        {
+
+                            return Ok(new { message = "Order Status Changed Successfully." });
+                        }
+                        else
+                        {
+                            return BadRequest(new { message = "Order Details Status is not Changed." });
+                        }
+
+                    }
+                    else
+                    {
+                        return BadRequest(new { message = "Send A Valid OrderDetail Id." });
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+
+        }
+
+
+
+
+
 
         [HttpPost,Authorize(Roles = "admin")]
         [Route("getReturnDataForAdmin/{pageNumber}/{pageSize}")]
