@@ -502,51 +502,39 @@ GROUP BY CR.MaxUser;";
 
 
         // =================================================== getSingleUserInfo ===================================
-        //[HttpGet]
-        //[Route("getSingleUserInfo")]
-        //public IActionResult getSingleUser(string  userCode)
-        //{
-        //    UserModel user = new UserModel();
-        //    //byte[] userCodeBytes = Encoding.UTF8.GetBytes(userCode);
-        //    string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-        //    //string DecryptedUserCode = ConvertBytesToHexString(user.UserCode);
-        //    SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserCode = @userCode ", con);
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
-        //    //Console.WriteLine(decryptedUserCode);
-        //    con.Open();
-        //    SqlDataReader reader = cmd.ExecuteReader();
-        //    if (reader.Read())
-        //    {
-        //        user.UserID = (int)reader["UserId"];
-        //        user.UserCode = reader["UserCode"].ToString();
-        //        user.CounteryRegion = reader["CountryRegion"].ToString();
-        //        user.IsBuyer = (bool)reader["IsBuyer"];
-        //        user.IsSeller = (bool)reader["IsSeller"];
-        //        user.IsAdmin = (bool)reader["IsAdmin"];
-        //        user.FullName = reader["FullName"].ToString();
-        //        user.PhoneNumber = reader["PhoneNumber"].ToString();
-        //        user.Email = reader["Email"].ToString();
-        //        user.Address = reader["Address"].ToString();
-        //        user.CompanyName = reader["CompanyName"].ToString();
-        //        user.Website = reader["Website"].ToString();
-        //        user.ProductCategory = reader["ProductCategory"].ToString();
-        //        user.YearsInBusiness = reader["YearsInBusiness"].ToString();
-        //        user.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();
-        //        user.TaxIDNumber = reader["TaxIdNumber"].ToString();
-        //        user.PreferredPaymentMethod = reader["PreferredPaymentMethod"].ToString();
-
-        //        con.Close();
-
-        //        // Return the user object as a response
-        //        return Ok(new { message = "GET single data successful", user });
-        //    }
-        //    else
-        //    {
-        //        con.Close();
-        //        return BadRequest(new { message = "Invalid Inforamtion" });
-        //    }
-        //}
+        [HttpGet]
+        [Route("getSingleUserInfo")]
+        public IActionResult getSingleUser(int? userId)
+        {
+            UserModel user = new UserModel();
+            //byte[] userCodeBytes = Encoding.UTF8.GetBytes(userCode);
+  
+            //string DecryptedUserCode = ConvertBytesToHexString(user.UserCode);
+            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", _healthCareConnection);
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            //Console.WriteLine(decryptedUserCode);
+            _healthCareConnection.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                user.UserId = (int)reader["UserId"];
+                user.UserCode = reader["UserCode"].ToString();
+ 
+                user.FullName = reader["FullName"].ToString();
+                user.PhoneNumber = reader["PhoneNumber"].ToString();
+                user.Email = reader["Email"].ToString();
+                user.Address = reader["Address"].ToString();
+                _healthCareConnection.Close();
+                // Return the user object as a response
+                return Ok(new { message = "GET single data successful", user });
+            }
+            else
+            {
+                _healthCareConnection.Close();
+                return BadRequest(new { message = "Invalid Inforamtion" });
+            }
+        }
 
 
 
@@ -580,49 +568,7 @@ GROUP BY CR.MaxUser;";
 
 
         // ============================= Update Pass =============================
-        //[HttpPut]
-        //[Route("updatePass")]
-        //public IActionResult UpdatePasss(UpdatePasswordModel user)
-        //{
-        //    SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", _healthCareConnection);
 
-        //    //string decrypteedUserCode = CommonServices.DecryptPassword(user.userCode);
-        //    cmd.Parameters.AddWithValue("@UserId", user.userId);
-
-
-        //    createPasswordHash(user.newPassword, out byte[] passwordHash, out byte[] passwordSalt);
-
-        //    _healthCareConnection.Open();
-        //    SqlDataReader reader = cmd.ExecuteReader();
-        //    if (reader.HasRows)
-        //    {
-        //        reader.Read();
-        //        byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
-        //        byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
-
-
-        //        reader.Close();
-        //        if (!VerifyPasswordHash(user.oldPassword, storedPasswordHash, storedPasswordSalt))
-        //        {
-        //            return BadRequest(new { message = "Password did not matched!" });
-        //        }
-
-        //        SqlCommand cmd2 = new SqlCommand("UPDATE UserRegistration SET [PasswordHash] = @passwordHash ,[PasswordSalt] =@passwordSalt WHERE UserId = @userId ", con);
-        //        cmd2.Parameters.AddWithValue("@userId", user.userId);
-        //        cmd2.Parameters.AddWithValue("@passwordHash", passwordHash);
-        //        cmd2.Parameters.AddWithValue("@passwordSalt", passwordSalt);
-        //        //cmd2.Parameters.AddWithValue("@OldPasswordHash", oldpasswordHash);
-        //        int rowsAffected = cmd2.ExecuteNonQuery();
-        //        if (rowsAffected > 0)
-        //        {
-        //            _healthCareConnection.Close();
-        //            return Ok(new { message = "Passsword updated successfully!", user.userCode });
-        //        }
-        //    }
-
-        //    _healthCareConnection.Close();
-        //    return BadRequest(new { message = "Password did not matched!" });
-        //}
         [HttpPut]
         [Route("updatePass")]
         public IActionResult UpdatePasss(UpdatePasswordModel user)
