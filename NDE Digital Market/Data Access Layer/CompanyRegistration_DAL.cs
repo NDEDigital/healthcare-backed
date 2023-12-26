@@ -140,7 +140,7 @@ public class CompanyRegistration_DAL
             company.CompanyCode = reader["CompanyCode"].ToString();
             company.CompanyName = reader["CompanyName"].ToString();
             company.Email = reader["Email"].ToString();
-            company.CompanyAdminCode = reader["CompanyAdminCode"].ToString();
+            company.CompanyAdminId = Convert.ToInt32(reader["CompanyAdminId"]);
             company.CompanyImage = reader["CompanyImage"].ToString();
             company.CompanyFoundationDate = Convert.ToDateTime(reader["CompanyFoundationDate"]);
             company.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();

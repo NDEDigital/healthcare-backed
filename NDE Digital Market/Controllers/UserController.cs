@@ -94,18 +94,19 @@ GROUP BY CR.MaxUser;";
         [Route("CreateUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto user)
         {
-            bool companyExist = false;
+            int? companyExist = 0;
 
             if (!string.IsNullOrEmpty(user.CompanyCode))
             {
-                if (await CompanyExistAsync(user.CompanyCode)==null)
+                companyExist = await CompanyExistAsync(user.CompanyCode);
+                if (companyExist == null)
                 {
                     return BadRequest(new
                     {
                         message = "No Campany Found with this ID"
                     });
                 }
-                else if(await CompanyExistAsync(user.CompanyCode) == 0)
+                else if(companyExist == 0)
                 {
                     return BadRequest(new
                     {
@@ -134,26 +135,30 @@ GROUP BY CR.MaxUser;";
                 systemCode = cmdSP.ExecuteScalar()?.ToString();
                 await _healthCareConnection.CloseAsync();
             }
+            //SP END
 
-            if (companyExist == true)
+            if (companyExist == 1)
             {
                 string updateCompanyAdmin = @"
-                          UPDATE CompanyRegistration
-                            SET CompanyAdminCode = 'dsds'
-                            WHERE CompanyAdminCode IS NULL AND CompanyCode = @CompanyCode;
-                            ";
-                SqlCommand cmd1 = new SqlCommand(updateCompanyAdmin, _healthCareConnection);
-                cmd1.CommandType = CommandType.Text;
-                cmd1.Parameters.AddWithValue("@CompanyCode", user.CompanyCode);
+                      UPDATE CompanyRegistration
+                        SET CompanyAdminId = @CompanyAdminId
+                        WHERE CompanyAdminId IS NULL AND CompanyCode = @CompanyCode;
+                        ";
+                    SqlCommand cmd1 = new SqlCommand(updateCompanyAdmin, _healthCareConnection);
+                    cmd1.CommandType = CommandType.Text;
+                    cmd1.Parameters.AddWithValue("@CompanyCode", user.CompanyCode);
+                    cmd1.Parameters.AddWithValue("@CompanyAdminId", int.Parse(systemCode.Split('%')[0]));
 
-
+                    await _healthCareConnection.OpenAsync();
+                    int rowsAffected = cmd1.ExecuteNonQuery();
+                    await _healthCareConnection.CloseAsync();
             }
 
 
-            //SP END
+
 
             // Encrypt the Password
-            string encryptedPassword = CommonServices.EncryptPassword(user.Password);
+            //string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             createPasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             UserModel userModel = new UserModel();
