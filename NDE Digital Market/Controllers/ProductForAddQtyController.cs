@@ -283,5 +283,54 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetSellerProductsByCompanyCode/{CompanyCode}")]
+        public async Task<IActionResult> GetSellerProductsByCompanyCode(string CompanyCode, Int32? status=null)
+        {
+            var sellerProductsByCompanyCode = new List<SellerProductsByCompanyCodeDto>();
+            try
+            {
+                using (var connection = new SqlConnection(_healthCareConnection))
+                {
+                    using (var command = new SqlCommand("GetSellerProductsByCompanyCode", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@CompanyCode", CompanyCode));
+                        await connection.OpenAsync();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var sellerProduct = new SellerProductsByCompanyCodeDto();
+
+                                sellerProduct.SellerProductId = Convert.ToInt32(reader["SellerProductId"]);
+                                sellerProduct.ProductId = Convert.ToInt32(reader["ProductId"]);
+                                sellerProduct.ProductName = reader["ProductName"].ToString();
+                                sellerProduct.UserId = reader["UserId"].ToString();
+                                sellerProduct.FullName = reader["FullName"].ToString();
+                                sellerProduct.Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0;
+                                sellerProduct.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountAmount"]) : 0;
+                                sellerProduct.DiscountPct = reader["DiscountPct"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountPct"]) : 0;
+                                sellerProduct.EffectivateDate = reader["EffectivateDate"] != DBNull.Value ? Convert.ToDateTime(reader["EffectivateDate"]) : DateTime.MinValue;
+                                sellerProduct.EndDate = reader["EndDate"] != DBNull.Value ? Convert.ToDateTime(reader["EndDate"]) : DateTime.MinValue;
+                                sellerProduct.ImagePath = reader["ImagePath"].ToString();
+                                sellerProduct.Status = reader["Status"].ToString();
+                                sellerProduct.IsActive = reader["IsActive"] != DBNull.Value ? Convert.ToBoolean(reader["IsActive"]) : false;
+                                sellerProduct.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
+
+                                sellerProductsByCompanyCode.Add(sellerProduct);
+                            }
+
+                        }
+                    }
+                }
+                return Ok(sellerProductsByCompanyCode);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
+            }
+        }
+
     }
 }

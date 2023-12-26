@@ -156,8 +156,8 @@ namespace NDE_Digital_Market.Controllers
 
                 }
                 else
-                    query = @"SELECT * FROM ProductList WHERE CONVERT(DATE, AddedDate) = CONVERT(DATE, GETDATE()) ORDER BY ProductId  DESC";
                 {
+                    query = @"SELECT * FROM ProductList WHERE CONVERT(DATE, AddedDate) = CONVERT(DATE, GETDATE()) ORDER BY ProductId  DESC";
 
                 }
                 using (SqlCommand cmd = new SqlCommand(query, con))
