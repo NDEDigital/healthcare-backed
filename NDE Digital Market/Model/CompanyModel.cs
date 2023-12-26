@@ -3,8 +3,10 @@
     public class CompanyModel
     {
         public int? CompanyID { get; set; }
+        public int? MaxUser { get; set; }
         public string? CompanyCode { get; set; }
         public string? CompanyName { get; set; }
+        public string? Email { get; set; }
         public string? CompanyAdminCode { get; set; }
         public IFormFile? CompanyImageFile { get; set; }
         public byte[]? CompanyImageFileBite { get; set; }

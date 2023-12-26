@@ -136,8 +136,10 @@ public class CompanyRegistration_DAL
         {
             CompanyModel company = new CompanyModel();
             company.CompanyID = Convert.ToInt32(reader["CompanyID"]);
+            company.MaxUser = Convert.ToInt32(reader["MaxUser"]);
             company.CompanyCode = reader["CompanyCode"].ToString();
             company.CompanyName = reader["CompanyName"].ToString();
+            company.Email = reader["Email"].ToString();
             company.CompanyAdminCode = reader["CompanyAdminCode"].ToString();
             company.CompanyImage = reader["CompanyImage"].ToString();
             company.CompanyFoundationDate = Convert.ToDateTime(reader["CompanyFoundationDate"]);
