@@ -458,8 +458,8 @@ GROUP BY CR.MaxUser;";
 
             return jwt;
         }
-       
-      
+
+
 
 
         // ==================================== UPDATE USER ===========================
@@ -496,10 +496,10 @@ GROUP BY CR.MaxUser;";
         //    con.Close();
         //    string encryptedUserCode = CommonServices.EncryptPassword(user.UserCode);
         //    return Ok(new { message = "User updated successfully", user });
-                  
+
         //}
 
-       
+
 
         // =================================================== getSingleUserInfo ===================================
         //[HttpGet]
@@ -556,9 +556,9 @@ GROUP BY CR.MaxUser;";
         //public IActionResult isAdmin(string userCode)
         //{
         //    UserModel user = new UserModel();
-     
+
         //    string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-        
+
         //    SqlCommand cmd = new SqlCommand("SELECT PhoneNumber FROM UserRegistration WHERE UserCode = @userCode ", con);
         //    cmd.CommandType = CommandType.Text;
         //    cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
@@ -580,48 +580,90 @@ GROUP BY CR.MaxUser;";
 
 
         // ============================= Update Pass =============================
+        //[HttpPut]
+        //[Route("updatePass")]
+        //public IActionResult UpdatePasss(UpdatePasswordModel user)
+        //{
+        //    SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", _healthCareConnection);
+
+        //    //string decrypteedUserCode = CommonServices.DecryptPassword(user.userCode);
+        //    cmd.Parameters.AddWithValue("@UserId", user.userId);
+
+
+        //    createPasswordHash(user.newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+        //    _healthCareConnection.Open();
+        //    SqlDataReader reader = cmd.ExecuteReader();
+        //    if (reader.HasRows)
+        //    {
+        //        reader.Read();
+        //        byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
+        //        byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
+
+
+        //        reader.Close();
+        //        if (!VerifyPasswordHash(user.oldPassword, storedPasswordHash, storedPasswordSalt))
+        //        {
+        //            return BadRequest(new { message = "Password did not matched!" });
+        //        }
+
+        //        SqlCommand cmd2 = new SqlCommand("UPDATE UserRegistration SET [PasswordHash] = @passwordHash ,[PasswordSalt] =@passwordSalt WHERE UserId = @userId ", con);
+        //        cmd2.Parameters.AddWithValue("@userId", user.userId);
+        //        cmd2.Parameters.AddWithValue("@passwordHash", passwordHash);
+        //        cmd2.Parameters.AddWithValue("@passwordSalt", passwordSalt);
+        //        //cmd2.Parameters.AddWithValue("@OldPasswordHash", oldpasswordHash);
+        //        int rowsAffected = cmd2.ExecuteNonQuery();
+        //        if (rowsAffected > 0)
+        //        {
+        //            _healthCareConnection.Close();
+        //            return Ok(new { message = "Passsword updated successfully!", user.userCode });
+        //        }
+        //    }
+
+        //    _healthCareConnection.Close();
+        //    return BadRequest(new { message = "Password did not matched!" });
+        //}
         [HttpPut]
         [Route("updatePass")]
         public IActionResult UpdatePasss(UpdatePasswordModel user)
         {
-            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserCode = @userCode ", con);
-           
-            string decrypteedUserCode = CommonServices.DecryptPassword(user.userCode);
-            cmd.Parameters.AddWithValue("@userCode", decrypteedUserCode);
-         
-         
+            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId", _healthCareConnection);
+
+            cmd.Parameters.AddWithValue("@UserId", user.userId);
+
             createPasswordHash(user.newPassword, out byte[] passwordHash, out byte[] passwordSalt);
 
-            con.Open();
+            _healthCareConnection.Open();
             SqlDataReader reader = cmd.ExecuteReader();
+
             if (reader.HasRows)
             {
                 reader.Read();
                 byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
                 byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
-
-
                 reader.Close();
+
                 if (!VerifyPasswordHash(user.oldPassword, storedPasswordHash, storedPasswordSalt))
                 {
-                    return BadRequest(new { message = "Password did not matched!" });
+                    return BadRequest(new { message = "Password did not match!" });
                 }
 
-                SqlCommand cmd2 = new SqlCommand("UPDATE UserRegistration SET [PasswordHash] = @passwordHash ,[PasswordSalt] =@passwordSalt WHERE UserCode = @userCode ", con);
-                cmd2.Parameters.AddWithValue("@userCode", decrypteedUserCode);
+                SqlCommand cmd2 = new SqlCommand("UPDATE UserRegistration SET [PasswordHash] = @passwordHash, [PasswordSalt] = @passwordSalt WHERE UserId = @userId", _healthCareConnection);
+                cmd2.Parameters.AddWithValue("@userId", user.userId);
                 cmd2.Parameters.AddWithValue("@passwordHash", passwordHash);
                 cmd2.Parameters.AddWithValue("@passwordSalt", passwordSalt);
-                //cmd2.Parameters.AddWithValue("@OldPasswordHash", oldpasswordHash);
+
                 int rowsAffected = cmd2.ExecuteNonQuery();
+
                 if (rowsAffected > 0)
                 {
-                    con.Close();
-                    return Ok(new { message = "Passsword updated successfully!", user.userCode });
+                    _healthCareConnection.Close();
+                    return Ok(new { message = "Password updated successfully!", user.userCode });
                 }
             }
 
-            con.Close();
-            return BadRequest(new { message = "Password did not matched!" });
+            _healthCareConnection.Close();
+            return BadRequest(new { message = "Password did not match!" });
         }
 
     }
