@@ -806,8 +806,8 @@ namespace NDE_Digital_Market.Controllers
 
 
         //================================== Added By Tushar ==============================
-        [HttpGet("GetSellerOrderBasedOnUserCode")]
-        public async Task<IActionResult> GetSellerOrderBasedOnUserCodeAsync(string usercode)
+        [HttpGet("GetSellerOrderBasedOnUserID")]
+        public async Task<IActionResult> GetSellerOrderBasedOnUserCodeAsync(string userid, string? status)
         {
             try
             {
@@ -818,14 +818,19 @@ namespace NDE_Digital_Market.Controllers
                     SqlCommand sqlCommand = new SqlCommand(query , con);
 
                     sqlCommand.CommandType = CommandType.StoredProcedure;
-                    sqlCommand.Parameters.AddWithValue("@SellerId", usercode);
+                    sqlCommand.Parameters.AddWithValue("@SellerId", userid);
+                    if(status != null)
+                    {
+                        sqlCommand.Parameters.AddWithValue("@Status", status);
+                    }
+
 
                     await con.OpenAsync();
                     SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
-                    if (!reader.HasRows)
-                    {
-                        return BadRequest(new { message = "No Data Found." });
-                    }
+                    //if (!reader.HasRows)
+                    //{
+                    //    return BadRequest(new { message = "No Data Found." });
+                    //}
                     while (await reader.ReadAsync())
                     {
                         GetSellerOrderBasedOnUserCodeDto details = new GetSellerOrderBasedOnUserCodeDto();
@@ -843,6 +848,8 @@ namespace NDE_Digital_Market.Controllers
                             details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
                             details.Unit = reader["Unit"].ToString();
                             details.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                            details.Status = reader["Status"].ToString();
+
                         }
 
                         objectlist.Add(details);
