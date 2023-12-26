@@ -12,6 +12,7 @@
         public decimal DiscountPct { get; set; }
         public DateTime EffectivateDate { get; set; }
         public DateTime EndDate { get; set; }
+        public DateTime AddedDate { get; set; }
         public string ImagePath { get; set; }
         public string Status { get; set; }
         public bool IsActive { get; set; }

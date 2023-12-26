@@ -284,8 +284,8 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpGet]
-        [Route("GetSellerProductsByCompanyCode/{CompanyCode}")]
-        public async Task<IActionResult> GetSellerProductsByCompanyCode(string CompanyCode, Int32? status=null)
+        [Route("GetSellerProductsByCompanyCode")]
+        public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status=null)
         {
             var sellerProductsByCompanyCode = new List<SellerProductsByCompanyCodeDto>();
             try
@@ -295,7 +295,8 @@ namespace NDE_Digital_Market.Controllers
                     using (var command = new SqlCommand("GetSellerProductsByCompanyCode", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.Add(new SqlParameter("@CompanyCode", CompanyCode));
+                        command.Parameters.Add(new SqlParameter("@userID", userID));
+                        command.Parameters.Add(new SqlParameter("@status", status));
                         await connection.OpenAsync();
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -317,6 +318,8 @@ namespace NDE_Digital_Market.Controllers
                                 sellerProduct.Status = reader["Status"].ToString();
                                 sellerProduct.IsActive = reader["IsActive"] != DBNull.Value ? Convert.ToBoolean(reader["IsActive"]) : false;
                                 sellerProduct.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
+                                sellerProduct.AddedDate = reader["AddedDate"] != DBNull.Value ? Convert.ToDateTime(reader["AddedDate"]) : DateTime.MinValue;
+
 
                                 sellerProductsByCompanyCode.Add(sellerProduct);
                             }
