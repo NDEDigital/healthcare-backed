@@ -78,7 +78,7 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@TotalPrice", orderdata.TotalPrice);
                 cmd.Parameters.AddWithValue("@PhoneNumber", orderdata.PhoneNumber);
                 cmd.Parameters.AddWithValue("@DeliveryCharge", orderdata.DeliveryCharge);
-                cmd.Parameters.AddWithValue("@Status", "new");
+                cmd.Parameters.AddWithValue("@Status", "Pending");
 
                 cmd.Parameters.AddWithValue("@AddedBy", orderdata.AddedBy);
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
@@ -141,7 +141,7 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@UnitId", OrderDetailsList[i].UnitId);
                     CheckCMD.Parameters.AddWithValue("@DiscountAmount", OrderDetailsList[i].DiscountAmount != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
                     CheckCMD.Parameters.AddWithValue("@Price", OrderDetailsList[i].Price);
-                    CheckCMD.Parameters.AddWithValue("@Status", "new");
+                    CheckCMD.Parameters.AddWithValue("@Status", "Pending");
                     CheckCMD.Parameters.AddWithValue("@DeliveryCharge", OrderDetailsList[i].DeliveryCharge);
                     CheckCMD.Parameters.AddWithValue("@DeliveryDate", OrderDetailsList[i].DeliveryDate);
                     CheckCMD.Parameters.AddWithValue("@DiscountPct",OrderDetailsList[i].DiscountPct != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
@@ -751,7 +751,66 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
-      
+
+        //================================== Added By Tushar ==============================
+        [HttpGet("GetSellerOrderBasedOnUserCode")]
+        public async Task<IActionResult> GetSellerOrderBasedOnUserCodeAsync(string usercode)
+        {
+            try
+            {
+                List<GetSellerOrderBasedOnUserCodeDto> objectlist = new List<GetSellerOrderBasedOnUserCodeDto>();
+                using (SqlConnection con = new SqlConnection(_healthCareConnection))
+                {
+                    string query = "GetSellerSelesBySellerId";
+                    SqlCommand sqlCommand = new SqlCommand(query , con);
+
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
+                    sqlCommand.Parameters.AddWithValue("@SellerId", usercode);
+
+                    await con.OpenAsync();
+                    SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
+                    if (!reader.HasRows)
+                    {
+                        return BadRequest(new { message = "No Data Found." });
+                    }
+                    while (await reader.ReadAsync())
+                    {
+                        GetSellerOrderBasedOnUserCodeDto details = new GetSellerOrderBasedOnUserCodeDto();
+                        {
+                            details.OrderNo = reader["OrderNo"].ToString();
+                            details.Address = reader["Address"].ToString();
+                            details.BUserId = Convert.ToInt32(reader["BUserId"]);
+                            details.BuyerName = reader["BuyerName"].ToString();
+                            details.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                            details.ProductId = Convert.ToInt32(reader["ProductId"]);
+                            details.ProductName = reader["ProductName"].ToString();
+                            details.Specification = reader["Specification"].ToString();
+                            details.StockQty = reader.IsDBNull(reader.GetOrdinal("StockQty")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("StockQty"));
+                            details.SaleQty = reader.IsDBNull(reader.GetOrdinal("SaleQty")) ? (int?)null : (int?)reader.GetInt32(reader.GetOrdinal("SaleQty"));
+                            details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
+                            details.Unit = reader["Unit"].ToString();
+                            details.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                        }
+
+                        objectlist.Add(details);
+                    }
+                    await con.CloseAsync();
+                }
+
+                return Ok(objectlist);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+
+
+
+
+
         //public class CountsList
         //{
         //    public int PendingCount { get; set; }
@@ -829,7 +888,7 @@ namespace NDE_Digital_Market.Controllers
         //}
 
         // update order status for seller
-       
+
         // ============================== Added By Rey ==========================
 
 
