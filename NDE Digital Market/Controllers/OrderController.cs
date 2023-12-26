@@ -78,7 +78,7 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@TotalPrice", orderdata.TotalPrice);
                 cmd.Parameters.AddWithValue("@PhoneNumber", orderdata.PhoneNumber);
                 cmd.Parameters.AddWithValue("@DeliveryCharge", orderdata.DeliveryCharge);
-                cmd.Parameters.AddWithValue("@Status", "new");
+                cmd.Parameters.AddWithValue("@Status", "Pending");
 
                 cmd.Parameters.AddWithValue("@AddedBy", orderdata.AddedBy);
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
@@ -141,7 +141,7 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@UnitId", OrderDetailsList[i].UnitId);
                     CheckCMD.Parameters.AddWithValue("@DiscountAmount", OrderDetailsList[i].DiscountAmount != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
                     CheckCMD.Parameters.AddWithValue("@Price", OrderDetailsList[i].Price);
-                    CheckCMD.Parameters.AddWithValue("@Status", "new");
+                    CheckCMD.Parameters.AddWithValue("@Status", "Pending");
                     CheckCMD.Parameters.AddWithValue("@DeliveryCharge", OrderDetailsList[i].DeliveryCharge);
                     CheckCMD.Parameters.AddWithValue("@DeliveryDate", OrderDetailsList[i].DeliveryDate);
                     CheckCMD.Parameters.AddWithValue("@DiscountPct",OrderDetailsList[i].DiscountPct != null ? (object)OrderDetailsList[i].DiscountPct : DBNull.Value);
