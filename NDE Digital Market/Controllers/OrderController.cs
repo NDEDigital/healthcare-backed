@@ -456,69 +456,7 @@ namespace NDE_Digital_Market.Controllers
             }
 
         }
-        //older status change code
-        //public async Task<IActionResult> UpdateOrderStatusAsync(OrderMasterStatusUpdateDto orderMasterStatusUpdate)
-        //{
-        //    try
-        //    {
-        //        string orderMasterQuery = @"UPDATE OrderMaster SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId";
-        //        using (var connection = new SqlConnection(_healthCareConnection))
-        //        {
-        //            await connection.OpenAsync();
-        //            using (SqlCommand orderMasterCommand = new SqlCommand(orderMasterQuery, connection))
-        //            {
-        //                orderMasterCommand.Parameters.AddWithValue("@OrderMasterId", orderMasterStatusUpdate.OrderMasterId);
-        //                orderMasterCommand.Parameters.AddWithValue("@Status", orderMasterStatusUpdate.Status);
-        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
-        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedBy", orderMasterStatusUpdate.UpdatedBy);
-        //                orderMasterCommand.Parameters.AddWithValue("@UpdatedPC", orderMasterStatusUpdate.UpdatedPC);
-        //                int affectedRows = await orderMasterCommand.ExecuteNonQueryAsync();
-        //                if (affectedRows > 0)
-        //                {
-        //                    await UpdateOrderDetailsStatus(orderMasterStatusUpdate.OrderMasterId, orderMasterStatusUpdate.OrderDetailsStatusUpdatelist);
-        //                    return Ok(new { message = "Order status updated successfully." });
-        //                }
-        //                else
-        //                {
-        //                    return BadRequest(new { message = "Failed to update order status." });
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { message = $"An error occurred: {ex.Message}" });
-        //    }
-        //}
-        //private async Task UpdateOrderDetailsStatus(int OrderMasterId, List<OrderDetailsStatusUpdateDto> OrderDetailsStatusUpdatelist)
-        //{
-        //    try
-        //    {
-        //        foreach (var orderDetailsUpdate in OrderDetailsStatusUpdatelist)
-        //        {
-        //            string orderDetailsQuery = @"UPDATE OrderDetails SET Status = @Status, UpdatedDate=@UpdatedDate, UpdatedBy=@UpdatedBy, UpdatedPC=@UpdatedPC WHERE OrderMasterId = @OrderMasterId AND OrderDetailId = @OrderDetailId";
-        //            using (var connection = new SqlConnection(_healthCareConnection))
-        //            {
-        //                await connection.OpenAsync();
-        //                using (SqlCommand orderDetailsCommand = new SqlCommand(orderDetailsQuery, connection))
-        //                {
-        //                    orderDetailsCommand.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
-        //                    orderDetailsCommand.Parameters.AddWithValue("@OrderDetailId", orderDetailsUpdate.OrderDetailId);
-        //                    orderDetailsCommand.Parameters.AddWithValue("@Status", orderDetailsUpdate.Status);
-        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
-        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedBy", orderDetailsUpdate.UpdatedBy);
-        //                    orderDetailsCommand.Parameters.AddWithValue("@UpdatedPC", orderDetailsUpdate.UpdatedPC);
-        //                    await orderDetailsCommand.ExecuteNonQueryAsync();
-        //                }
-        //            }
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Error updating order details status: {ex.Message}");
-        //    }
-        //}
+       
 
         [HttpPut("UpdateSellerOrderDetailsStatus")]
         public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status)
