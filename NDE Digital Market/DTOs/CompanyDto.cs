@@ -4,6 +4,7 @@
     {
         public string? CompanyCode { get; set; }
         public string? CompanyName { get; set; }
+        public string? Email { get; set; }
         public string? CompanyAdminCode { get; set; }
         public IFormFile? CompanyImageFile { get; set; }
         //public string? CompanyImage { get; set; } // Assume byte[] for image data
