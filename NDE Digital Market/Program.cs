@@ -21,6 +21,7 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
         });
 });
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -77,8 +78,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 //CORS
 app.UseCors(MyAllowSpecificOrigins);
+
 app.UseAuthentication();
 
 app.UseAuthorization();

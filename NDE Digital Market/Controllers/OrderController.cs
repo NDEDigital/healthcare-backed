@@ -663,7 +663,7 @@ namespace NDE_Digital_Market.Controllers
 
                         cmdDetails.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.SellerSalesDetailsList[i].AddedBy);
                         cmdDetails.Parameters.AddWithValue("@AddedDate", DateTime.Now);
-                        cmdDetails.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.SellerSalesDetailsList[i].AddedPC);
+                        cmdDetails.Parameters.AddWithValue("@AddedPC", sellerSalesMasterDto.SellerSalesDetailsList[i].AddedPC);
 
                         int detailsRes = await cmdDetails.ExecuteNonQueryAsync();
                         if (detailsRes<=0)
@@ -1016,6 +1016,7 @@ namespace NDE_Digital_Market.Controllers
                     {
                         GetBuyerOrderBasedOnUserIDDto details = new GetBuyerOrderBasedOnUserIDDto();
                         {
+                            details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
                             details.OrderNo = reader["OrderNo"].ToString();
                             details.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
                             details.Address = reader["Address"].ToString();
