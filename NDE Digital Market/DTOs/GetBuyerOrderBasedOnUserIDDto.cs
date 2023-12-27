@@ -3,6 +3,7 @@
     public class GetBuyerOrderBasedOnUserIDDto
     {
         // Order Master Details
+        public int? OrderDetailId { get; set; }
         public string? OrderNo { get; set; }
         public DateTime? OrderDate { get; set; }
         public string? Address { get; set; }
