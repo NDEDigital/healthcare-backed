@@ -44,6 +44,7 @@ namespace NDE_Digital_Market.Controllers
                                 ProductGroupName = reader["ProductGroupName"].ToString(),
                                 ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
                                 ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
+                                ImagePath = reader["ImagePath"].ToString(),
                                 ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
                             };
                             lst.Add(modelObj);
