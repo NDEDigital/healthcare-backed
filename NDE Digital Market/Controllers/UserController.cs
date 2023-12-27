@@ -14,8 +14,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json.Linq;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -30,8 +29,9 @@ namespace NDE_Digital_Market.Controllers
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
+            CommonServices commonServices = new CommonServices(configuration);
             con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
-            _healthCareConnection = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            _healthCareConnection = new SqlConnection(commonServices.HealthCareConnection);
            
         }
 

@@ -13,14 +13,6 @@ namespace NDE_Digital_Market.Controllers
     public class ProductListController : ControllerBase
     {
 
-
- 
-
-
-
-
-
-
         private readonly string foldername;
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
@@ -29,8 +21,8 @@ namespace NDE_Digital_Market.Controllers
         public ProductListController(IConfiguration configuration)
         {
             _configuration = configuration;
-            con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
             CommonServices commonServices = new CommonServices(_configuration);
+            con = new SqlConnection(commonServices.HealthCareConnection);       
             foldername = commonServices.FilesPath + "Productfiles";
         }
 

@@ -26,8 +26,8 @@ namespace NDE_Digital_Market.Controllers
             _configuration = configuration;
             _commonServices = new CommonServices(configuration);
             //_hostingEnvironment = hostingEnvironment;
-            con = new SqlConnection(_configuration.GetConnectionString("ProminentConnection"));
-            _healthCareConnection = _configuration.GetConnectionString("HealthCare");
+            con = new SqlConnection(_commonServices.HealthCareConnection);
+            _healthCareConnection = _commonServices.HealthCareConnection;
 
             //string rootPath = _hostingEnvironment.ContentRootPath;
             //Console.WriteLine(rootPath);
@@ -36,118 +36,6 @@ namespace NDE_Digital_Market.Controllers
 
         //===================================== Create User ================================
 
-        //By => "User"
-        //data => DateTime.Now
-        //PC => "0.0.0.0"
-
-        //[HttpPost, Authorize(Roles = "seller")]
-        [HttpPost]
-        [Route("AddProduct")]
-        public IActionResult AddProcuct([FromForm] GoodsQuantityModel product)
-        {
-
-            product.AddedDate = DateTime.Now;
-            product.UpdatedDate = DateTime.Now;
-
-            string decryptedSupplierCode = CommonServices.DecryptPassword(product.SellerCode);
-            product.SellerCode = decryptedSupplierCode;
-        //string rootPath = _hostingEnvironment.ContentRootPath;
-        //Console.WriteLine(rootPath);
-        //string path = Path.Combine(rootPath,@"images\Uploads", product.ImageName);
-        //string path = Path.Combine(@"C:\development\NDE Medical\NDE-Digital-Medical-Front-\src\assets\images\medical", product.ImageName);
-        //string path = Path.Combine(@"C:\NDE-Digital-Market\dist\nde-digital-market\assets\images\Uploads", product.ImageName);
-        string path = Path.Combine(@"E:\Nimpex Health Care\NDE-Digital-Medical-Front-\src\assets\images\Uploads", product.ImageName);
-        
-            product.ImagePath = path;
-            //Console.WriteLine(path);
-            product.AddedBy = decryptedSupplierCode;
-            product.UpdatedBy = decryptedSupplierCode;
-
-            using (Stream stream = new FileStream(path, FileMode.Create))
-            {
-                product.Image.CopyTo(stream);
-            }
-            string systemCode = string.Empty;
-
-            SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con);
-            {
-                cmdSP.CommandType = CommandType.StoredProcedure;
-                cmdSP.Parameters.AddWithValue("@TableName", "ProductList");
-                cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
-                cmdSP.Parameters.AddWithValue("@AddNumber", 1);
-
-                con.Open();
-                systemCode = cmdSP.ExecuteScalar()?.ToString();
-                con.Close();
-            }
-
-           
-            string query = @"INSERT INTO ProductList
-    (GoodsName, GroupCode, GroupName, Specification, Price, SellerCode, Quantity, 
-     QuantityUnit, AddedDate, UpdatedDate, AddedBy, UpdatedBy, AddedPc, UpdatedPc, 
-     ImagePath, Status)
-VALUES
-    (@GoodsName, @GroupCode, @GroupName, @Specification, @Price, @SellerCode, @Quantity, 
-     @QuantityUnit, @AddedDate, @UpdatedDate, @AddedBy, @UpdatedBy, @AddedPc, @UpdatedPc, 
-     @ImagePath, @Status);
- SELECT SCOPE_IDENTITY();
-";
-
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@GoodsName", product.GoodsName);
-            cmd.Parameters.AddWithValue("@GroupCode", product.GroupCode);
-            cmd.Parameters.AddWithValue("@GroupName", product.GroupName);
-            cmd.Parameters.AddWithValue("@Specification", product.Specification);
-            cmd.Parameters.AddWithValue("@Price", product.Price);
-            cmd.Parameters.AddWithValue("@SellerCode", product.SellerCode);
-            cmd.Parameters.AddWithValue("@Quantity", product.Quantity);
-            cmd.Parameters.AddWithValue("@QuantityUnit", product.QuantityUnit);
-            cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now); // or product.AddedDate if it's already set
-            cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now); // or product.UpdatedDate if it's already set
-            cmd.Parameters.AddWithValue("@AddedBy", product.AddedBy);
-            cmd.Parameters.AddWithValue("@UpdatedBy", product.UpdatedBy);
-            cmd.Parameters.AddWithValue("@AddedPc", product.AddedPc);
-            cmd.Parameters.AddWithValue("@UpdatedPc", product.UpdatedPc);
-            cmd.Parameters.AddWithValue("@ImagePath", product.ImagePath);
-            cmd.Parameters.AddWithValue("@Status", product.Status);
-
-            try
-            {
-                con.Open();
-                object result = cmd.ExecuteScalar();
-                if (result != null)
-                {
-                    product.GoodsId = result.ToString();
-                }
-                con.Close();
-              
-                MaterialStockInsert stock = new MaterialStockInsert();
-                stock.GroupCode = product.GroupCode;
-                stock.GoodsId = Convert.ToInt32(product.GoodsId);
-                stock.SellerCode = product.SellerCode;
-                stock.PresentQty = (float)product.Quantity;
-                stock.PreviousQty = (float)product.Quantity;
-             
-                string ans = _commonServices.InsertStockQt(stock);
-
-                return Ok(); // If execution is successful
-            }
-            catch (SqlException ex)
-            {
-                // Handle any SQL-related errors
-                return BadRequest("SQL Error: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                // Handle any other errors
-                return StatusCode(500, "Internal Server Error: " + ex.Message);
-            }
-
-
-        }
 
         [HttpPut, Authorize(Roles = "seller")]
         [Route("UpdateProduct")]

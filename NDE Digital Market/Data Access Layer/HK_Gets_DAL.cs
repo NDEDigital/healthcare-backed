@@ -1,7 +1,7 @@
 ﻿using NDE_Digital_Market.Data_Access_Layer;
 using NDE_Digital_Market.Model;
 using System.Data.SqlClient;
-
+using NDE_Digital_Market.SharedServices;
 namespace NDE_Digital_Market.Data_Access_Layer;
 
 public class HK_Gets_DAL
@@ -10,8 +10,9 @@ public class HK_Gets_DAL
     private readonly SqlConnection con;
     public HK_Gets_DAL(IConfiguration configuration)
     {
+        CommonServices commonServices = new CommonServices(configuration);
         _configuration = configuration;
-        con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+        con = new SqlConnection(commonServices.HealthCareConnection);
     }
     public async Task<List<PaymentMethodModel>> PaymentMethodGetAsync()
     {

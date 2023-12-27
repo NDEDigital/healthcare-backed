@@ -18,6 +18,7 @@ namespace NDE_Digital_Market.Controllers
         private readonly string filename = "SellerProductGroup";
         public ProductGroupsController(IConfiguration configuration)
         {
+            CommonServices commonServices = new CommonServices(configuration);
             _configuration = configuration;
             con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
             CommonServices commonServices = new CommonServices(configuration);

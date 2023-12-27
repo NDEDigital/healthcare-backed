@@ -12,6 +12,7 @@ namespace NDE_Digital_Market.SharedServices
         //public static string FilesPath { get; } = @"F:\Projects\Health Care\healthcare-frontend\src\assets\images\";
 
         public string FilesPath { get; set; }
+        public string HealthCareConnection { get; set; }
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
        
@@ -19,8 +20,7 @@ namespace NDE_Digital_Market.SharedServices
         {
             _configuration = configuration;
             FilesPath = _configuration["FilesPaths:filepath"];
-            con = new SqlConnection(_configuration.GetConnectionString("DigitalMarketConnection"));
-           
+            HealthCareConnection = configuration.GetConnectionString("HealthCare");
         }
 
         public static string EncryptPassword(string clearText)
@@ -67,85 +67,7 @@ namespace NDE_Digital_Market.SharedServices
             }
             return cipherText;
         }
-        public string InsertStockQt(MaterialStockInsert Stock)
-        {
-
-            string query = @"
-                            INSERT INTO MaterialStockQty (GroupCode, GoodsId, SellerCode, PreviousQty, PresentQty)
-                            VALUES (@GroupCode, @GoodsId, @SellerCode, @PreviousQty, @PresentQty)           
-                       ";
-
-            using (SqlCommand cmd = new SqlCommand(query, con))
-            {
-               
-                    cmd.Parameters.AddWithValue("@GroupCode", Stock.GroupCode);
-                    cmd.Parameters.AddWithValue("@GoodsId", Stock.GoodsId);
-                    cmd.Parameters.AddWithValue("@SellerCode", Stock.SellerCode);
-                    cmd.Parameters.AddWithValue("@PreviousQty", Stock.PreviousQty);
-                    cmd.Parameters.AddWithValue("@PresentQty", Stock.PresentQty);
-
-                    try
-                    {
-                        con.Open();
-                        cmd.ExecuteNonQuery();
-                        con.Close();
-                        return "200"; // If execution is successful
-                    }
-                    catch (SqlException ex)
-                    {
-                        // Handle any SQL-related errors
-                        return "SQL Error";
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle any other errors
-                        return "500";
-                    }
-
-            }
-            return "200";
-
-
-        }
-        public string UpdateStockQt(List<MaterialStockUpdate> Stock)
-        {
-
-            string query = @"UPDATE MaterialStockQty SET PreviousQty = PresentQty, PresentQty = PresentQty - @SALES
-                              WHERE GroupCode = @GroupCode AND GoodsId = @GoodsId AND SellerCode = @SellerCode";
-
-            using (SqlCommand cmd = new SqlCommand(query, con))
-            {
-                foreach (var stock in Stock)
-                {
-                    cmd.Parameters.AddWithValue("@GroupCode", stock.GroupCode);
-                    cmd.Parameters.AddWithValue("@GoodsId", stock.GoodsId);
-                    cmd.Parameters.AddWithValue("@SellerCode", stock.SellerCode);
-                    cmd.Parameters.AddWithValue("@SALES", stock.SalesQty);
-                    try
-                    {
-                        con.Open();
-                        cmd.ExecuteNonQuery();
-                        con.Close();
-                        return "200"; // If execution is successful
-                    }
-                    catch (SqlException ex)
-                    {
-                        // Handle any SQL-related errors
-                        return "SQL Error";
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle any other errors
-                        return "500";
-                    }
-
-                }
-            }
-            return "200";
-
-
-        }
-
+      
 
         public static string UploadFiles(string foldername, string filename, IFormFile file)
         {
