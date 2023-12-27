@@ -520,9 +520,13 @@ namespace NDE_Digital_Market.Controllers
         //    }
         //}
 
+
+
         [HttpPut("UpdateSellerOrderDetailsStatus")]
-        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status)
+        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status, SellerSalesMasterDto? sellerSalesMasterDto)
         {
+            // Start a transaction
+            SqlTransaction transaction = null;
 
             try
             {
@@ -536,20 +540,33 @@ namespace NDE_Digital_Market.Controllers
                         orderdetailsIdString = string.Join(",", DetailsIds);
                         string masterStatusChangeQuery = "UPDATE OrderDetails SET Status = @value  WHERE OrderDetailId IN (" + orderdetailsIdString + ") ;";
 
-                        SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con);
+
+
+                        await con.OpenAsync();
+                        transaction = con.BeginTransaction();
+                        SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con, transaction);
                         //cmd1.Parameters.AddWithValue("@orderMasterId", orderMasterId);
                         cmd1.Parameters.AddWithValue("@value", status);
-                        await con.OpenAsync();
+
                         int masteRES = await cmd1.ExecuteNonQueryAsync();
-                        await con.CloseAsync();
                         if (masteRES > 0)
                         {
+                            if (status == "Processing")
+                            {
+                                var detailsResult = await InsertSellerSalesDataAsync(sellerSalesMasterDto, con, transaction);
+                                if (detailsResult is BadRequestObjectResult)
+                                {
+                                    throw new Exception((detailsResult as BadRequestObjectResult).Value.ToString());
+                                }
+                            }
 
+                            // If everything is fine, commit the transaction
+                            transaction.Commit();
                             return Ok(new { message = "Order Status Changed Successfully." });
                         }
                         else
                         {
-                            return BadRequest(new { message = "Order Details Status is not Changed." });
+                            return BadRequest(new { message = "Order Details not found." });
                         }
 
                     }
@@ -563,11 +580,115 @@ namespace NDE_Digital_Market.Controllers
             }
             catch (Exception ex)
             {
-
+                // If there is any error, rollback the transaction
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
                 return BadRequest(new { message = ex.Message });
+            }
+            finally
+            {
+                // Finally block to ensure the connection is always closed
+                if (con.State == ConnectionState.Open)
+                {
+                    await con.CloseAsync();
+                }
             }
 
         }
+
+        private async Task<IActionResult> InsertSellerSalesDataAsync(SellerSalesMasterDto sellerSalesMasterDto, SqlConnection con,  SqlTransaction transaction)
+        {
+
+
+            try
+            {
+                string systemCode = string.Empty;
+
+                // Execute the stored procedure to generate the system code
+                SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con, transaction);
+                {
+                    cmdSP.CommandType = CommandType.StoredProcedure;
+                    cmdSP.Parameters.AddWithValue("@TableName", "SellerSalesMaster");
+                    cmdSP.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+                    cmdSP.Parameters.AddWithValue("@AddNumber", 1);
+                    var tempSystem = await cmdSP.ExecuteScalarAsync();
+                    systemCode = tempSystem?.ToString() ?? string.Empty;
+                }
+                int SSMId = int.Parse(systemCode.Split('%')[0]);
+                string SSMCode = systemCode.Split('%')[1];
+                // SP END
+
+                SqlCommand cmdMaster = new SqlCommand("InsertSellerSalesMaster", con, transaction);
+                cmdMaster.CommandType = CommandType.StoredProcedure;
+
+                cmdMaster.Parameters.AddWithValue("@SSMId", SSMId);
+                cmdMaster.Parameters.AddWithValue("@SSMCode", SSMCode);
+                cmdMaster.Parameters.AddWithValue("@SSMDate", sellerSalesMasterDto.SSMDate);
+                cmdMaster.Parameters.AddWithValue("@UserId", sellerSalesMasterDto.UserId);
+                cmdMaster.Parameters.AddWithValue("@TotalPrice", sellerSalesMasterDto.TotalPrice);
+                cmdMaster.Parameters.AddWithValue("@Challan", sellerSalesMasterDto.Challan ?? (object)DBNull.Value);
+                cmdMaster.Parameters.AddWithValue("@Remarks", sellerSalesMasterDto.Remarks ?? (object)DBNull.Value);
+                cmdMaster.Parameters.AddWithValue("@BUserId", sellerSalesMasterDto.BUserId);
+                cmdMaster.Parameters.AddWithValue("@CompanyCode", sellerSalesMasterDto.CompanyCode);
+
+                cmdMaster.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.AddedBy);
+                cmdMaster.Parameters.AddWithValue("@DateAdded", DateTime.Now);
+                cmdMaster.Parameters.AddWithValue("@AddedPC", sellerSalesMasterDto.AddedPC);
+
+                int a = await cmdMaster.ExecuteNonQueryAsync();
+                if (a > 0)
+                {
+                    for (int i = 0; i < sellerSalesMasterDto.SellerSalesDetailsList.Count; i++)
+                    {
+                        string detailsQuery = "InsertSellerSalesDetail";
+                        //checking if user already exect for not.
+                        SqlCommand cmdDetails = new SqlCommand(detailsQuery, con, transaction);
+                        cmdDetails.CommandType = CommandType.StoredProcedure;
+
+                        cmdDetails.Parameters.Clear();
+
+                        cmdDetails.Parameters.AddWithValue("@SSMId", SSMId);
+                        cmdDetails.Parameters.AddWithValue("@OrderNo", sellerSalesMasterDto.SellerSalesDetailsList[i].OrderNo);
+                        cmdDetails.Parameters.AddWithValue("@ProductId", sellerSalesMasterDto.SellerSalesDetailsList[i].ProductId);
+                        cmdDetails.Parameters.AddWithValue("@Specification", sellerSalesMasterDto.SellerSalesDetailsList[i].Specification);
+                        cmdDetails.Parameters.AddWithValue("@StockQty", sellerSalesMasterDto.SellerSalesDetailsList[i].StockQty);
+                        cmdDetails.Parameters.AddWithValue("@SaleQty", sellerSalesMasterDto.SellerSalesDetailsList[i].SaleQty);
+                        cmdDetails.Parameters.AddWithValue("@UnitId", sellerSalesMasterDto.SellerSalesDetailsList[i].UnitId);
+                        cmdDetails.Parameters.AddWithValue("@NetPrice", sellerSalesMasterDto.SellerSalesDetailsList[i].NetPrice);
+                        cmdDetails.Parameters.AddWithValue("@Address", sellerSalesMasterDto.SellerSalesDetailsList[i].Address);
+                        cmdDetails.Parameters.AddWithValue("@ProductGroupID", sellerSalesMasterDto.SellerSalesDetailsList[i].ProductGroupID);
+                        cmdDetails.Parameters.AddWithValue("@Remarks", sellerSalesMasterDto.SellerSalesDetailsList[i].Remarks ?? (object)DBNull.Value);
+
+                        cmdDetails.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.SellerSalesDetailsList[i].AddedBy);
+                        cmdDetails.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                        cmdDetails.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.SellerSalesDetailsList[i].AddedPC);
+
+                        int detailsRes = await cmdDetails.ExecuteNonQueryAsync();
+                        if (detailsRes<=0)
+                        {
+                            return BadRequest(new { message = "SellerSales details data isn't Inserted." });
+                        }
+                    }
+                }
+                else
+                {
+                    return BadRequest(new { message = "SellerSales Master data isn't Inserted Successfully." });
+                }
+                return Ok(new { message = "SellerSale data Inserted Successfully." });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            //return Ok(new { message = "Order Details data Inserted Successfully." });
+        }
+
+
+
 
 
 
@@ -865,6 +986,73 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
+        [HttpGet("GetBuyerOrderBasedOnUserID")]
+        public async Task<IActionResult> GetBuyerOrderBasedOnUserIDAsync(string userid, string? status)
+        {
+            try
+            {
+                List<GetBuyerOrderBasedOnUserIDDto> objectlist = new List<GetBuyerOrderBasedOnUserIDDto>();
+                using (SqlConnection con = new SqlConnection(_healthCareConnection))
+                {
+                    string query = "GetBuyerOrderByUserId";
+                    SqlCommand sqlCommand = new SqlCommand(query, con);
+
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
+                    sqlCommand.Parameters.AddWithValue("@UserId", userid);
+                    if (status != null)
+                    {
+                        sqlCommand.Parameters.AddWithValue("@Status", status);
+                    }
+
+
+                    await con.OpenAsync();
+                    SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
+                    //if (!reader.HasRows)
+                    //{
+                    //    return BadRequest(new { message = "No Data Found." });
+                    //}
+                    while (await reader.ReadAsync())
+                    {
+                        GetBuyerOrderBasedOnUserIDDto details = new GetBuyerOrderBasedOnUserIDDto();
+                        {
+                            details.OrderNo = reader["OrderNo"].ToString();
+                            details.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+                            details.Address = reader["Address"].ToString();
+                            details.BuyerName = reader["BuyerName"].ToString();
+                            details.PaymentMethod = reader["PaymentMethod"].ToString();
+                            details.NumberOfItem = Convert.ToInt32(reader["NumberOfItem"]);
+                            details.TotalPrice = Convert.ToInt32(reader["TotalPrice"]);
+                            details.PhoneNumber = reader["PhoneNumber"].ToString();
+                            details.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                            details.ProductName = reader["ProductName"].ToString();
+                            details.Specification = reader["Specification"].ToString();
+                            details.Qty = Convert.ToInt32(reader["Qty"].ToString());
+                            details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
+                            details.Unit = reader["Unit"].ToString();
+                            details.DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountAmount"));
+                            details.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
+                            details.DetailDeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DetailDeliveryCharge")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DetailDeliveryCharge"));
+                            details.DetailDeliveryDate = reader.IsDBNull(reader.GetOrdinal("DetailDeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DetailDeliveryDate"));
+                            details.DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountPct"));
+                            details.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                            details.OrderStatus = reader["OrderStatus"].ToString();
+                            details.SellerStatus = reader["SellerStatus"].ToString();
+
+                        }
+
+                        objectlist.Add(details);
+                    }
+                    await con.CloseAsync();
+                }
+
+                return Ok(objectlist);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
 
 
