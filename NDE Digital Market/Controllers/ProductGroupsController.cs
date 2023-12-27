@@ -4,6 +4,7 @@ using NDE_Digital_Market.Model;
 using NDE_Digital_Market.DTOs;
 using System.Data;
 using System.Data.SqlClient;
+using NDE_Digital_Market.SharedServices;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -13,10 +14,14 @@ namespace NDE_Digital_Market.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
+        private readonly string foldername;
+        private readonly string filename = "SellerProductGroup";
         public ProductGroupsController(IConfiguration configuration)
         {
             _configuration = configuration;
             con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
+            CommonServices commonServices = new CommonServices(configuration);
+            foldername = commonServices.FilesPath + "SellerProductGroupFiles";
         }
 
         private async Task<Boolean> ProductGroupsNameCheck(string productgoodsname)
@@ -37,7 +42,7 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpPost("CreateProductGroups")]
-        public async Task<IActionResult> CreateProductGroupsAsync(ProductGroupsDto productGroupsDto)
+        public async Task<IActionResult> CreateProductGroupsAsync([FromForm]  ProductGroupsDto productGroupsDto)
         {
             try
             {
@@ -68,13 +73,16 @@ namespace NDE_Digital_Market.Controllers
                     string ProductGroupsCode = systemCode.Split('%')[1];
 
                     //SP END
-                    string query = @"INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC)
-                        VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
+
+                    string ImagePath = CommonServices.UploadFiles(foldername, filename, productGroupsDto.ImageFile);
+                    string query = @"INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName,ImagePath, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC)
+                        VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ImagePath, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@ProductGroupID", ProductGroupsID);
                     cmd.Parameters.AddWithValue("@ProductGroupCode", ProductGroupsCode);
                     cmd.Parameters.AddWithValue("@ProductGroupName", productGroupsDto.ProductGroupName);
+                    cmd.Parameters.AddWithValue("@ImagePath", ImagePath);
                     cmd.Parameters.AddWithValue("@ProductGroupPrefix", productGroupsDto.ProductGroupPrefix);
                     cmd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails ?? string.Empty);
                     cmd.Parameters.AddWithValue("@IsActive", 1);

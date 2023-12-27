@@ -7,6 +7,7 @@
         public string? ProductGroupPrefix { get; set; }
         public string? ProductGroupDetails { get; set; }
         //public bool IsActive { get; set; }
+        public IFormFile? ImageFile { get; set; }
         public string? AddedBy { get; set; }
         public DateTime? DateAdded { get; set; }
         public string? AddedPC { get; set; }
