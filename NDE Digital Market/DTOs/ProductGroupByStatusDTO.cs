@@ -9,6 +9,7 @@
         public string? ProductGroupDetails { get; set; }
         public bool IsActive { get; set; }
         public DateTime? DateAdded { get; set; }
+        public string? Imagepath { get; set; }
 
     }
 }
