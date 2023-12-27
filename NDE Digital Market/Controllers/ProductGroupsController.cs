@@ -21,7 +21,6 @@ namespace NDE_Digital_Market.Controllers
             CommonServices commonServices = new CommonServices(configuration);
             _configuration = configuration;
             con = new SqlConnection(_configuration.GetConnectionString("HealthCare"));
-            CommonServices commonServices = new CommonServices(configuration);
             foldername = commonServices.FilesPath + "SellerProductGroupFiles";
         }
 
