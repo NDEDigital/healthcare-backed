@@ -956,6 +956,7 @@ namespace NDE_Digital_Market.Controllers
                     {
                         GetSellerOrderBasedOnUserCodeDto details = new GetSellerOrderBasedOnUserCodeDto();
                         {
+                            details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
                             details.OrderNo = reader["OrderNo"].ToString();
                             details.Address = reader["Address"].ToString();
                             details.BUserId = Convert.ToInt32(reader["BUserId"]);
@@ -1016,7 +1017,7 @@ namespace NDE_Digital_Market.Controllers
                     {
                         GetBuyerOrderBasedOnUserIDDto details = new GetBuyerOrderBasedOnUserIDDto();
                         {
-                            details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
+                            //details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
                             details.OrderNo = reader["OrderNo"].ToString();
                             details.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
                             details.Address = reader["Address"].ToString();
