@@ -456,13 +456,18 @@ namespace NDE_Digital_Market.Controllers
             }
 
         }
-       
 
 
+       public class updateOrderClass{
+            public string? orderdetailsIds { get; set; }
+            public string? status { get; set; }
+            public SellerSalesMasterDto? sellerSalesMasterDto { get; set; }
+        }
 
         [HttpPut("UpdateSellerOrderDetailsStatus")]
-        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(String orderdetailsIds, string status, SellerSalesMasterDto? sellerSalesMasterDto)
+        public async Task<IActionResult> SellerOrderDetailsStatusChangedAsync(updateOrderClass updateOrder)
         {
+
             // Start a transaction
             SqlTransaction transaction = null;
 
@@ -470,11 +475,11 @@ namespace NDE_Digital_Market.Controllers
             {
                 using (SqlConnection con = new SqlConnection(_healthCareConnection))
                 {
-                    if (!string.IsNullOrEmpty(orderdetailsIds))
+                    if (!string.IsNullOrEmpty(updateOrder.orderdetailsIds))
                     {
                         string orderdetailsIdString = "''";
 
-                        List<int> DetailsIds = orderdetailsIds.Split(',').Select(int.Parse).ToList();
+                        List<int> DetailsIds = updateOrder.orderdetailsIds.Split(',').Select(int.Parse).ToList();
                         orderdetailsIdString = string.Join(",", DetailsIds);
                         string masterStatusChangeQuery = "UPDATE OrderDetails SET Status = @value  WHERE OrderDetailId IN (" + orderdetailsIdString + ") ;";
 
@@ -484,14 +489,14 @@ namespace NDE_Digital_Market.Controllers
                         transaction = con.BeginTransaction();
                         SqlCommand cmd1 = new SqlCommand(masterStatusChangeQuery, con, transaction);
                         //cmd1.Parameters.AddWithValue("@orderMasterId", orderMasterId);
-                        cmd1.Parameters.AddWithValue("@value", status);
+                        cmd1.Parameters.AddWithValue("@value", updateOrder.status);
 
                         int masteRES = await cmd1.ExecuteNonQueryAsync();
                         if (masteRES > 0)
                         {
-                            if (status == "Processing")
+                            if (updateOrder.status == "Processing")
                             {
-                                var detailsResult = await InsertSellerSalesDataAsync(sellerSalesMasterDto, con, transaction);
+                                var detailsResult = await InsertSellerSalesDataAsync(updateOrder.sellerSalesMasterDto, con, transaction);
                                 if (detailsResult is BadRequestObjectResult)
                                 {
                                     throw new Exception((detailsResult as BadRequestObjectResult).Value.ToString());
@@ -563,14 +568,12 @@ namespace NDE_Digital_Market.Controllers
 
                 cmdMaster.Parameters.AddWithValue("@SSMId", SSMId);
                 cmdMaster.Parameters.AddWithValue("@SSMCode", SSMCode);
-                cmdMaster.Parameters.AddWithValue("@SSMDate", sellerSalesMasterDto.SSMDate);
+                cmdMaster.Parameters.AddWithValue("@SSMDate", DateTime.Now);
                 cmdMaster.Parameters.AddWithValue("@UserId", sellerSalesMasterDto.UserId);
                 cmdMaster.Parameters.AddWithValue("@TotalPrice", sellerSalesMasterDto.TotalPrice);
                 cmdMaster.Parameters.AddWithValue("@Challan", sellerSalesMasterDto.Challan ?? (object)DBNull.Value);
                 cmdMaster.Parameters.AddWithValue("@Remarks", sellerSalesMasterDto.Remarks ?? (object)DBNull.Value);
                 cmdMaster.Parameters.AddWithValue("@BUserId", sellerSalesMasterDto.BUserId);
-                cmdMaster.Parameters.AddWithValue("@CompanyCode", sellerSalesMasterDto.CompanyCode);
-
                 cmdMaster.Parameters.AddWithValue("@AddedBy", sellerSalesMasterDto.AddedBy);
                 cmdMaster.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                 cmdMaster.Parameters.AddWithValue("@AddedPC", sellerSalesMasterDto.AddedPC);
