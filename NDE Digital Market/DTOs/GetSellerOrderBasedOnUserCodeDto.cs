@@ -2,6 +2,7 @@
 {
     public class GetSellerOrderBasedOnUserCodeDto
     {
+        public int OrderDetailId { get; set; }
         public string? OrderNo { get; set; }
         public string? Address { get; set; }
         public int? BUserId { get; set; }
