@@ -177,6 +177,7 @@ namespace NDE_Digital_Market.Controllers
                         modelObj.ProductGroupPrefix = reader["ProductGroupPrefix"].ToString();
                         modelObj.ProductGroupDetails = reader["ProductGroupDetails"].ToString();
                         modelObj.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                        modelObj.Imagepath = reader["Imagepath"].ToString();
                         modelObj.DateAdded = reader.IsDBNull(reader.GetOrdinal("DateAdded")) ? (DateTime?)null : (DateTime?)reader["DateAdded"];
 
                         lst.Add(modelObj);
