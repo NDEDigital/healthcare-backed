@@ -133,7 +133,7 @@ namespace NDE_Digital_Market.Controllers
 
                 cmd.Parameters.AddWithValue("@Remarks", portaldata.Remarks ?? String.Empty);
                 cmd.Parameters.AddWithValue("@UserId", portaldata.UserId);
-                cmd.Parameters.AddWithValue("@CompanyCode", portaldata.CompanyCode);
+             
  
                 cmd.Parameters.AddWithValue("@AddedBy", portaldata.AddedBy);
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
