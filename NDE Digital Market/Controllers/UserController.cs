@@ -58,10 +58,11 @@ namespace NDE_Digital_Market.Controllers
         private async Task<int?> CompanyExistAsync(string CompanyCode)
         {
             string query = @"SELECT COALESCE(CASE WHEN COUNT(UR.CompanyCode) < CR.MaxUser THEN 1 ELSE 0 END, 0) AS UserCount
-FROM CompanyRegistration CR
-LEFT JOIN UserRegistration UR ON UR.CompanyCode = CR.CompanyCode AND UR.IsActive = 1
-WHERE CR.CompanyCode = @CompanyCode
-GROUP BY CR.MaxUser;";
+                                FROM CompanyRegistration CR
+                                LEFT JOIN UserRegistration UR ON UR.CompanyCode = CR.CompanyCode AND UR.IsActive = 1
+                                WHERE CR.CompanyCode = @CompanyCode
+								and CR.IsActive = 1
+                                GROUP BY CR.MaxUser;";
 
             try
             {

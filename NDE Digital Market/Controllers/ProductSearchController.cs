@@ -27,12 +27,12 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpGet("GetSearchedProduct")]
-        public IActionResult GetSearchedProduct(string productName, string sortDirection, int nextCount, int offset)
+        public IActionResult GetSearchedProduct(string productName, string sortDirection)
         {
-            if (offset != 0)
-            {
-                offset = 20 * (offset - 1);
-            }
+            //if (offset != 0)
+            //{
+            //    offset = 20 * (offset - 1);
+            //}
 
             var resultList = new List<ProductSearchDto>();
 
@@ -43,8 +43,8 @@ namespace NDE_Digital_Market.Controllers
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@ProductName", productName));
                     cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
-                    cmd.Parameters.Add(new SqlParameter("@NextCount", nextCount));
-                    cmd.Parameters.Add(new SqlParameter("@Offset", offset));
+                    //cmd.Parameters.Add(new SqlParameter("@NextCount", nextCount));
+                    //cmd.Parameters.Add(new SqlParameter("@Offset", offset));
 
                     connection.Open();
 
