@@ -566,6 +566,8 @@ namespace NDE_Digital_Market.Controllers
                 SqlCommand cmdMaster = new SqlCommand("InsertSellerSalesMaster", con, transaction);
                 cmdMaster.CommandType = CommandType.StoredProcedure;
 
+
+
                 cmdMaster.Parameters.AddWithValue("@SSMId", SSMId);
                 cmdMaster.Parameters.AddWithValue("@SSMCode", SSMCode);
                 cmdMaster.Parameters.AddWithValue("@SSMDate", DateTime.Now);
