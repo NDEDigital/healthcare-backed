@@ -77,5 +77,40 @@ namespace NDE_Digital_Market.Controllers
 
             return lst;
         }
+
+        [HttpGet("GetReturnList")]
+        public async Task<IActionResult> GetReturnListAsync()
+        {
+            try
+            {
+                List<ReturnTypeModel> lst = new List<ReturnTypeModel>();
+                await con.OpenAsync();
+                string query = "select ReturnTypeId, ReturnTypeName from HK_ReturnType;";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            ReturnTypeModel modelObj = new ReturnTypeModel();
+                            modelObj.ReturnTypeId = Convert.ToInt32(reader["ReturnTypeId"]);
+                            modelObj.ReturnTypeName = reader["ReturnTypeName"].ToString();
+
+                            lst.Add(modelObj);
+                        }
+                    }
+                }
+
+                return Ok(lst);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "No ReturnType found." });
+                //return BadRequest(new { message = ex.Message });
+            }
+
+
+        }
     }
 }
