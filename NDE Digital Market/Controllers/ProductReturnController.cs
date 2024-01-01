@@ -63,13 +63,14 @@ namespace NDE_Digital_Market.Controllers
 
                 cmd.Parameters.AddWithValue("@ProductReturnId", ProductReturnId);
                 cmd.Parameters.AddWithValue("@ProductReturnCode", ProductReturnCode);
+                cmd.Parameters.AddWithValue("@ReturnTypeId", returnData.ReturnTypeId);
                 cmd.Parameters.AddWithValue("@ProductGroupId", returnData.ProductGroupId ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@ProductId", returnData.ProductId ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@OrderNo", returnData.OrderNo ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Price", returnData.Price ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@OrderDetailsId", returnData.OrderDetailsId ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@SellerId", returnData.SellerId ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@ApplyDate", returnData.ApplyDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ApplyDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@DeliveryDate", returnData.DeliveryDate ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Remarks", returnData.Remarks ?? (object)DBNull.Value);
 
@@ -80,7 +81,7 @@ namespace NDE_Digital_Market.Controllers
                 int a = await cmd.ExecuteNonQueryAsync();
                 if (a > 0)
                 {
-                    SqlCommand command = new SqlCommand("UPDATE OrderDetails SET Status = 'to Return' WHERE OrderDetailId = " + returnData.OrderDetailsId + "", con, transaction);
+                    SqlCommand command = new SqlCommand("UPDATE OrderDetails SET Status = 'ToReturn' WHERE OrderDetailId = " + returnData.OrderDetailsId + "", con, transaction);
 
                     int updateResult = await command.ExecuteNonQueryAsync();
 

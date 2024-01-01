@@ -4,6 +4,8 @@
     {
         //public int? ProductReturnId { get; set; }
         //public string? ProductReturnCode { get; set; }
+        public int? ReturnTypeId { get; set; }
+
         public int? ProductGroupId { get; set; }
         public int? ProductId { get; set; }
         public string? OrderNo { get; set; }
