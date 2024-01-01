@@ -63,19 +63,19 @@ namespace NDE_Digital_Market.Controllers
 
                 cmd.Parameters.AddWithValue("@ProductReturnId", ProductReturnId);
                 cmd.Parameters.AddWithValue("@ProductReturnCode", ProductReturnCode);
-                cmd.Parameters.AddWithValue("@ProductGroupId", returnData.ProductGroupId);
-                cmd.Parameters.AddWithValue("@ProductId", returnData.ProductId);
-                cmd.Parameters.AddWithValue("@OrderNo", returnData.OrderNo);
-                cmd.Parameters.AddWithValue("@Price", returnData.Price);
-                cmd.Parameters.AddWithValue("@OrderDetailsId", returnData.OrderDetailsId);
-                cmd.Parameters.AddWithValue("@SellerId", returnData.SellerId);
-                cmd.Parameters.AddWithValue("@ApplyDate", returnData.ApplyDate);
-                cmd.Parameters.AddWithValue("@DeliveryDate", returnData.DeliveryDate);
-                cmd.Parameters.AddWithValue("@Remarks", returnData.Remarks);
+                cmd.Parameters.AddWithValue("@ProductGroupId", returnData.ProductGroupId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ProductId", returnData.ProductId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@OrderNo", returnData.OrderNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Price", returnData.Price ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@OrderDetailsId", returnData.OrderDetailsId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SellerId", returnData.SellerId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ApplyDate", returnData.ApplyDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DeliveryDate", returnData.DeliveryDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Remarks", returnData.Remarks ?? (object)DBNull.Value);
 
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
-                cmd.Parameters.AddWithValue("@AddedBy", returnData.AddedBy);
-                cmd.Parameters.AddWithValue("@AddedPc", returnData.AddedPc);
+                cmd.Parameters.AddWithValue("@AddedBy", returnData.AddedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@AddedPc", returnData.AddedPc ?? (object)DBNull.Value);
 
                 int a = await cmd.ExecuteNonQueryAsync();
                 if (a > 0)
