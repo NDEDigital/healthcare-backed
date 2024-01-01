@@ -52,9 +52,9 @@ namespace NDE_Digital_Market.Controllers
                 string ProductReturnCode = systemCode.Split('%')[1];
                 // SP END
 
-                string query = @"INSERT INTO ProductReturn(ProductReturnId,ProductReturnCode,ProductGroupId,ProductId,OrderNo,Price,
+                string query = @"INSERT INTO ProductReturn(ProductReturnId,ProductReturnCode,ReturnTypeId,ProductGroupId,ProductId,OrderNo,Price,
                                     OrderDetailsId,SellerId,ApplyDate,DeliveryDate,Remarks,AddedDate,AddedBy,AddedPc)
-                                VALUES(@ProductReturnId,@ProductReturnCode,@ProductGroupId,@ProductId,@OrderNo,@Price,
+                                VALUES(@ProductReturnId,@ProductReturnCode,@ReturnTypeId,@ProductGroupId,@ProductId,@OrderNo,@Price,
                                     @OrderDetailsId,@SellerId,@ApplyDate,@DeliveryDate,@Remarks,@AddedDate,@AddedBy,@AddedPc);";
 
 
