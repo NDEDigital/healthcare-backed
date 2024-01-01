@@ -3,7 +3,7 @@
     public class GetOrderInvoiceByMasterIdDto
     {
         // Order Master Details
-        public int? OrderMasterId { get; set; }
+        //public int? OrderMasterId { get; set; }
         public string? OrderNo { get; set; }
         public DateTime? OrderDate { get; set; }
         public string? Address { get; set; }
@@ -15,12 +15,13 @@
         public decimal? DeliveryCharge { get; set; }
 
         // Order Detail Details
-        public int? OrderDetailId { get; set; }
+        //public int? OrderDetailId { get; set; }
         public string? SellerName { get; set; }
+        public string? CompanyName { get; set; }
         public string? ProductName { get; set; }
         public string? Specification { get; set; }
         public int? Qty { get; set; }
-        public int? UnitId { get; set; }
+        //public int? UnitId { get; set; }
         public string? Unit { get; set; }
         public decimal? DiscountAmount { get; set; }
         public decimal? Price { get; set; }
