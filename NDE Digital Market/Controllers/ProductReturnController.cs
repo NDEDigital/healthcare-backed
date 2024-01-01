@@ -34,6 +34,7 @@ namespace NDE_Digital_Market.Controllers
             try
             {
                 await con.OpenAsync();
+                transaction = con.BeginTransaction();
                 string systemCode = string.Empty;
 
                 // Execute the stored procedure to generate the system code
@@ -87,7 +88,7 @@ namespace NDE_Digital_Market.Controllers
                     {
 
                         transaction.Rollback();
-                        return BadRequest(new { message = "Order Details status isn't change." });
+                        return BadRequest(new { message = "Order Details status isn't change or not found." });
                     }
                 }
                 else
