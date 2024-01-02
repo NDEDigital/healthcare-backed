@@ -528,16 +528,21 @@ namespace NDE_Digital_Market.Controllers
                 user.PhoneNumber = reader["PhoneNumber"].ToString();
                 user.Email = reader["Email"].ToString();
                 user.Address = reader["Address"].ToString();
-                user.CompanyName = reader["CompanyName"].ToString();
-                user.YearsInBusiness = (int)reader["YearsInBusiness"];
-                user.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();
-                user.TaxIdentificationNumber = reader["TaxIdentificationNumber"].ToString();
-                user.PreferredPaymentMethodID = reader["PreferredPaymentMethodID"] as int?;
-                user.PMName = reader["PMName"].ToString();
-                user.BankNameID = reader["BankNameID"] as int?;
-                user.PMBankName = reader["PMBankName"].ToString();
-                user.AccountNumber = reader["AccountNumber"].ToString();
-                user.AccountHolderName = reader["AccountHolderName"].ToString();
+                if (user.IsSeller == true)
+                {
+                    user.CompanyName = reader["CompanyName"].ToString();
+                    user.YearsInBusiness = (int)reader["YearsInBusiness"];
+                    user.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();
+                    user.TaxIdentificationNumber = reader["TaxIdentificationNumber"].ToString();
+                    user.PreferredPaymentMethodID = reader["PreferredPaymentMethodID"] as int?;
+                    user.PMName = reader["PMName"].ToString();
+                    user.BankNameID = reader["BankNameID"] as int?;
+                    user.PMBankName = reader["PMBankName"].ToString();
+                    user.AccountNumber = reader["AccountNumber"].ToString();
+                    user.AccountHolderName = reader["AccountHolderName"].ToString();
+
+                }
+
                 _healthCareConnection.Close();
                 // Return the user object as a response
                 return Ok(new { message = "GET single data successful", user });
