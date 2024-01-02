@@ -1,32 +1,35 @@
-﻿namespace NDE_Digital_Market.DTOs
+﻿public class GetOrderInvoiceByMasterIdDto
 {
-    public class GetOrderInvoiceByMasterIdDto
-    {
-        // Order Master Details
-        public int? OrderMasterId { get; set; }
-        public string? OrderNo { get; set; }
-        public DateTime? OrderDate { get; set; }
-        public string? Address { get; set; }
-        public string? BuyerName { get; set; }
-        public string? PaymentMethod { get; set; }
-        public int? NumberOfItem { get; set; }
-        public decimal? TotalPrice { get; set; }
-        public string? PhoneNumber { get; set; }
-        public decimal? DeliveryCharge { get; set; }
+    // Buyer details
+    public string InvoiceNumber { get; set; }
+    public DateTime OrderDate { get; set; }
+    public string BuyerName { get; set; }
+    public string Address { get; set; }
+    public string Phone { get; set; }
+    public string PaymentMethod { get; set; }
+    public int NumberOfItem { get; set; }
+    public decimal TotalPrice { get; set; }
 
-        // Order Detail Details
-        public int? OrderDetailId { get; set; }
-        public string? SellerName { get; set; }
-        public string? ProductName { get; set; }
-        public string? Specification { get; set; }
-        public int? Qty { get; set; }
-        public int? UnitId { get; set; }
-        public string? Unit { get; set; }
-        public decimal? DiscountAmount { get; set; }
-        public decimal? Price { get; set; }
-        public decimal? DetailDeliveryCharge { get; set; }
-        public DateTime? DetailDeliveryDate { get; set; }
-        public decimal? DiscountPct { get; set; }
-        public decimal? NetPrice { get; set; }
-    }
+    // OrderInvoice list
+    public List<OrderInvoiceDetails> OrderInvoiceDetailList { get; set; } = new List<OrderInvoiceDetails>();
+}
+
+public class OrderInvoiceDetails
+{
+    // OrderInvoice details
+    public string ProductName { get; set; }
+    public string Specification { get; set; }
+    public int Quantity { get; set; }
+    public string Unit { get; set; }
+    public decimal Price { get; set; }
+    public decimal DeliveryCharge { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal DiscountPct { get; set; }
+    public decimal NetPrice { get; set; }
+    public decimal DetailDeliveryCharge { get; set; }
+    public decimal SubTotalPrice { get; set; }
+    public string SelesPerson { get; set; }
+    public string SelesAddress { get; set; }
+    public string SellerContact { get; set; }
+    public string Company { get; set; }
 }
