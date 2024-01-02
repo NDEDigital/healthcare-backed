@@ -16,7 +16,6 @@ namespace NDE_Digital_Market.Controllers
         private readonly string foldername;
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
-        //private readonly string foldername = "D:/HealthCare/healthcare-frontend/src/assets/images/Productfiles";
         private readonly string filename = "Productfile";
         public ProductListController(IConfiguration configuration)
         {
@@ -54,13 +53,11 @@ namespace NDE_Digital_Market.Controllers
                 if (check)
                 {
                     return BadRequest(new { message = "ProductName and Specification is same!" });
-                    //return Ok("ProductName and Specification is same.");
                 }
                 else
                 {
                     string systemCode = string.Empty;
 
-                    // Execute the stored procedure to generate the system code
                     SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con);
                     {
                         cmdSP.CommandType = CommandType.StoredProcedure;
@@ -76,9 +73,7 @@ namespace NDE_Digital_Market.Controllers
                     string ImagePath = CommonServices.UploadFiles(foldername, filename, productListDto.ImageFile);
 
                     int ProductID = int.Parse(systemCode.Split('%')[0]);
-                    //string ProductGroupsCode = systemCode.Split('%')[1];
 
-                    //SP END
                     string query = "INSERT INTO ProductList (ProductId, ProductName, ProductGroupID,Specification,UnitId, ImagePath, ProductSubName, IsActive, AddedDate, AddedBy, AddedPC)" +
                         "VALUES (@ProductId, @ProductName, @ProductGroupID, @Specification, @UnitId, @ImagePath, @ProductSubName, @IsActive, @AddedDate, @AddedBy, @AddedPC)";
                     SqlCommand cmd = new SqlCommand(query, con);
@@ -101,15 +96,13 @@ namespace NDE_Digital_Market.Controllers
 
                     return Ok(new { message = "Product Added Successfully." });
                 }
-
-
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
         }
+
 
         [HttpGet]
         [Route("GetProductList")]
@@ -157,19 +150,16 @@ namespace NDE_Digital_Market.Controllers
                 if (status != null)
                 {
                     query = @"SELECT * FROM ProductList WHERE IsActive= @IsActive ORDER BY ProductId  DESC;";
-
                 }
                 else
                 {
                     query = @"SELECT * FROM ProductList WHERE CONVERT(DATE, AddedDate) = CONVERT(DATE, GETDATE()) ORDER BY ProductId  DESC";
-
                 }
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     if (status != null)
                     {
                         cmd.Parameters.Add(new SqlParameter("@IsActive", status));
-
                     }
                     using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                     {
@@ -190,14 +180,13 @@ namespace NDE_Digital_Market.Controllers
                         }
                     }
                 }
-
                 return Ok(lst);
             }
+
             catch(Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
-
         }
     }
 }

@@ -19,7 +19,6 @@ namespace NDE_Digital_Market.Controllers
         private readonly string foldername;
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
-        //private readonly string foldername = "D:/HealthCare/healthcare-frontend/src/assets/images/Productfiles";
         private readonly string filename = "Reviewfile";
         public ReviewAndRatingController(IConfiguration configuration)
         {

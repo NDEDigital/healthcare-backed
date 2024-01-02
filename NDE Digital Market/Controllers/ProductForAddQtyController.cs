@@ -33,7 +33,6 @@ namespace NDE_Digital_Market.Controllers
         [HttpGet("GetProductForAddQtyByUserId/{UserId}")]
         public async Task<IActionResult> GetProductForAddQtyByUserId(int UserId)
         {
-            //string DecryptId = CommonServices.DecryptPassword(companyCode);
             var products = new List<SellerPoductListModel>();
 
             try
@@ -77,7 +76,6 @@ namespace NDE_Digital_Market.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception here
                 return StatusCode(500, "An error occurred while retrieving products: " + ex.Message);
             }
 
@@ -91,7 +89,6 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> InsertPortalReceivedAsync(PortalReceivedMasterDto portaldata)
         {
 
-            // Start a transaction
             SqlTransaction transaction = null;
             try
             {
@@ -99,7 +96,6 @@ namespace NDE_Digital_Market.Controllers
                 await con.OpenAsync();
                 transaction = con.BeginTransaction();
 
-                // Execute the stored procedure to generate the system code
                 SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con, transaction);
                 {
                     cmdSP.CommandType = CommandType.StoredProcedure;
@@ -113,7 +109,6 @@ namespace NDE_Digital_Market.Controllers
 
                 int PortalReceivedId = int.Parse(systemCode.Split('%')[0]);
                 string PortalReceivedCode = systemCode.Split('%')[1];
-                //SP END
                 portaldata.PortalReceivedId = PortalReceivedId;
                 portaldata.PortalReceivedCode = PortalReceivedCode;
 
@@ -124,8 +119,6 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@MaterialReceivedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@ChallanNo", portaldata.ChallanNo ?? String.Empty);
 
-                //cmd.Parameters.AddWithValue("@ChallanNo", (object)portaldata.ChallanNo ?? DBNull.Value);
-                //cmd.Parameters.AddWithValue("@ChallanNo", (object)portaldata.ChallanNo ?? DBNull.Value);
 
 
                 cmd.Parameters.AddWithValue("@ChallanDate", portaldata.ChallanDate ?? (object)DBNull.Value);
@@ -153,13 +146,11 @@ namespace NDE_Digital_Market.Controllers
                 {
                     return BadRequest(new { message = "Portal Master data isn't Inserted Successfully." });
                 }
-                // If everything is fine, commit the transaction
                 transaction.Commit();
                 return Ok(portaldata);
             }
             catch (Exception ex)
             {
-                // If there is any error, rollback the transaction
                 if (transaction != null)
                 {
                     transaction.Rollback();
@@ -168,7 +159,6 @@ namespace NDE_Digital_Market.Controllers
             }
             finally
             {
-                // Finally block to ensure the connection is always closed
                 if (con.State == ConnectionState.Open)
                 {
                     await con.CloseAsync();
@@ -184,7 +174,6 @@ namespace NDE_Digital_Market.Controllers
                 {
                     PortalReceivedDetailsList[i].PortalReceivedId = PortalReceivedId;
                     string query = "InsertPortalReceivedDetails";
-                    //checking if user already exect for not.
                     SqlCommand CheckCMD = new SqlCommand(query, con, transaction);
                     CheckCMD.CommandType = CommandType.StoredProcedure;
 
@@ -204,9 +193,6 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@AddedBy", PortalReceivedDetailsList[i].AddedBy);
                     CheckCMD.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                     CheckCMD.Parameters.AddWithValue("@AddedPC", PortalReceivedDetailsList[i].AddedPC);
-                    //cmd.Parameters.AddWithValue("@UpdatedBy", "UpdatedBy");
-                    //cmd.Parameters.AddWithValue("@UpdatedDate", (object)groups.UpdatedDate ?? DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@UpdatedPC", "Default UpdatedPC");
 
                     await CheckCMD.ExecuteNonQueryAsync();
 
@@ -257,7 +243,6 @@ namespace NDE_Digital_Market.Controllers
                 {
                     string ImagePath = CommonServices.UploadFiles(foldername, filename, sellerproductdata.ImageFile);
 
-                    //SP END
                     string query = @"INSERT INTO SellerProductPriceAndOffer(ProductId, UserId, Price,DiscountAmount,DiscountPct,EffectivateDate,
                     EndDate,ImagePath,Status,IsActive, AddedDate,AddedBy,AddedPC,TotalPrice,CompanyCode) 
                     VALUES (@ProductId,@UserId,@Price,@DiscountAmount,@DiscountPct,@EffectivateDate,@EndDate, @ImagePath,
@@ -275,7 +260,6 @@ namespace NDE_Digital_Market.Controllers
                     cmd.Parameters.AddWithValue("@Status", "Pending");
                     cmd.Parameters.AddWithValue("@IsActive", 1);
                     cmd.Parameters.AddWithValue("@TotalPrice", sellerproductdata.TotalPrice);
-                    //cmd.Parameters.AddWithValue("@CompanyCode", sellerproductdata.CompanyCode);
 
                     cmd.Parameters.AddWithValue("@AddedBy", sellerproductdata.AddedBy);
                     cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);

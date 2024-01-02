@@ -4,6 +4,7 @@ using NDE_Digital_Market.Services.HK_GetsServices;
 using NDE_Digital_Market.Model;
 using System.Data.SqlClient;
 using NDE_Digital_Market.SharedServices;
+using System.Data;
 
 namespace NDE_Digital_Market.Controllers
 {
@@ -26,28 +27,45 @@ namespace NDE_Digital_Market.Controllers
         [HttpGet("PreferredPaymentMethods")]
         public async Task<IActionResult> PaymentMethodGetAsync()
         {
-            List<PaymentMethodModel> res = await _HKGets.PaymentMethodGetAsync();
-            if (res.Count > 0)
+            try
             {
-                return Ok(res);
+                List<PaymentMethodModel> res = await _HKGets.PaymentMethodGetAsync();
+
+                if (res.Count > 0)
+                {
+                    return Ok(res);
+                }
+                else
+                {
+                    return BadRequest("No Payment method found.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest("No Payment method found.");
+                return StatusCode(500, "An error occurred while fetching payment methods.");
             }
         }
+
 
         [HttpGet("PreferredBankNames")]
         public async Task<IActionResult> BankNameGetAsync(int preferredPM)
         {
-            List<PaymentMethodModel> res = await _HKGets.BankNameGetAsync(preferredPM);
-            if (res.Count > 0)
+            try
             {
-                return Ok(res);
+                List<PaymentMethodModel> res = await _HKGets.BankNameGetAsync(preferredPM);
+
+                if (res.Count > 0)
+                {
+                    return Ok(res);
+                }
+                else
+                {
+                    return BadRequest(new { message = "No Payment method found." });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "No Payment method found." });
+                return StatusCode(500, new { message = "An error occurred while fetching bank names." });
             }
         }
 
@@ -55,27 +73,40 @@ namespace NDE_Digital_Market.Controllers
         [Route("GetUnitList")]
         public async Task<List<UnitModel>> GetUnitListAsync()
         {
-            
-            List<UnitModel> lst = new List<UnitModel>();
-            await con.OpenAsync();
-            string query = "select UnitId, Name from Units;";
-
-            using (SqlCommand cmd = new SqlCommand(query, con))
+            try
             {
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        UnitModel modelObj = new UnitModel();
-                        modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
-                        modelObj.Name = reader["Name"].ToString();
+                List<UnitModel> lst = new List<UnitModel>();
+                await con.OpenAsync();
+                string query = "select UnitId, Name from Units;";
 
-                        lst.Add(modelObj);
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            UnitModel modelObj = new UnitModel();
+                            modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
+                            modelObj.Name = reader["Name"].ToString();
+
+                            lst.Add(modelObj);
+                        }
                     }
                 }
-            }
 
-            return lst;
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
         }
 
         [HttpGet("GetReturnList")]
@@ -106,11 +137,15 @@ namespace NDE_Digital_Market.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "No ReturnType found." });
-                //return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "An error occurred while fetching ReturnTypes." });
             }
-
-
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
         }
     }
 }
