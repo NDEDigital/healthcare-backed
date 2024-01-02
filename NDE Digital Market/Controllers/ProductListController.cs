@@ -74,6 +74,10 @@ namespace NDE_Digital_Market.Controllers
                         await con.CloseAsync();
                     }
                     string ImagePath = CommonServices.UploadFiles(foldername, filename, productListDto.ImageFile);
+                    if(ImagePath == null)
+                    {
+                        return BadRequest(new { message = "Image Problem" });
+                    }
 
                     int ProductID = int.Parse(systemCode.Split('%')[0]);
                     //string ProductGroupsCode = systemCode.Split('%')[1];

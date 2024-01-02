@@ -73,7 +73,7 @@ namespace NDE_Digital_Market.SharedServices
         {
             if (file == null || file.Length == 0)
             {
-                return "Invalid file";
+                return null;
             }
 
             // Get the original file name with extension

@@ -28,7 +28,7 @@ namespace NDE_Digital_Market.Controllers
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("NDE Digital Market", "nde.digital@ndesteel.com"));
+                message.From.Add(new MailboxAddress("HealthCare", "nde.digital@ndesteel.com"));
                 message.To.Add(new MailboxAddress("", emailRequest.To));
                 message.Subject = emailRequest.Subject;
                 message.Body = new TextPart("plain")
