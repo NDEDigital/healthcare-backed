@@ -566,6 +566,8 @@ namespace NDE_Digital_Market.Controllers
                 SqlCommand cmdMaster = new SqlCommand("InsertSellerSalesMaster", con, transaction);
                 cmdMaster.CommandType = CommandType.StoredProcedure;
 
+
+
                 cmdMaster.Parameters.AddWithValue("@SSMId", SSMId);
                 cmdMaster.Parameters.AddWithValue("@SSMCode", SSMCode);
                 cmdMaster.Parameters.AddWithValue("@SSMDate", DateTime.Now);
@@ -958,7 +960,7 @@ namespace NDE_Digital_Market.Controllers
                     {
                         GetBuyerOrderBasedOnUserIDDto details = new GetBuyerOrderBasedOnUserIDDto();
                         {
-                            //details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
+                            details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
                             details.OrderNo = reader["OrderNo"].ToString();
                             details.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
                             details.Address = reader["Address"].ToString();
