@@ -914,6 +914,9 @@ namespace NDE_Digital_Market.Controllers
                             details.Unit = reader["Unit"].ToString();
                             details.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
                             details.Status = reader["Status"].ToString();
+                            details.ReturnTypeName = reader["ReturnTypeName"] is DBNull || reader["ReturnTypeName"].ToString() == null? (string?)null: reader["ReturnTypeName"].ToString();
+
+
 
                         }
 
