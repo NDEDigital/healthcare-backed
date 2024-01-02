@@ -75,6 +75,10 @@ namespace NDE_Digital_Market.Controllers
                     //SP END
 
                     string ImagePath = CommonServices.UploadFiles(foldername, filename, productGroupsDto.ImageFile);
+                    if (ImagePath == null)
+                    {
+                        return BadRequest(new { message = "Image Problem" });
+                    }
                     string query = @"INSERT INTO ProductGroups (ProductGroupID, ProductGroupCode, ProductGroupName,ImagePath, ProductGroupPrefix, ProductGroupDetails, IsActive, AddedBy, DateAdded, AddedPC)
                         VALUES(@ProductGroupID, @ProductGroupCode, @ProductGroupName, @ImagePath, @ProductGroupPrefix, @ProductGroupDetails, @IsActive, @AddedBy, @DateAdded, @AddedPC);";
                     SqlCommand cmd = new SqlCommand(query, con);
