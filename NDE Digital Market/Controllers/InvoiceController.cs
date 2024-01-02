@@ -28,73 +28,9 @@ namespace NDE_Digital_Market.Controllers
         }
 
         //========================================== Added By Maru =================================
-        // Get Invoice data For Admin
-        //[HttpGet, Authorize(Roles = "admin")]
+
         [HttpGet]
         [Route("GetInvoiceDataForBuyer")]
-        //public async Task<IActionResult> GetInvoiceDataForAdminAsync(int OrderMasterId)
-        //{
-        //    try
-        //    {
-        //        List<GetOrderInvoiceByMasterIdDto> objectlist = new List<GetOrderInvoiceByMasterIdDto>();
-        //        using (SqlConnection con = new SqlConnection(connectionHealthCare))
-        //        {
-        //            string query = "GetOrderInvoiceByMasterId";
-        //            SqlCommand sqlCommand = new SqlCommand(query , con);
-
-        //            sqlCommand.CommandType = CommandType.StoredProcedure;
-        //            sqlCommand.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
-
-        //            await con.OpenAsync();
-        //            SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
-        //            if (!reader.HasRows)
-        //            {
-        //                return BadRequest(new { message = "No Order Data Found." });
-        //            }
-        //            while (await reader.ReadAsync())
-        //            {
-        //                GetOrderInvoiceByMasterIdDto details = new GetOrderInvoiceByMasterIdDto();
-        //                {
-        //                    //details.OrderMasterId = Convert.ToInt32(reader["OrderMasterId"].ToString());
-        //                    details.OrderNo = reader["OrderNo"].ToString();
-        //                    details.OrderDate = Convert.ToDateTime(reader["OrderDate"].ToString());
-        //                    details.Address = reader["Address"].ToString();
-        //                    details.BuyerName = reader["BuyerName"].ToString();
-        //                    details.PaymentMethod = reader["PaymentMethod"].ToString();
-        //                    details.NumberOfItem = Convert.ToInt32(reader["NumberOfItem"].ToString());
-        //                    details.TotalPrice = Convert.ToDecimal(reader["TotalPrice"].ToString());
-        //                    details.PhoneNumber = reader["PhoneNumber"].ToString();
-        //                    details.DeliveryCharge = Convert.ToDecimal(reader["DeliveryCharge"].ToString());
-        //                    //details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString());
-        //                    details.SellerName = reader["SellerName"].ToString();
-        //                    details.CompanyName = reader["CompanyName"].ToString();
-        //                    details.ProductName = reader["ProductName"].ToString();
-        //                    details.Specification = reader["Specification"].ToString();
-        //                    details.Qty = Convert.ToInt32(reader["Qty"].ToString());
-        //                    //details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
-        //                    details.Unit = reader["Unit"].ToString();
-        //                    details.DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountAmount"));
-        //                    details.Price = Convert.ToDecimal(reader["Price"].ToString());
-        //                    details.DetailDeliveryCharge = Convert.ToDecimal(reader["DetailDeliveryCharge"].ToString());
-        //                    //details.DetailDeliveryDate = Convert.ToDateTime(reader["DetailDeliveryDate"].ToString());
-        //                    //details.DetailDeliveryDate = reader.IsDBNull(reader.GetOrdinal("DetailDeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DetailDeliveryDate"));
-        //                    details.DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountPct"));
-        //                    details.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (Decimal?)null : (Decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
-        //                }
-
-        //                objectlist.Add(details);
-        //            }
-        //            await con.CloseAsync();
-        //        }
-
-        //        return Ok(objectlist);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { message = ex.Message });
-        //    }
-        //}
-
         public async Task<IActionResult> GetInvoiceDataForBuyer(int OrderMasterId)
         {
             GetOrderInvoiceByMasterIdDto invoice = new GetOrderInvoiceByMasterIdDto();
@@ -148,7 +84,6 @@ namespace NDE_Digital_Market.Controllers
                 };
                 invoice.OrderInvoiceDetailList.Add(orderDetails); 
             }
-
             return Ok(new { message = "Buyer Order Invoice got successfully", invoice });
         }
 
@@ -156,83 +91,141 @@ namespace NDE_Digital_Market.Controllers
         //========================================== Added By Rey =================================
         // Get Invoice data For Seller
 
+        //[HttpGet]
+        //[Route("GetInvoiceDataForSeller")]
+        //public async Task<IActionResult> GetInvoiceDataForSeller(int SSMId)
+        //{
+        //    try
+        //    {
+        //List<SellerInvoice> objectlist = new List<SellerInvoice>();
+
+        //        using (SqlConnection con = new SqlConnection(connectionHealthCare))
+        //        {
+        //            string query = "SellerInvoice";
+
+        //            SqlCommand sqlCommand = new SqlCommand(query, con);
+
+        //            sqlCommand.CommandType = CommandType.StoredProcedure;
+        //            sqlCommand.Parameters.AddWithValue("@SSMId", SSMId);
+
+        //            await con.OpenAsync();
+
+        //            SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
+
+        //            if (!reader.HasRows)
+        //            {
+        //                return BadRequest(new { message = "No Order Data Found." });
+        //            }
+
+        //            while (await reader.ReadAsync())
+        //            {
+        //                SellerInvoice details = new SellerInvoice();
+        //                {
+        //                    details.SSMId = Convert.ToInt32(reader["SSMId"].ToString());
+        //                    details.SSMCode = reader["SSMCode"].ToString();
+        //                    details.SSMDate = Convert.ToDateTime(reader["SSMDate"].ToString());
+        //                    details.CompanyCode = reader["CompanyCode"].ToString();
+        //                    details.CompanyName = reader["CompanyName"].ToString();
+        //                    details.TotalPrice = Convert.ToDecimal(reader["TotalPrice"].ToString());
+        //                    details.Challan = reader["Challan"].ToString();
+        //                    details.TotalPrice = Convert.ToDecimal(reader["TotalPrice"].ToString());
+        //                    details.Remarks = reader["Remarks"].ToString();
+        //                    details.BUserId = Convert.ToInt32(reader["BUserId"].ToString());
+        //                    details.BuyerName = reader["BuyerName"].ToString();
+        //                    details.OrderNo = reader["OrderNo"] == DBNull.Value ? null : reader["OrderNo"].ToString();
+        //                    details.ProductId = Convert.ToInt32(reader["ProductId"].ToString());
+        //                    details.ProductName = reader["ProductName"].ToString();
+        //                    details.Specification = reader["Specification"].ToString();
+
+
+        //                    details.StockQty = Convert.ToDecimal(reader["StockQty"].ToString());
+        //                    details.SaleQty = Convert.ToInt32(reader["SaleQty"].ToString());
+
+        //                    details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
+        //                    details.Unit = reader["Unit"].ToString();
+
+
+        //                    details.NetPrice = Convert.ToDecimal(reader["NetPrice"].ToString());
+
+
+        //                    details.SSLRemarks = reader["SSLRemarks"].ToString();
+
+
+        //                    details.Address = reader["Address"].ToString();
+
+        //                    details.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"].ToString());
+        //                    details.ProductGroupName = reader["ProductGroupName"].ToString();
+        //                }
+
+        //                objectlist.Add(details);
+        //            }
+        //            await con.CloseAsync();
+        //        }
+
+        //        return Ok(objectlist);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //}
+
         [HttpGet]
         [Route("GetInvoiceDataForSeller")]
-        public async Task<IActionResult> GetInvoiceDataForSeller(int SSMId)
+        public async Task<IActionResult> GetInvoiceDataForSeller( int SSMId)
         {
-            try
+            SellerInvoice invoice = new SellerInvoice();
+            SqlConnection con = new SqlConnection(connectionHealthCare);
+            string queryForSeller = "SellerInvoice";
+            con.Open();
+            SqlCommand cmdForSeller = new SqlCommand(queryForSeller, con);
+            cmdForSeller.CommandType = CommandType.StoredProcedure;
+            cmdForSeller.Parameters.AddWithValue("@SSMId", SSMId);
+            SqlDataAdapter adapter = new SqlDataAdapter(cmdForSeller);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds);
+            DataTable reader = ds.Tables[0];
+            DataTable reader1 = ds.Tables[1];
+            con.Close();
+            for (int i = 0; i < reader.Rows.Count; i++)
             {
-                List<SellerInvoice> objectlist = new List<SellerInvoice>();
-
-                using (SqlConnection con = new SqlConnection(connectionHealthCare))
+                SellerInvoice Sellerdata = new SellerInvoice
                 {
-                    string query = "SellerInvoice";
 
-                    SqlCommand sqlCommand = new SqlCommand(query, con);
-
-                    sqlCommand.CommandType = CommandType.StoredProcedure;
-                    sqlCommand.Parameters.AddWithValue("@SSMId", SSMId);
-
-                    await con.OpenAsync();
-
-                    SqlDataReader reader = await sqlCommand.ExecuteReaderAsync();
-
-                    if (!reader.HasRows)
-                    {
-                        return BadRequest(new { message = "No Order Data Found." });
-                    }
-
-                    while (await reader.ReadAsync())
-                    {
-                        SellerInvoice details = new SellerInvoice();
-                        {
-                            details.SSMId = Convert.ToInt32(reader["SSMId"].ToString());
-                            details.SSMCode = reader["SSMCode"].ToString();
-                            details.SSMDate = Convert.ToDateTime(reader["SSMDate"].ToString());
-                            details.CompanyCode = reader["CompanyCode"].ToString();
-                            details.CompanyName = reader["CompanyName"].ToString();
-                            details.TotalPrice = Convert.ToDecimal(reader["TotalPrice"].ToString());
-                            details.Challan = reader["Challan"].ToString();
-                            details.TotalPrice = Convert.ToDecimal(reader["TotalPrice"].ToString());
-                            details.Remarks = reader["Remarks"].ToString();
-                            details.BUserId = Convert.ToInt32(reader["BUserId"].ToString());
-                            details.BuyerName = reader["BuyerName"].ToString();
-                            details.OrderNo = reader["OrderNo"] == DBNull.Value ? null : reader["OrderNo"].ToString();
-                            details.ProductId = Convert.ToInt32(reader["ProductId"].ToString());
-                            details.ProductName = reader["ProductName"].ToString();
-                            details.Specification = reader["Specification"].ToString();
-
-
-                            details.StockQty = Convert.ToDecimal(reader["StockQty"].ToString());
-                            details.SaleQty = Convert.ToInt32(reader["SaleQty"].ToString());
-
-                            details.UnitId = Convert.ToInt32(reader["UnitId"].ToString());
-                            details.Unit = reader["Unit"].ToString();
-
-
-                            details.NetPrice = Convert.ToDecimal(reader["NetPrice"].ToString());
-
-
-                            details.SSLRemarks = reader["SSLRemarks"].ToString();
-
-
-                            details.Address = reader["Address"].ToString();
-
-                            details.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"].ToString());
-                            details.ProductGroupName = reader["ProductGroupName"].ToString();
-                        }
-
-                        objectlist.Add(details);
-                    }
-                    await con.CloseAsync();
-                }
-
-                return Ok(objectlist);
+                    SSMCode = reader.Rows[i]["SSMCode"].ToString(),
+                    SSMDate = Convert.ToDateTime(reader.Rows[i]["SSMDate"].ToString()),
+                    SelesPerson = reader.Rows[i]["SelesPerson"].ToString(),
+                    Company = reader.Rows[i]["Company"].ToString(),
+                    SelesAddress = reader.Rows[i]["SelesAddress"].ToString(),
+                    Phone = reader.Rows[i]["Phone"].ToString(),
+                    Challan = reader.Rows[i]["Challan"].ToString(),
+                    Remarks = reader.Rows[i]["Remarks"].ToString(),
+            };
             }
-            catch (Exception ex)
+
+            for (int i = 0; i < reader1.Rows.Count; i++)
             {
-                return BadRequest(new { message = ex.Message });
+
+                     SellerInvoiceDetails sellerDetails = new SellerInvoiceDetails
+                {
+                    OrderNo = reader1.Rows[i]["OrderNo"].ToString(),
+                    ProductGroupName = reader1.Rows[i]["ProductGroupName"].ToString(),
+                    ProductName = reader1.Rows[i]["ProductName"].ToString(),
+                    Specification = reader1.Rows[i]["Specification"].ToString(),
+                    StockQty = Convert.ToDecimal(reader1.Rows[i]["StockQty"].ToString()),
+                    SaleQty = Convert.ToInt32(reader1.Rows[i]["SaleQty"].ToString()),
+                    Unit = reader1.Rows[i]["Unit"].ToString(),
+                    NetPrice = Convert.ToDecimal(reader1.Rows[i]["NetPrice"].ToString()),
+                    SSLRemarks = reader1.Rows[i]["SSLRemarks"].ToString(),
+                    BuyerName = reader1.Rows[i]["BuyerName"].ToString(),
+                    BuyerPhone = reader1.Rows[i]["BuyerPhone"].ToString(),
+                    Address = reader1.Rows[i]["Address"].ToString(),
+
+                };
+                // Add the ProductDetails object to the productDetailsList
+                invoice.SellerInvoiceDetailList.Add(sellerDetails);
             }
+            return Ok(new { message = "Sellers Order Invoice got successfully", invoice });
         }
 
 
