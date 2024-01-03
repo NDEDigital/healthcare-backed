@@ -484,77 +484,58 @@ namespace NDE_Digital_Market.Controllers
         //}
 
 
-
         // =================================================== getSingleUserInfo ===================================
         [HttpGet]
         [Route("getSingleUserInfo")]
         public IActionResult getSingleUser(int? userId)
         {
-            try
+            UserDetailsDTO user = new UserDetailsDTO();
+            //byte[] userCodeBytes = Encoding.UTF8.GetBytes(userCode);
+
+            //string DecryptedUserCode = ConvertBytesToHexString(user.UserCode);
+            SqlCommand cmd = new SqlCommand("SELECT\r\n     UR.UserId,\r\n\tUR.UserCode,   UR.FullName,\r\n    UR.IsAdmin,\r\n    UR.IsBuyer,\r\n    UR.IsSeller,\r\n    UR.PhoneNumber,\r\n    UR.Email,\r\n    UR.Address,\r\n    CR.CompanyName,\r\n   DATEDIFF(YEAR, CR.CompanyFoundationDate, GETDATE()) as YearsInBusiness,\r\n\tCR.BusinessRegistrationNumber,\r\n\tCR.TaxIdentificationNumber,\r\n\tCR.PreferredPaymentMethodID,\r\n\tPM.PMName,\r\n\tCR.BankNameID,\r\n\tPD.PMBankName,\r\n\tCR.AccountNumber,\r\n\tCR.AccountHolderName\r\n\r\n\r\nFROM\r\n    UserRegistration UR\r\nLEFT JOIN\r\n    CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode\r\nLEFT JOIN\r\n    HK_PaymentMethodMaster PM ON CR.PreferredPaymentMethodID = PM.PMMasterID\r\nLEFT JOIN\r\n    HK_PaymentMethodDetails PD ON CR.BankNameID = PD.PMDetailsID\r\nWHERE\r\n    UR.UserId = @UserId ", _healthCareConnection);
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            //Console.WriteLine(decryptedUserCode);
+            _healthCareConnection.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
             {
-                UserModel user = new UserModel();
-                SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", _healthCareConnection);
-                cmd.CommandType = CommandType.Text;
-                cmd.Parameters.AddWithValue("@UserId", userId);
-
-                _healthCareConnection.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (reader.Read())
+                user.UserId = (int)reader["UserId"];
+                user.UserCode = reader["UserCode"].ToString();
+                user.FullName = reader["FullName"].ToString();
+                user.IsAdmin = reader["IsAdmin"] as bool?;
+                user.IsBuyer = reader["IsBuyer"] as bool?;
+                user.IsSeller = reader["IsSeller"] as bool?;
+                user.PhoneNumber = reader["PhoneNumber"].ToString();
+                user.Email = reader["Email"].ToString();
+                user.Address = reader["Address"].ToString();
+                if (user.IsSeller == true)
                 {
-                    user.UserId = (int)reader["UserId"];
-                    user.UserCode = reader["UserCode"].ToString();
-                    user.FullName = reader["FullName"].ToString();
-                    user.PhoneNumber = reader["PhoneNumber"].ToString();
-                    user.Email = reader["Email"].ToString();
-                    user.Address = reader["Address"].ToString();
-                    _healthCareConnection.Close();
+                    user.CompanyName = reader["CompanyName"].ToString();
+                    user.YearsInBusiness = (int)reader["YearsInBusiness"];
+                    user.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();
+                    user.TaxIdentificationNumber = reader["TaxIdentificationNumber"].ToString();
+                    user.PreferredPaymentMethodID = reader["PreferredPaymentMethodID"] as int?;
+                    user.PMName = reader["PMName"].ToString();
+                    user.BankNameID = reader["BankNameID"] as int?;
+                    user.PMBankName = reader["PMBankName"].ToString();
+                    user.AccountNumber = reader["AccountNumber"].ToString();
+                    user.AccountHolderName = reader["AccountHolderName"].ToString();
 
-                    return Ok(new { message = "GET single data successful", user });
                 }
-                else
-                {
-                    _healthCareConnection.Close();
-                    return BadRequest(new { message = "Invalid Information" });
-                }
+                _healthCareConnection.Close();
+
+                return Ok(new { message = "GET single data successful", user });
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return BadRequest(new { message = "An error occurred while processing the request." });
+                _healthCareConnection.Close();
+                return BadRequest(new { message = "Invalid Inforamtion" });
             }
         }
 
 
-
-
-        //// =================================================== isAdmin ===================================
-        //[HttpGet]
-        //[Route("isAdmin")]
-        //public IActionResult isAdmin(string userCode)
-        //{
-        //    UserModel user = new UserModel();
-
-        //    string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-
-        //    SqlCommand cmd = new SqlCommand("SELECT PhoneNumber FROM UserRegistration WHERE UserCode = @userCode ", con);
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
-        //    //Console.WriteLine(decryptedUserCode);
-        //    con.Open();
-        //    SqlDataReader reader = cmd.ExecuteReader();
-        //    if (reader.Read())
-        //    {
-        //        con.Close();
-
-        //        return Ok(new { message = "User is an Admin" });
-        //    }
-        //    else
-        //    {
-        //        con.Close();
-        //        return BadRequest(new { message = "User is not an Admin" });
-        //    }
-        //}
 
 
         // ============================= Update Pass =============================
