@@ -34,7 +34,6 @@ namespace NDE_Digital_Market.Controllers
         public async Task<IActionResult> GetInvoiceDataForBuyer(int OrderMasterId)
         {
             SqlConnection con = new SqlConnection(connectionHealthCare);
-
             try
             {
                 GetOrderInvoiceByMasterIdDto invoice = new GetOrderInvoiceByMasterIdDto();
@@ -49,7 +48,6 @@ namespace NDE_Digital_Market.Controllers
                 adapter.Fill(ds);
                 DataTable reader = ds.Tables[0];
                 DataTable reader1 = ds.Tables[1];
-
                 for (int i = 0; i < reader.Rows.Count; i++)
                 {
                     invoice.InvoiceNumber = reader.Rows[i]["InvoiceNumber"].ToString();
@@ -61,18 +59,20 @@ namespace NDE_Digital_Market.Controllers
                     invoice.NumberOfItem = Convert.ToInt32(reader.Rows[i]["NumberOfItem"].ToString());
                     invoice.TotalPrice = Convert.ToDecimal(reader.Rows[i]["TotalPrice"].ToString());
                 }
-
                 for (int i = 0; i < reader1.Rows.Count; i++)
                 {
                     OrderInvoiceDetails orderDetails = new OrderInvoiceDetails
                     {
                         ProductName = reader1.Rows[i]["ProductName"].ToString(),
+                        Status = reader1.Rows[i]["Status"].ToString(),
                         Specification = reader1.Rows[i]["Specification"].ToString(),
                         Quantity = Convert.ToInt32(reader1.Rows[i]["Quantity"].ToString()),
+                        SellerId = Convert.ToInt32(reader1.Rows[i]["SellerId"].ToString()),
                         Unit = reader1.Rows[i]["Unit"].ToString(),
                         Price = Convert.ToDecimal(reader1.Rows[i]["Price"].ToString()),
                         DeliveryCharge = Convert.ToDecimal(reader1.Rows[i]["DeliveryCharge"].ToString()),
                         DiscountAmount = Convert.ToDecimal(reader1.Rows[i]["DiscountAmount"].ToString()),
+                        // DeliveryDate = Convert.ToDateTime(reader.Rows[i]["DeliveryDate"].ToString()),
                         DiscountPct = Convert.ToDecimal(reader1.Rows[i]["DiscountPct"].ToString()),
                         NetPrice = Convert.ToDecimal(reader1.Rows[i]["NetPrice"].ToString()),
                         DetailDeliveryCharge = Convert.ToDecimal(reader1.Rows[i]["DetailDeliveryCharge"].ToString()),
