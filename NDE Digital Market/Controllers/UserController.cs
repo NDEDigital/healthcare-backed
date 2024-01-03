@@ -524,8 +524,9 @@ namespace NDE_Digital_Market.Controllers
                     user.AccountHolderName = reader["AccountHolderName"].ToString();
 
                 }
-                _healthCareConnection.Close();
 
+                _healthCareConnection.Close();
+                // Return the user object as a response
                 return Ok(new { message = "GET single data successful", user });
             }
             else
@@ -534,7 +535,6 @@ namespace NDE_Digital_Market.Controllers
                 return BadRequest(new { message = "Invalid Inforamtion" });
             }
         }
-
 
 
 

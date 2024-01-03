@@ -105,7 +105,7 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetInvoiceDataForSeller")]
-        public async Task<IActionResult> GetInvoiceDataForSeller(int SSMId)
+        public async Task<IActionResult> GetInvoiceDataForSeller(int OrderMasterId, int UserId)
         {
             SellerInvoice invoice = new SellerInvoice();
             SqlConnection con = new SqlConnection(connectionHealthCare);
@@ -116,42 +116,46 @@ namespace NDE_Digital_Market.Controllers
                 con.Open();
                 SqlCommand cmdForSeller = new SqlCommand(queryForSeller, con);
                 cmdForSeller.CommandType = CommandType.StoredProcedure;
-                cmdForSeller.Parameters.AddWithValue("@SSMId", SSMId);
+                cmdForSeller.Parameters.AddWithValue("@OrderMasterId", OrderMasterId);
+                cmdForSeller.Parameters.AddWithValue("@UserId", UserId);
                 SqlDataAdapter adapter = new SqlDataAdapter(cmdForSeller);
                 DataSet ds = new DataSet();
                 adapter.Fill(ds);
                 DataTable reader = ds.Tables[0];
                 DataTable reader1 = ds.Tables[1];
+                DataTable reader2 = ds.Tables[2];
                 con.Close();
 
                 for (int i = 0; i < reader.Rows.Count; i++)
                 {
-                    invoice.SSMCode = reader.Rows[i]["SSMCode"].ToString();
-                    invoice.SSMDate = Convert.ToDateTime(reader.Rows[i]["SSMDate"].ToString());
                     invoice.SelesPerson = reader.Rows[i]["SelesPerson"].ToString();
                     invoice.Company = reader.Rows[i]["Company"].ToString();
                     invoice.SelesAddress = reader.Rows[i]["SelesAddress"].ToString();
-                    invoice.Phone = reader.Rows[i]["Phone"].ToString();
-                    invoice.Challan = reader.Rows[i]["Challan"].ToString();
-                    invoice.Remarks = reader.Rows[i]["Remarks"].ToString();
+                    invoice.SellerContact = reader.Rows[i]["SellerContact"].ToString();
                 }
 
                 for (int i = 0; i < reader1.Rows.Count; i++)
                 {
+                    BuyerDetails buyerDetails = new BuyerDetails
+                    {
+                        BuyerName = reader1.Rows[i]["BuyerName"].ToString(),
+                        BuyerAddress = reader1.Rows[i]["BuyerAddress"].ToString(),
+                        BuyerContact = reader1.Rows[i]["BuyerContact"].ToString(),
+                    };
+                    invoice.BuyerDetailsList.Add(buyerDetails);
+                }
+
+                for (int i = 0; i < reader2.Rows.Count; i++)
+                {
                     SellerInvoiceDetails sellerDetails = new SellerInvoiceDetails
                     {
-                        OrderNo = reader1.Rows[i]["OrderNo"].ToString(),
-                        ProductGroupName = reader1.Rows[i]["ProductGroupName"].ToString(),
-                        ProductName = reader1.Rows[i]["ProductName"].ToString(),
-                        Specification = reader1.Rows[i]["Specification"].ToString(),
-                        StockQty = Convert.ToDecimal(reader1.Rows[i]["StockQty"].ToString()),
-                        SaleQty = Convert.ToInt32(reader1.Rows[i]["SaleQty"].ToString()),
-                        Unit = reader1.Rows[i]["Unit"].ToString(),
-                        NetPrice = Convert.ToDecimal(reader1.Rows[i]["NetPrice"].ToString()),
-                        SSLRemarks = reader1.Rows[i]["SSLRemarks"].ToString(),
-                        BuyerName = reader1.Rows[i]["BuyerName"].ToString(),
-                        BuyerPhone = reader1.Rows[i]["BuyerPhone"].ToString(),
-                        Address = reader1.Rows[i]["Address"].ToString(),
+                        OrderNo = reader2.Rows[i]["OrderNo"].ToString(),
+                        ProductGroupName = reader2.Rows[i]["ProductGroupName"].ToString(),
+                        ProductName = reader2.Rows[i]["ProductName"].ToString(),
+                        Specification = reader2.Rows[i]["Specification"].ToString(),
+                        Qty = Convert.ToInt32(reader2.Rows[i]["Qty"].ToString()),
+                        Unit = reader2.Rows[i]["Unit"].ToString(),
+                        NetPrice = Convert.ToDecimal(reader2.Rows[i]["NetPrice"].ToString()),
                     };
                     invoice.SellerInvoiceDetailList.Add(sellerDetails);
                 }
