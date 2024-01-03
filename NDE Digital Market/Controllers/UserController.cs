@@ -52,7 +52,6 @@ namespace NDE_Digital_Market.Controllers
                 userExist = true;
             }
             return userExist;
-            //   return BadRequest(new { message = "User does not exist" , userExist });
         }
 
         private async Task<int?> CompanyExistAsync(string CompanyCode)
@@ -72,20 +71,14 @@ namespace NDE_Digital_Market.Controllers
                 {
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@CompanyCode", CompanyCode);
-
-                    // Execute the query and store the result in the 'userCount' variable
                     var result = await cmd.ExecuteScalarAsync();
 
                     await _healthCareConnection.CloseAsync();
-
-                    // Check if the result is not null and cast it to int
                     return result != null ? Convert.ToInt32(result) : (int?)null;
                 }
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it appropriately
-                // Returning null in case of an exception
                 return null;
             }
         }
@@ -123,7 +116,6 @@ namespace NDE_Digital_Market.Controllers
             }
             string systemCode = string.Empty;
 
-            // Execute the stored procedure to generate the system code
             SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", _healthCareConnection);
             {
                 cmdSP.CommandType = CommandType.StoredProcedure;
@@ -136,7 +128,6 @@ namespace NDE_Digital_Market.Controllers
                 systemCode = cmdSP.ExecuteScalar()?.ToString();
                 await _healthCareConnection.CloseAsync();
             }
-            //SP END
 
             if (companyExist == 1)
             {
@@ -155,11 +146,6 @@ namespace NDE_Digital_Market.Controllers
                     await _healthCareConnection.CloseAsync();
             }
 
-
-
-
-            // Encrypt the Password
-            //string encryptedPassword = CommonServices.EncryptPassword(user.Password);
             createPasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             UserModel userModel = new UserModel();
@@ -222,10 +208,10 @@ namespace NDE_Digital_Market.Controllers
                 message = "User created successfully",
                 encryptedUserCode,
                 role,
-                token,  // Include the token in the response object
+                token, 
                 newRefreshToken
             });
-            //}
+
         }
 
 
@@ -233,46 +219,51 @@ namespace NDE_Digital_Market.Controllers
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> LoginUser(LoginUserDto user)
-        //public IActionResult LoginUser(string phone, string pass)
         {
-            //UserModel user = new UserModel();
-            //string encryptedPassword = CommonServices.EncryptPassword(user.Password);
-            SqlCommand cmd = new SqlCommand("SELECT * FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber ", _healthCareConnection);
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
-            //cmd.Parameters.AddWithValue("@Password", user.Password);
-           await _healthCareConnection.OpenAsync();
-            SqlDataReader reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
+            try
             {
-                int userId =(int) reader["UserId"];
-     
-                bool IsBuyer = (bool)reader["IsBuyer"];
-                bool IsSeller = (bool)reader["IsSeller"];
-                bool IsAdmin = (bool)reader["IsAdmin"];
+                SqlCommand cmd = new SqlCommand("SELECT * FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber ", _healthCareConnection);
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
 
-                byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
-                byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
-                await _healthCareConnection.CloseAsync();
-              
-                string role = IsAdmin ? "admin" : IsSeller ? "seller" : IsBuyer ? "buyer" : "";
-                string token = CreateToken(role);
-                var newRefreshToken = CreateRefreshToken(userId.ToString());
+                await _healthCareConnection.OpenAsync();
+                SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                if (!VerifyPasswordHash(user.Password, storedPasswordHash, storedPasswordSalt))
+                if (await reader.ReadAsync())
                 {
-                    return BadRequest(new { message = "Invalid password" });
+                    int userId = (int)reader["UserId"];
+                    bool IsBuyer = (bool)reader["IsBuyer"];
+                    bool IsSeller = (bool)reader["IsSeller"];
+                    bool IsAdmin = (bool)reader["IsAdmin"];
+
+                    byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
+                    byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
+
+                    await _healthCareConnection.CloseAsync();
+
+                    string role = IsAdmin ? "admin" : IsSeller ? "seller" : IsBuyer ? "buyer" : "";
+                    string token = CreateToken(role);
+                    var newRefreshToken = CreateRefreshToken(userId.ToString());
+
+                    if (!VerifyPasswordHash(user.Password, storedPasswordHash, storedPasswordSalt))
+                    {
+                        return BadRequest(new { message = "Invalid password" });
+                    }
+
+                    return Ok(new { message = "Login successful", userId, role, token, newRefreshToken });
                 }
-                //await SetRefreshToken(newRefreshToken, encryptedUserCode);
-                // Return the user object as a response
-                return Ok(new { message = "Login successful", userId, role, token, newRefreshToken });
+                else
+                {
+                    return BadRequest(new { message = "Invalid phone number or Password" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                con.Close();
-                return BadRequest(new { message = "Invalid phone number or Password"});
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest(new { message = "An error occurred while processing the request." });
             }
         }
+
 
 
         [HttpPost]
@@ -297,14 +288,7 @@ namespace NDE_Digital_Market.Controllers
 
             if (DateTime.UtcNow > expireDate)
             {
-                // Return a forbidden (403) response
-                //  return Unauthorized();
                 return Forbid();
-                //return Ok(new
-                //{
-                //    message = "reFreshToken Expired",
-
-                //});
             }
 
             var userIdClaim = jwtToken.Claims.FirstOrDefault(c =>  c.Type == ClaimTypes.NameIdentifier);
@@ -326,7 +310,7 @@ namespace NDE_Digital_Market.Controllers
             bool? isSeller = null;
             bool? isAdmin = null;
 
-            string query = "SELECT * FROM UserRegistration WHERE UserId = @userId";
+            string query = "SELECT * FROM UserRegistration UR\r\n  LEFT JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode \r\n   WHERE UserId  = @userId";
 
             using (SqlCommand cmd = new SqlCommand(query, _healthCareConnection))
             {
@@ -369,18 +353,17 @@ namespace NDE_Digital_Market.Controllers
 
             if (timeStamp == null || timeStamp.Value > issueDate)
             {
-                timeStamp = DateTime.UtcNow.AddSeconds(1); // Assign any value greater than issueDate
+                timeStamp = DateTime.UtcNow.AddSeconds(1); 
             }
 
-            // If the timestamp is more recent than the token issue date, it means the token should be considered invalid
             if (timeStamp > issueDate)
             {
                 return Unauthorized("Token has been invalidated.");
             }
 
-            // At this point, the token is considered valid, and we can generate a new access and refresh token
-            string newAccessToken = CreateToken(role); // Replace "RoleFromYourSystem" with actual role retrieval logic
-            string newRefreshToken = CreateRefreshToken(encryptedUserId); // This method should be defined to create a refresh token
+
+            string newAccessToken = CreateToken(role); 
+            string newRefreshToken = CreateRefreshToken(encryptedUserId); 
 
             return Ok(new
             {
@@ -501,17 +484,16 @@ namespace NDE_Digital_Market.Controllers
         //}
 
 
-
         // =================================================== getSingleUserInfo ===================================
         [HttpGet]
         [Route("getSingleUserInfo")]
         public IActionResult getSingleUser(int? userId)
         {
-            UserModel user = new UserModel();
+            UserDetailsDTO user = new UserDetailsDTO();
             //byte[] userCodeBytes = Encoding.UTF8.GetBytes(userCode);
-  
+
             //string DecryptedUserCode = ConvertBytesToHexString(user.UserCode);
-            SqlCommand cmd = new SqlCommand("SELECT * FROM UserRegistration WHERE UserId = @UserId ", _healthCareConnection);
+            SqlCommand cmd = new SqlCommand("SELECT\r\n     UR.UserId,\r\n\tUR.UserCode,   UR.FullName,\r\n    UR.IsAdmin,\r\n    UR.IsBuyer,\r\n    UR.IsSeller,\r\n    UR.PhoneNumber,\r\n    UR.Email,\r\n    UR.Address,\r\n    CR.CompanyName,\r\n   DATEDIFF(YEAR, CR.CompanyFoundationDate, GETDATE()) as YearsInBusiness,\r\n\tCR.BusinessRegistrationNumber,\r\n\tCR.TaxIdentificationNumber,\r\n\tCR.PreferredPaymentMethodID,\r\n\tPM.PMName,\r\n\tCR.BankNameID,\r\n\tPD.PMBankName,\r\n\tCR.AccountNumber,\r\n\tCR.AccountHolderName\r\n\r\n\r\nFROM\r\n    UserRegistration UR\r\nLEFT JOIN\r\n    CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode\r\nLEFT JOIN\r\n    HK_PaymentMethodMaster PM ON CR.PreferredPaymentMethodID = PM.PMMasterID\r\nLEFT JOIN\r\n    HK_PaymentMethodDetails PD ON CR.BankNameID = PD.PMDetailsID\r\nWHERE\r\n    UR.UserId = @UserId ", _healthCareConnection);
             cmd.CommandType = CommandType.Text;
             cmd.Parameters.AddWithValue("@UserId", userId);
             //Console.WriteLine(decryptedUserCode);
@@ -521,13 +503,29 @@ namespace NDE_Digital_Market.Controllers
             {
                 user.UserId = (int)reader["UserId"];
                 user.UserCode = reader["UserCode"].ToString();
- 
                 user.FullName = reader["FullName"].ToString();
+                user.IsAdmin = reader["IsAdmin"] as bool?;
+                user.IsBuyer = reader["IsBuyer"] as bool?;
+                user.IsSeller = reader["IsSeller"] as bool?;
                 user.PhoneNumber = reader["PhoneNumber"].ToString();
                 user.Email = reader["Email"].ToString();
                 user.Address = reader["Address"].ToString();
+                if (user.IsSeller == true)
+                {
+                    user.CompanyName = reader["CompanyName"].ToString();
+                    user.YearsInBusiness = (int)reader["YearsInBusiness"];
+                    user.BusinessRegistrationNumber = reader["BusinessRegistrationNumber"].ToString();
+                    user.TaxIdentificationNumber = reader["TaxIdentificationNumber"].ToString();
+                    user.PreferredPaymentMethodID = reader["PreferredPaymentMethodID"] as int?;
+                    user.PMName = reader["PMName"].ToString();
+                    user.BankNameID = reader["BankNameID"] as int?;
+                    user.PMBankName = reader["PMBankName"].ToString();
+                    user.AccountNumber = reader["AccountNumber"].ToString();
+                    user.AccountHolderName = reader["AccountHolderName"].ToString();
+
+                }
                 _healthCareConnection.Close();
-                // Return the user object as a response
+
                 return Ok(new { message = "GET single data successful", user });
             }
             else
@@ -538,34 +536,6 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
-
-        //// =================================================== isAdmin ===================================
-        //[HttpGet]
-        //[Route("isAdmin")]
-        //public IActionResult isAdmin(string userCode)
-        //{
-        //    UserModel user = new UserModel();
-
-        //    string decryptedUserCode = CommonServices.DecryptPassword(userCode);
-
-        //    SqlCommand cmd = new SqlCommand("SELECT PhoneNumber FROM UserRegistration WHERE UserCode = @userCode ", con);
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.Parameters.AddWithValue("@userCode", decryptedUserCode);
-        //    //Console.WriteLine(decryptedUserCode);
-        //    con.Open();
-        //    SqlDataReader reader = cmd.ExecuteReader();
-        //    if (reader.Read())
-        //    {
-        //        con.Close();
-
-        //        return Ok(new { message = "User is an Admin" });
-        //    }
-        //    else
-        //    {
-        //        con.Close();
-        //        return BadRequest(new { message = "User is not an Admin" });
-        //    }
-        //}
 
 
         // ============================= Update Pass =============================

@@ -39,7 +39,6 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpPut, Authorize(Roles = "seller")]
         [Route("UpdateProduct")]
-
         public IActionResult UpdateProduct([FromForm] GoodsQuantityModel product)
         {
             string decryptedSupplierCode = CommonServices.DecryptPassword(product.SellerCode);
@@ -70,20 +69,16 @@ namespace NDE_Digital_Market.Controllers
                 con.Open();
                 cmd.ExecuteNonQuery();
                 con.Close();
-                return Ok(); // If execution is successful
+                return Ok();
             }
             catch (SqlException ex)
             {
-                // Handle any SQL-related errors
                 return BadRequest("SQL Error: " + ex.Message);
             }
             catch (Exception ex)
             {
-                // Handle any other errors
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
-           
-
         }
 
        
@@ -93,91 +88,100 @@ namespace NDE_Digital_Market.Controllers
         [HttpGet ]
         [Route("GetDashboardContents")]
 
-        //public Tuple<List<SellerProductsModel>, object> GetDashboardContents(string sellerCode, String? status = null)
         public IActionResult GetDashboardContents(string sellerCode, String? status = null, String? productName = null, String? companyName = null, DateTime? addedDate = null)
         {
-            Console.WriteLine(sellerCode, "sellerCode");
-            string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
-
-            bool isAdmin = false;
-            int newCount = 0, editedCount = 0, approvedCount = 0, rejectedCount = 0;
-            string query = "SELECT PhoneNumber FROM UserRegistration WHERE UserCode = @UserCode;";
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@UserCode", decryptedSupplierCode);
-            con.Open();
-            SqlDataReader reader = cmd.ExecuteReader();
-          
-            if (reader.Read())
+            try
             {
-                string phoneNumber = reader["PhoneNumber"].ToString();
-            
-                if (phoneNumber == "admin")
+                Console.WriteLine(sellerCode, "sellerCode");
+                string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
+
+                bool isAdmin = false;
+                int newCount = 0, editedCount = 0, approvedCount = 0, rejectedCount = 0;
+                string query = "SELECT PhoneNumber FROM UserRegistration WHERE UserCode = @UserCode;";
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@UserCode", decryptedSupplierCode);
+                con.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
                 {
-                    isAdmin = true;
+                    string phoneNumber = reader["PhoneNumber"].ToString();
+
+                    if (phoneNumber == "admin")
+                    {
+                        isAdmin = true;
+                    }
                 }
-            }
-            con.Close();
-            List<GoodsQuantityModel> Products = new List<GoodsQuantityModel>();
-
-            if (isAdmin && status != null)
-            {
-
-                Console.WriteLine(isAdmin);
-                Console.WriteLine("isAdmin");
-
-
-                string queryForAdmin = "sp_ProductListWithCompanyName";
-
-                SqlCommand cmdForAdmin = new SqlCommand(queryForAdmin, con);
-                cmdForAdmin.CommandType = CommandType.StoredProcedure;
-                cmdForAdmin.Parameters.AddWithValue("@Status", status);
-                if (productName != null) { cmdForAdmin.Parameters.AddWithValue("@productName", productName); }
-                if (companyName != null) { cmdForAdmin.Parameters.AddWithValue("@CompanyName", companyName); }
-                if (addedDate != null) { cmdForAdmin.Parameters.AddWithValue("@AddedDate", addedDate); }
-                SqlDataAdapter adapter = new SqlDataAdapter(cmdForAdmin);
-                DataSet ds = new DataSet();
-                adapter.Fill(ds);
-                DataTable dt = ds.Tables[0];
-                DataTable dt1 = ds.Tables[1];
-
                 con.Close();
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    newCount = Convert.ToInt32(dt.Rows[i]["NewCount"]);
-                    editedCount = Convert.ToInt32(dt.Rows[i]["EditedCount"]);
-                    approvedCount = Convert.ToInt32(dt.Rows[i]["ApprovedCount"]);
-                    rejectedCount = Convert.ToInt32(dt.Rows[i]["RejectedCount"]);
+                List<GoodsQuantityModel> Products = new List<GoodsQuantityModel>();
 
-                }
-
-                for (int i = 0; i < dt1.Rows.Count; i++)
+                if (isAdmin && status != null)
                 {
-                    GoodsQuantityModel modelObj = new GoodsQuantityModel();
-                    modelObj.CompanyName = dt1.Rows[i]["CompanyName"].ToString();
-                    modelObj.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
-                    modelObj.GoodsId = dt1.Rows[i]["GoodsID"].ToString();
-                    modelObj.GroupName = dt1.Rows[i]["GroupName"].ToString();
-                    modelObj.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
-                    modelObj.Specification = dt1.Rows[i]["Specification"].ToString();
-                    modelObj.ApproveSalesQty = float.Parse(dt1.Rows[i]["Quantity"].ToString());
-                    modelObj.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
-                    modelObj.Price = float.Parse(dt1.Rows[i]["Price"].ToString());
-                    modelObj.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
-                    modelObj.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
-                    modelObj.AddedDate = dt1.Rows[i]["AddedDate"] != DBNull.Value ? Convert.ToDateTime(dt1.Rows[i]["AddedDate"]) : (DateTime?)null;
-                    Products.Add(modelObj);
+
+                    Console.WriteLine(isAdmin);
+                    Console.WriteLine("isAdmin");
+
+                    string queryForAdmin = "sp_ProductListWithCompanyName";
+
+                    SqlCommand cmdForAdmin = new SqlCommand(queryForAdmin, con);
+                    cmdForAdmin.CommandType = CommandType.StoredProcedure;
+                    cmdForAdmin.Parameters.AddWithValue("@Status", status);
+                    if (productName != null) { cmdForAdmin.Parameters.AddWithValue("@productName", productName); }
+                    if (companyName != null) { cmdForAdmin.Parameters.AddWithValue("@CompanyName", companyName); }
+                    if (addedDate != null) { cmdForAdmin.Parameters.AddWithValue("@AddedDate", addedDate); }
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmdForAdmin);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable dt = ds.Tables[0];
+                    DataTable dt1 = ds.Tables[1];
+
+                    con.Close();
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        newCount = Convert.ToInt32(dt.Rows[i]["NewCount"]);
+                        editedCount = Convert.ToInt32(dt.Rows[i]["EditedCount"]);
+                        approvedCount = Convert.ToInt32(dt.Rows[i]["ApprovedCount"]);
+                        rejectedCount = Convert.ToInt32(dt.Rows[i]["RejectedCount"]);
+                    }
+
+                    for (int i = 0; i < dt1.Rows.Count; i++)
+                    {
+                        GoodsQuantityModel modelObj = new GoodsQuantityModel();
+                        modelObj.CompanyName = dt1.Rows[i]["CompanyName"].ToString();
+                        modelObj.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
+                        modelObj.GoodsId = dt1.Rows[i]["GoodsID"].ToString();
+                        modelObj.GroupName = dt1.Rows[i]["GroupName"].ToString();
+                        modelObj.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
+                        modelObj.Specification = dt1.Rows[i]["Specification"].ToString();
+                        modelObj.ApproveSalesQty = float.Parse(dt1.Rows[i]["Quantity"].ToString());
+                        modelObj.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
+                        modelObj.Price = float.Parse(dt1.Rows[i]["Price"].ToString());
+                        modelObj.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
+                        modelObj.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
+                        modelObj.AddedDate = dt1.Rows[i]["AddedDate"] != DBNull.Value ? Convert.ToDateTime(dt1.Rows[i]["AddedDate"]) : (DateTime?)null;
+                        Products.Add(modelObj);
+                    }
                 }
+                else
+                {
+                    isAdmin = false;
+                }
+                return Ok(new { message = "content get successfully", Products, isAdmin, newCount, editedCount, approvedCount, rejectedCount });
             }
-            else
+            catch (Exception ex)
             {
-                isAdmin = false;
-                //Products = GetSellerProduct(sellerCode);
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest(new { message = "An error occurred while processing the request." });
             }
-
-            //return Tuple.Create(Products, (object)isAdmin);
-            return Ok(new { message = "content get successfully", Products, isAdmin, newCount, editedCount, approvedCount, rejectedCount });
-
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
         }
+
 
         // ======================= GET Product ==================
 
@@ -257,7 +261,6 @@ namespace NDE_Digital_Market.Controllers
         [HttpGet("GetSellerProductForAdminApproval")]
         public async Task<IActionResult> GetSellerProductForAdminApproval(string status)
         {
-            //string DecryptId = CommonServices.DecryptPassword(companyCode);
             var products = new List<ProductStatusDto>();
 
             try
@@ -300,12 +303,6 @@ namespace NDE_Digital_Market.Controllers
                         }
                     }
                 }
-
-                //if (products.Count == 0)
-                //{
-                //    return NotFound("No products found for the given status.");
-                //}
-
                 return Ok(products);
             }
             catch (Exception ex)
@@ -320,20 +317,31 @@ namespace NDE_Digital_Market.Controllers
         [Route("DeleteProduct")]
         public IActionResult DeleteProcuct(string sellerCode, int ProductId)
         {
-            string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
+            try
+            {
+                string decryptedSupplierCode = CommonServices.DecryptPassword(sellerCode);
 
+                SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @GoodsId AND SellerCode = @SellerCode", con);
 
-            SqlCommand cmd = new SqlCommand("DELETE FROM ProductList WHERE  GoodsId = @GoodsId AND SellerCode = @SellerCode", con);
-
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@GoodsId", ProductId);
-            cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            return Ok(new { message = "Product DELETED successfully" });
-
-
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@GoodsId", ProductId);
+                cmd.Parameters.AddWithValue("@SellerCode", decryptedSupplierCode);
+                con.Open();
+                cmd.ExecuteNonQuery();
+                return Ok(new { message = "Product DELETED successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest(new { message = "An error occurred while processing the request." });
+            }
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
         }
 
 
@@ -489,48 +497,64 @@ namespace NDE_Digital_Market.Controllers
         [Route("comapreEditedProduct")]
         public IActionResult comapreEditedProduct(int productId)
         {
-            GoodsQuantityModel oldData = new GoodsQuantityModel();
-            GoodsQuantityModel newData = new GoodsQuantityModel();
-            string query = "SELECT * FROM ProductList WHERE GoodsId=@ProductId; SELECT * FROM EditedProductList WHERE GoodsId=@ProductId;";
-            con.Open();
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@ProductId", productId);
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataSet ds = new DataSet();
-            adapter.Fill(ds);
-            DataTable dt0 = ds.Tables[0];
-            DataTable dt1 = ds.Tables[1];
-            con.Close();
-            for (int i = 0; i < dt0.Rows.Count; i++)
+            try
             {
-                oldData.GoodsId = dt0.Rows[i]["GoodsId"].ToString();
-                oldData.Status = dt0.Rows[i]["Status"].ToString();
-                oldData.GoodsName = dt0.Rows[i]["GoodsName"].ToString();
-                oldData.Specification = dt0.Rows[i]["Specification"].ToString();
-                oldData.GroupCode = dt0.Rows[i]["GroupCode"].ToString();
-                oldData.GroupName = dt0.Rows[i]["GroupName"].ToString();
-                oldData.Price = Convert.ToSingle(dt0.Rows[i]["Price"]);
-                oldData.ImagePath = dt0.Rows[i]["ImagePath"].ToString();
-                oldData.SellerCode = dt0.Rows[i]["SellerCode"].ToString();
-                oldData.Quantity = Convert.ToInt32(dt0.Rows[i]["Quantity"].ToString());
-                oldData.QuantityUnit = dt0.Rows[i]["QuantityUnit"].ToString();
+                GoodsQuantityModel oldData = new GoodsQuantityModel();
+                GoodsQuantityModel newData = new GoodsQuantityModel();
+                string query = "SELECT * FROM ProductList WHERE GoodsId=@ProductId; SELECT * FROM EditedProductList WHERE GoodsId=@ProductId;";
+                con.Open();
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataSet ds = new DataSet();
+                adapter.Fill(ds);
+                DataTable dt0 = ds.Tables[0];
+                DataTable dt1 = ds.Tables[1];
+                con.Close();
+                for (int i = 0; i < dt0.Rows.Count; i++)
+                {
+                    oldData.GoodsId = dt0.Rows[i]["GoodsId"].ToString();
+                    oldData.Status = dt0.Rows[i]["Status"].ToString();
+                    oldData.GoodsName = dt0.Rows[i]["GoodsName"].ToString();
+                    oldData.Specification = dt0.Rows[i]["Specification"].ToString();
+                    oldData.GroupCode = dt0.Rows[i]["GroupCode"].ToString();
+                    oldData.GroupName = dt0.Rows[i]["GroupName"].ToString();
+                    oldData.Price = Convert.ToSingle(dt0.Rows[i]["Price"]);
+                    oldData.ImagePath = dt0.Rows[i]["ImagePath"].ToString();
+                    oldData.SellerCode = dt0.Rows[i]["SellerCode"].ToString();
+                    oldData.Quantity = Convert.ToInt32(dt0.Rows[i]["Quantity"].ToString());
+                    oldData.QuantityUnit = dt0.Rows[i]["QuantityUnit"].ToString();
+                }
+                for (int i = 0; i < dt1.Rows.Count; i++)
+                {
+                    newData.GoodsId = dt1.Rows[i]["GoodsId"].ToString();
+                    newData.Status = dt1.Rows[i]["Status"].ToString();
+                    newData.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
+                    newData.Specification = dt1.Rows[i]["Specification"].ToString();
+                    newData.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
+                    newData.GroupName = dt1.Rows[i]["GroupName"].ToString();
+                    newData.Price = Convert.ToSingle(dt1.Rows[i]["Price"]);
+                    newData.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
+                    newData.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
+                    newData.Quantity = Convert.ToInt32(dt1.Rows[i]["Quantity"].ToString());
+                    newData.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
+                }
+                return Ok(new { message = "GET Products data successful", oldData, newData });
             }
-            for (int i = 0; i < dt1.Rows.Count; i++)
+            catch (Exception ex)
             {
-                newData.GoodsId = dt1.Rows[i]["GoodsId"].ToString();
-                newData.Status = dt1.Rows[i]["Status"].ToString();
-                newData.GoodsName = dt1.Rows[i]["GoodsName"].ToString();
-                newData.Specification = dt1.Rows[i]["Specification"].ToString();
-                newData.GroupCode = dt1.Rows[i]["GroupCode"].ToString();
-                newData.GroupName = dt1.Rows[i]["GroupName"].ToString();
-                newData.Price = Convert.ToSingle(dt1.Rows[i]["Price"]);
-                newData.ImagePath = dt1.Rows[i]["ImagePath"].ToString();
-                newData.SellerCode = dt1.Rows[i]["SellerCode"].ToString();
-                newData.Quantity = Convert.ToInt32(dt1.Rows[i]["Quantity"].ToString());
-                newData.QuantityUnit = dt1.Rows[i]["QuantityUnit"].ToString();
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest(new { message = "An error occurred while processing the request." });
             }
-            return Ok(new { message = "GET Products data successful", oldData, newData });
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
         }
+
     }
 }

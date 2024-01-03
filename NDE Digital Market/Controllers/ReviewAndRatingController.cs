@@ -19,7 +19,6 @@ namespace NDE_Digital_Market.Controllers
         private readonly string foldername;
         private readonly IConfiguration _configuration;
         private readonly SqlConnection con;
-        //private readonly string foldername = "D:/HealthCare/healthcare-frontend/src/assets/images/Productfiles";
         private readonly string filename = "Reviewfile";
         public ReviewAndRatingController(IConfiguration configuration)
         {
@@ -123,6 +122,32 @@ namespace NDE_Digital_Market.Controllers
 
             using (con)
             {
+
+                // Retrieve ProductId and SellerId from OrderDetails
+                string getSellerAndProductQuery = @"
+                   SELECT ProductId, UserId AS SellerId FROM OrderDetails 
+                    WHERE OrderDetailId =  @OrderDetailId";
+
+                using (SqlCommand getSellerAndProductCmd = new SqlCommand(getSellerAndProductQuery, con))
+                {
+                    getSellerAndProductCmd.Parameters.AddWithValue("@OrderDetailId", review.OrderDetailId);
+
+                    await con.OpenAsync();
+                    using (SqlDataReader reader = await getSellerAndProductCmd.ExecuteReaderAsync())
+                    {
+                        if (reader.Read())
+                        {
+                            review.ProductId = reader["ProductId"] as int?;
+                            review.SellerId = reader["SellerId"] as int?;
+                        }
+                    }
+                    con.Close();
+                }
+
+
+
+
+
                 string query = @"
     INSERT INTO ReviewRatings
         (OrderDetailId, ReviewText, RatingValue, BuyerId, ProductGroupID, ProductId, 

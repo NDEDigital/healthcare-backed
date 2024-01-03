@@ -37,7 +37,6 @@ namespace NDE_Digital_Market.Controllers
                 transaction = con.BeginTransaction();
                 string systemCode = string.Empty;
 
-                // Execute the stored procedure to generate the system code
                 SqlCommand cmdSP = new SqlCommand("spMakeSystemCode", con, transaction);
                 {
                     cmdSP.CommandType = CommandType.StoredProcedure;
@@ -50,7 +49,6 @@ namespace NDE_Digital_Market.Controllers
                 }
                 int ProductReturnId = int.Parse(systemCode.Split('%')[0]);
                 string ProductReturnCode = systemCode.Split('%')[1];
-                // SP END
 
                 string query = @"INSERT INTO ProductReturn(ProductReturnId,ProductReturnCode,ReturnTypeId,ProductGroupId,ProductId,OrderNo,Price,
                                     OrderDetailsId,SellerId,ApplyDate,DeliveryDate,Remarks,AddedDate,AddedBy,AddedPc)
@@ -97,14 +95,12 @@ namespace NDE_Digital_Market.Controllers
                     return BadRequest(new { message = "ProductReturn data isn't Inserted Successfully." });
                 }
 
-                // If everything is fine, commit the transaction
                 transaction.Commit();
                 return Ok(new { message = "ProductReturn data Inserted Successfully." });
 
             }
             catch(Exception ex)
             {
-                // If there is any error, rollback the transaction
                 if (transaction != null)
                 {
                     transaction.Rollback();
@@ -113,7 +109,6 @@ namespace NDE_Digital_Market.Controllers
             }
             finally
             {
-                // Finally block to ensure the connection is always closed
                 if (con.State == ConnectionState.Open)
                 {
                     await con.CloseAsync();
