@@ -880,7 +880,7 @@ namespace NDE_Digital_Market.Controllers
                         GetSellerOrderBasedOnUserCodeDto details = new GetSellerOrderBasedOnUserCodeDto();
                         {
                             details.OrderDetailId = Convert.ToInt32(reader["OrderDetailId"].ToString()); 
-                        
+                                 details.OrderMasterId = Convert.ToInt32(reader["OrderMasterId"].ToString());
                             details.OrderNo = reader["OrderNo"].ToString();
                             details.Address = reader["Address"].ToString();
                             details.BUserId = Convert.ToInt32(reader["BUserId"]);
@@ -1082,6 +1082,9 @@ namespace NDE_Digital_Market.Controllers
             }
 
         }
+
+
+
     }
 }
 
