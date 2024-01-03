@@ -54,7 +54,7 @@ namespace NDE_Digital_Market.Controllers
                     invoice.OrderDate = Convert.ToDateTime(reader.Rows[i]["OrderDate"].ToString());
                     invoice.BuyerName = reader.Rows[i]["BuyerName"].ToString();
                     invoice.Address = reader.Rows[i]["Address"].ToString();
-                    invoice.Phone = reader.Rows[i]["Phone"].ToString();
+                    invoice.Phone = reader.Rows[i]["PhoneNumber"].ToString();
                     invoice.PaymentMethod = reader.Rows[i]["PaymentMethod"].ToString();
                     invoice.NumberOfItem = Convert.ToInt32(reader.Rows[i]["NumberOfItem"].ToString());
                     invoice.TotalPrice = Convert.ToDecimal(reader.Rows[i]["TotalPrice"].ToString());
