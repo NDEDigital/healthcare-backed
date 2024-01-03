@@ -106,10 +106,88 @@ namespace NDE_Digital_Market.Controllers
 
         //    return Ok(new { message = "Sellers ", reviewsAndRatings , ratingsArray, totalCount });
         //}
+
+        [HttpPost]
+        [Route("getReviewRatingsData")]
+        public async Task<IActionResult> AddReview([FromForm] ReviewsAndRatings review)
+        {
+            string ImagePath = string.Empty;
+            if (review.ImageFile != null)
+            {
+                ImagePath = CommonServices.UploadFiles(foldername, filename, review.ImageFile);
+                review.ImagePath = ImagePath;
+            }
+            using (con)
+            {
+                // Retrieve ProductId and SellerId from OrderDetails
+                string getSellerAndProductQuery = @"
+                   SELECT ProductId, UserId AS SellerId FROM OrderDetails
+                    WHERE OrderDetailId =  @OrderDetailId";
+                using (SqlCommand getSellerAndProductCmd = new SqlCommand(getSellerAndProductQuery, con))
+                {
+                    getSellerAndProductCmd.Parameters.AddWithValue("@OrderDetailId", review.OrderDetailId);
+                    await con.OpenAsync();
+                    using (SqlDataReader reader = await getSellerAndProductCmd.ExecuteReaderAsync())
+                    {
+                        if (reader.Read())
+                        {
+                            review.ProductId = reader["ProductId"] as int?;
+                            review.SellerId = reader["SellerId"] as int?;
+                        }
+                    }
+                    con.Close();
+                }
+                string query = @"
+    INSERT INTO ReviewRatings
+        (OrderDetailId, ReviewText, RatingValue, BuyerId, ProductGroupID, ProductId,
+         SellerId, ReviewDate, ImagePath, AddedDate, AddedBy, AddedPc)
+    VALUES
+        (@OrderDetailId, @ReviewText, @RatingValue, @BuyerId, @ProductGroupID, @ProductId,
+         @SellerId, @ReviewDate, @ImagePath, @AddedDate, @AddedBy, @AddedPc);";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@OrderDetailId", review.OrderDetailId);
+                    cmd.Parameters.AddWithValue("@ReviewText", review.ReviewText ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@RatingValue", review.RatingValue ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BuyerId", review.BuyerId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ProductGroupID", review.ProductGroupID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ProductId", review.ProductId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SellerId", review.SellerId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ReviewDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@ImagePath", ImagePath ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@AddedBy", review.AddedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@AddedPc", review.AddedPc ?? (object)DBNull.Value);
+                    try
+                    {
+                        await con.OpenAsync();
+                        int a = await cmd.ExecuteNonQueryAsync();
+                        if (a > 0)
+                        {
+                            SqlCommand command = new SqlCommand("UPDATE OrderDetails SET Status = 'Reviewed' WHERE OrderDetailId = " + review.OrderDetailId + "", con);
+                            int updateResult = await command.ExecuteNonQueryAsync();
+                            if (updateResult <= 0)
+                            {
+                                return BadRequest(new { message = "product review status isn't change or not found." });
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(new { message = "product review data isn't Inserted Successfully." });
+                        }
+                        return Ok(new { message = "Review added successfully." });
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, "Error adding review: " + ex.Message);
+                    }
+                }
+            }
+        }
         [HttpGet]
         [Route("getReviewRatingsDataForDetailsPage")]
         public async Task<IActionResult> getReviewRatingsData(int ProductId)
-        {
+     {
             int totalRating = 5;
             
            int totalCount = 0;
