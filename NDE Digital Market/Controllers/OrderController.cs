@@ -980,6 +980,108 @@ namespace NDE_Digital_Market.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
+        [HttpGet("getAllOrderForBuyer")]
+        public async Task<IActionResult> getAllOrderForBuyerAsync(string userid, string? status)
+        {
+            List<OrderMasterDataForBuyerDto> MasterList = new List<OrderMasterDataForBuyerDto>();
+
+            try
+            {
+                string query = string.Empty;
+
+                if (status != null)
+                {
+                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
+                                  PL.ImagePath, OD.Qty, OD.Status  from OrderMaster OM
+                                  join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
+                                  join ProductList PL on PL.ProductId = OD.ProductId
+                                  where OM.UserId = @UserId and OD.Status = @Status ORDER BY OM.OrderMasterId DESC;";
+                }
+                else
+                {
+                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
+                                  PL.ImagePath, OD.Qty, OD.Status  from OrderMaster OM
+                                  join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
+                                  join ProductList PL on PL.ProductId = OD.ProductId
+                                  where OM.UserId = @UserId ORDER BY OM.OrderMasterId DESC;";
+                }
+
+                con.Open();
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (status != null)
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userid);
+                        cmd.Parameters.AddWithValue("@Status", status);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userid);
+                    }
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        OrderMasterDataForBuyerDto Master = null;
+
+                        while (reader.Read())
+                        {
+                            int OrderMasterId = reader.IsDBNull("OrderMasterId") ? -1 : Convert.ToInt32(reader["OrderMasterId"]);
+
+                            if (Master == null || Master.OrderMasterId != OrderMasterId)
+                            {
+                                Master = new OrderMasterDataForBuyerDto();
+                                Master.OrderMasterId = OrderMasterId;
+                                Master.OrderNo = reader.IsDBNull("OrderNo") ? (string?)null : reader["OrderNo"].ToString();
+                                Master.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+
+                                MasterList.Add(Master);
+
+                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto()
+                                {
+
+                                    OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]),
+                                    ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]),
+                                    ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString(),
+                                    ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString(),
+                                    Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]),
+                                    Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString()
+                                };
+                                Master.OrderDetailsListForBuyer.Add(Detail);
+
+                            }
+                            else
+                            {
+                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto()
+                                {
+
+                                    OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]),
+                                    ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]),
+                                    ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString(),
+                                    ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString(),
+                                    Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]),
+                                    Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString()
+                                };
+                                Master.OrderDetailsListForBuyer.Add(Detail);
+                            }
+                        }
+                    }
+                }
+                return Ok(MasterList);
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+                return null;
+            }
+            finally
+            {
+                con.Close();
+            }
+
+        }
     }
 }
 
