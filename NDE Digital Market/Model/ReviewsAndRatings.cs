@@ -19,7 +19,7 @@ namespace NDE_Digital_Market.Model
 
         public int? ProductId { get; set; }
 
-        public string? SellerId { get; set; }
+        public int? SellerId { get; set; }
 
         public DateTime? ReviewDate { get; set; }
 
