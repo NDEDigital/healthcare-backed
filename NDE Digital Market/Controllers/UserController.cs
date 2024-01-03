@@ -310,7 +310,7 @@ namespace NDE_Digital_Market.Controllers
             bool? isSeller = null;
             bool? isAdmin = null;
 
-            string query = "SELECT * FROM UserRegistration WHERE UserId = @userId";
+            string query = "SELECT * FROM UserRegistration UR\r\n  LEFT JOIN CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode \r\n   WHERE UserId  = @userId";
 
             using (SqlCommand cmd = new SqlCommand(query, _healthCareConnection))
             {

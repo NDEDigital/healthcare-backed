@@ -180,6 +180,62 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
+        [HttpGet]
+        [Route("getReviewRatings")]
+        public async Task<IActionResult> GetReviewRatings()
+        {
+            var reviewsList = new List<ReviewRatingDTO>();
+            string query = @"
+        SELECT 
+            UR.FullName AS BuyerName,
+            RR.RatingValue,
+            RR.ReviewText,
+            RR.ImagePath,
+            RR.ReviewDate,
+            OD.ProductId
+        FROM ReviewRatings RR
+        INNER JOIN UserRegistration UR ON RR.BuyerId = UR.UserId
+        INNER JOIN OrderDetails OD ON RR.OrderDetailId = OD.OrderDetailId
+        ORDER BY RR.ReviewDate DESC";
+
+            try
+            {
+                using (var command = new SqlCommand(query, con))
+                {
+                    con.Open();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            var review = new ReviewRatingDTO
+                            {
+                                BuyerName = reader["BuyerName"].ToString(),
+                                RatingValue = reader["RatingValue"] as int?,
+                                ReviewText = reader["ReviewText"].ToString(),
+                                ImagePath = reader["ImagePath"].ToString(),
+                                ReviewDate = reader["ReviewDate"] as DateTime?,
+                                ProductId = reader["ProductId"] as int?  // Add this line
+                            };
+                            reviewsList.Add(review);
+                        }
+                    }
+                }
+                return Ok(reviewsList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+
+
+
+
+
+
+
+
+
         //private async Task<string> SaveImage(IFormFile imageFile)
         //{
 
@@ -255,7 +311,7 @@ namespace NDE_Digital_Market.Controllers
 
         //                            await command.ExecuteNonQueryAsync();
         //                        }
-        
+
         //                        // Commit the transaction if everything is successful
         //                        transaction.Commit();
 
