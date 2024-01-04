@@ -135,6 +135,7 @@ namespace NDE_Digital_Market.Controllers
 
                 return Ok(lst);
             }
+
             catch (Exception ex)
             {
                 return BadRequest(new { message = "An error occurred while fetching ReturnTypes." });
@@ -147,6 +148,8 @@ namespace NDE_Digital_Market.Controllers
                 }
             }
         }
+
+
 
     }
 }
