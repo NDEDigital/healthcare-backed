@@ -463,6 +463,36 @@ namespace NDE_Digital_Market.Controllers
 
         //}
 
+        [HttpPut]
+        [Route("UpdateReviewAndRatings")]
+        public async Task<IActionResult> UpdateReviewAndRatings(int reviewId, int rating, string? review = null)
+        {
+            try
+            {
+                using (  con )
+                {
+                    await con.OpenAsync();
+
+                    using (SqlCommand cmd = new SqlCommand("UPDATE ReviewRatings SET RatingValue = @RatingValue, ReviewText = @ReviewText WHERE ReviewId = @ReviewId", con))
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@ReviewId", reviewId);
+                        cmd.Parameters.AddWithValue("@RatingValue", rating);
+                        cmd.Parameters.AddWithValue("@ReviewText", (review != null) ? review : " ");
+
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return Ok(new { message = "Review updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while updating the review", message = ex.Message });
+            }
+        }
+
+
 
 
         //[HttpPut, Authorize(Roles = "buyer")]
