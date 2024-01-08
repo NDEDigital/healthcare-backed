@@ -1466,7 +1466,7 @@ namespace NDE_Digital_Market.Controllers
                                   PL.ImagePath, OD.Qty, OD.Price, OD.DeliveryCharge, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
-                                  where OD.UserId = @UserId and OD.Status = @Status  ORDER BY OM.OrderMasterId DESC;";
+                                  where OD.UserId = @UserId and OD.Status = @Status and OM.Status = 'Approved'  ORDER BY OM.OrderMasterId DESC;";
 
                 }
                 else
@@ -1475,7 +1475,7 @@ namespace NDE_Digital_Market.Controllers
                                   PL.ImagePath, OD.Qty, OD.Price, OD.DeliveryCharge, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
-                                  where OD.UserId = @UserId  ORDER BY OM.OrderMasterId DESC;";
+                                  where OD.UserId = @UserId and OM.Status = 'Approved'  ORDER BY OM.OrderMasterId DESC;";
                 }
 
                 con.Open();
