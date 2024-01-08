@@ -6,7 +6,7 @@
         public DateTime? DeliveryDate { get; set; }
         public string? Status { get; set; }
         public decimal? PackageSubtotal { get; set; } = decimal.Zero;
-        public int? PackageDeliveryCharge { get; set; } = 0;
+        public decimal? PackageDeliveryCharge { get; set; } = decimal.Zero;
 
         public List<OrderDetails2ndMDetailsForBuyerDto>? OrderDetails2ndMDetailsListForBuyer { get; set; }
 
