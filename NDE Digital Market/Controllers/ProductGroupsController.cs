@@ -41,6 +41,32 @@ namespace NDE_Digital_Market.Controllers
             return check;
         }
 
+        private async Task<Boolean> ProductGroupsExist(int? productGroupID)
+        {
+            if (productGroupID.HasValue)
+            {
+                string query = @"SELECT COUNT(*) FROM ProductGroups WHERE ProductGroupID = @ProductGroupID";
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@ProductGroupID", productGroupID.Value);
+                await con.OpenAsync();
+                int count = (int)await cmd.ExecuteScalarAsync();
+                await con.CloseAsync();
+                Boolean check = false;
+                if (count > 0)
+                {
+                    check = true;
+                }
+                return check;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+
         [HttpPost("CreateProductGroups")]
         public async Task<IActionResult> CreateProductGroupsAsync([FromForm]  ProductGroupsDto productGroupsDto)
         {
@@ -106,8 +132,88 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
+        //==================================================
+
+        [HttpPut("UpdateProductGroups")]
+        public async Task<IActionResult> UpdateProductGroupsAsync([FromForm] ProductGroupsDto productGroupsDto)
+        {
+            try
+            {
+                Boolean check = await ProductGroupsExist(productGroupsDto.ProductGroupID);
+
+                if (check)
+                {
+                    await con.OpenAsync();
+
+                    using (SqlTransaction transaction = con.BeginTransaction())
+                    {
+                        try
+                        {
+                            string ImagePath = CommonServices.UploadFiles(foldername, filename, productGroupsDto.ImageFile);
+
+                            if (ImagePath != null)
+                            {
 
 
+                                if (string.IsNullOrEmpty(productGroupsDto.ExistingImageFileName))
+                                {
+                                    string query = "UpdateProductGroupWithImage";
+                                    SqlCommand cmd = new SqlCommand(query, con, transaction);
+                                    cmd.CommandType = CommandType.StoredProcedure;
+                                    cmd.Parameters.AddWithValue("@ProductGroupID", productGroupsDto.ProductGroupID);
+                                    cmd.Parameters.AddWithValue("@ProductGroupName", productGroupsDto.ProductGroupName);
+                                    cmd.Parameters.AddWithValue("@ImagePath", ImagePath);
+                                    cmd.Parameters.AddWithValue("@ProductGroupPrefix", productGroupsDto.ProductGroupPrefix);
+                                    cmd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails ?? string.Empty);
+                                    cmd.Parameters.AddWithValue("@UpdatedBy", productGroupsDto.UpdatedBy);
+                                    cmd.Parameters.AddWithValue("@DateUpdated", DateTime.Now);
+                                    cmd.Parameters.AddWithValue("@UpdatedPC", productGroupsDto.UpdatedPC);
+
+                                    await cmd.ExecuteNonQueryAsync();
+                                }
+                            }
+                            else
+                            {
+                                string query1 = "UpdateProductGroupWithOutImage";
+                                SqlCommand cmdd = new SqlCommand(query1, con, transaction);
+                                cmdd.CommandType = CommandType.StoredProcedure;
+                                cmdd.Parameters.AddWithValue("@ProductGroupID", productGroupsDto.ProductGroupID);
+                                cmdd.Parameters.AddWithValue("@ProductGroupName", productGroupsDto.ProductGroupName);
+                                cmdd.Parameters.AddWithValue("@ProductGroupPrefix", productGroupsDto.ProductGroupPrefix);
+                                cmdd.Parameters.AddWithValue("@ProductGroupDetails", productGroupsDto.ProductGroupDetails ?? string.Empty);
+                                cmdd.Parameters.AddWithValue("@UpdatedBy", productGroupsDto.UpdatedBy);
+                                cmdd.Parameters.AddWithValue("@DateUpdated", DateTime.Now);
+                                cmdd.Parameters.AddWithValue("@UpdatedPC", productGroupsDto.UpdatedPC);
+
+                                await cmdd.ExecuteNonQueryAsync();
+                            }
+
+                            transaction.Commit();
+                            return Ok(new { message = "Product Group updated successfully." });
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            return BadRequest(new { message = $"Error updating product group: {ex.Message}" });
+                        }
+                        finally
+                        {
+                            con.Close();
+                        }
+                    }
+                }
+                else
+                {
+                    return NotFound(new { message = "Product Group not found!" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Error updating product group: {ex.Message}" });
+            }
+        }
+
+        //==================================================
 
         [HttpGet]
         [Route("GetProductGroupsList")]
