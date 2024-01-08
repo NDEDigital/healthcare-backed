@@ -1359,6 +1359,7 @@ namespace NDE_Digital_Market.Controllers
                                 Master.ShippingPhoneNumber = reader.IsDBNull("ShippingPhoneNumber") ? (string?)null : reader["ShippingPhoneNumber"].ToString();
                                 Master.BillingAddress = reader.IsDBNull("BillingAddress") ? (string?)null : reader["BillingAddress"].ToString();
                                 Master.BillingPhoneNumber = reader.IsDBNull("BillingPhoneNumber") ? (string?)null : reader["BillingPhoneNumber"].ToString();
+                                Master.TotalAmount = reader.IsDBNull("TotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["TotalPrice"]);
 
                                 sellermaster = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
                                 SecondMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
@@ -1377,6 +1378,9 @@ namespace NDE_Digital_Market.Controllers
 
                                 SecondMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
                                 SecondMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
+
                                 SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
                                 Master.OrderDetails2ndMasterListForBuyer.Add(SecondMaster);
                             }
@@ -1399,6 +1403,9 @@ namespace NDE_Digital_Market.Controllers
 
                                     SecondMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
                                     SecondMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                    Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
+
                                     SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
                                 }
                                 else
@@ -1419,6 +1426,9 @@ namespace NDE_Digital_Market.Controllers
 
                                     SenMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
                                     SenMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                    Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
+
                                     SenMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
                                     Master.OrderDetails2ndMasterListForBuyer.Add(SenMaster);
                                 }
