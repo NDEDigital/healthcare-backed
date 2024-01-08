@@ -29,7 +29,7 @@ namespace NDE_Digital_Market.Controllers
             foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }
 
- 
+
         [HttpGet("GetProductForAddQtyByUserId/{UserId}")]
         public async Task<IActionResult> GetProductForAddQtyByUserId(int UserId)
         {
@@ -56,7 +56,6 @@ namespace NDE_Digital_Market.Controllers
                                     ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupID")),
                                     Specification = reader.IsDBNull(reader.GetOrdinal("Specification")) ? null : reader.GetString(reader.GetOrdinal("Specification")),
                                     UnitId = reader.IsDBNull(reader.GetOrdinal("UnitId")) ? 0 : reader.GetInt32(reader.GetOrdinal("UnitId")),
-
                                     Unit = reader.IsDBNull(reader.GetOrdinal("Unit")) ? null : reader.GetString(reader.GetOrdinal("Unit")),
                                     Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Price")),
                                     AvailableQty = reader.IsDBNull(reader.GetOrdinal("AvailableQty")) ? 0 : reader.GetDecimal(reader.GetOrdinal("AvailableQty"))
@@ -118,23 +117,16 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@PortalReceivedCode", PortalReceivedCode);
                 cmd.Parameters.AddWithValue("@MaterialReceivedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@ChallanNo", portaldata.ChallanNo ?? String.Empty);
-
-
-
                 cmd.Parameters.AddWithValue("@ChallanDate", portaldata.ChallanDate ?? (object)DBNull.Value);
-
-
                 cmd.Parameters.AddWithValue("@Remarks", portaldata.Remarks ?? String.Empty);
                 cmd.Parameters.AddWithValue("@UserId", portaldata.UserId);
-             
- 
                 cmd.Parameters.AddWithValue("@AddedBy", portaldata.AddedBy);
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@AddedPC", portaldata.AddedPC);
 
                 int a = await cmd.ExecuteNonQueryAsync();
 
-                if(a > 0)
+                if (a > 0)
                 {
                     var detailsResult = await InsertPortalReceivedAsync(PortalReceivedId, portaldata.PortalReceivedDetailslist, transaction);
                     if (detailsResult is BadRequestObjectResult)
@@ -168,7 +160,7 @@ namespace NDE_Digital_Market.Controllers
 
         private async Task<IActionResult> InsertPortalReceivedAsync(int PortalReceivedId, List<PortalReceivedDetailsDto> PortalReceivedDetailsList, SqlTransaction transaction)
         {
-            try 
+            try
             {
                 for (int i = 0; i < PortalReceivedDetailsList.Count; i++)
                 {
@@ -176,7 +168,6 @@ namespace NDE_Digital_Market.Controllers
                     string query = "InsertPortalReceivedDetails";
                     SqlCommand CheckCMD = new SqlCommand(query, con, transaction);
                     CheckCMD.CommandType = CommandType.StoredProcedure;
-
                     CheckCMD.Parameters.Clear();
                     CheckCMD.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
                     CheckCMD.Parameters.AddWithValue("@ProductGroupID", PortalReceivedDetailsList[i].ProductGroupId);
@@ -188,27 +179,27 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@TotalPrice", PortalReceivedDetailsList[i].TotalPrice);
                     CheckCMD.Parameters.AddWithValue("@UserId", PortalReceivedDetailsList[i].UserId);
                     CheckCMD.Parameters.AddWithValue("@Remarks", PortalReceivedDetailsList[i].Remarks ?? String.Empty);
-
-
                     CheckCMD.Parameters.AddWithValue("@AddedBy", PortalReceivedDetailsList[i].AddedBy);
                     CheckCMD.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                     CheckCMD.Parameters.AddWithValue("@AddedPC", PortalReceivedDetailsList[i].AddedPC);
-
                     await CheckCMD.ExecuteNonQueryAsync();
 
                 }
-                return Ok(new { message = "Portal Details data Inserted Successfully." });
-            } 
-            catch(Exception ex) 
+
+
+                // transaction.Commit();
+
+                var portalReceivedMasterDto = await GetPortalReceivedDetailsAndMasterAsync(PortalReceivedId);
+
+                return Ok(new { message = "Portal Details data Inserted Successfully.", data = portalReceivedMasterDto });
+            }
+            catch (Exception ex)
             {
+
+
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
-
 
         private async Task<Boolean> SellerProductPriceAndOfferCheck(int ProductId, int? userId)
         {
@@ -234,7 +225,7 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId,sellerproductdata.UserId);
+                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId, sellerproductdata.UserId);
                 if (ProductPriceAndOfferExist)
                 {
                     return BadRequest(new { message = "ProductPriceAndOffer Allready Added." });
@@ -279,7 +270,7 @@ namespace NDE_Digital_Market.Controllers
                 }
 
 
-                
+
             }
             catch (Exception ex)
             {
@@ -289,7 +280,7 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetSellerProductsByCompanyCode")]
-        public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status=null)
+        public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status = null)
         {
             var sellerProductsByCompanyCode = new List<SellerProductsByCompanyCodeDto>();
             try
@@ -339,5 +330,76 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
+
+
+        private async Task<IActionResult> GetPortalReceivedDetailsAndMasterAsync(int portalReceivedId)
+        {
+            try
+            {
+                var portalReceivedMasterDto = new PortalReceivedMasterDto();
+                var portalReceivedDetailsDtos = new List<PortalReceivedDetailsDto>();
+
+                using (con)
+                {
+                    await con.OpenAsync();
+
+                    using (SqlCommand command = new SqlCommand("GetPortalReceivedDetailsAndMaster", con))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@PortalReceivedId", portalReceivedId);
+
+
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var portalReceivedDetailsDto = new PortalReceivedDetailsDto
+                                {
+                                    PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId")),
+                                    ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupId")),
+                                    ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    UnitId = reader.GetInt32(reader.GetOrdinal("UnitId")),
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Remarks = reader.GetOrdinal("Remarks").ToString(),
+                                    Specification = reader.GetOrdinal("Specification").ToString(),
+                                    Price = reader.GetOrdinal("Price"),
+                                    TotalPrice = reader.GetOrdinal("TotalPrice"),
+
+
+                                };
+                                portalReceivedDetailsDtos.Add(portalReceivedDetailsDto);
+                            }
+
+                            if (await reader.NextResultAsync())
+                            {
+                                if (await reader.ReadAsync())
+                                {
+                                    portalReceivedMasterDto.PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId"));
+                                    portalReceivedMasterDto.PortalReceivedCode = reader.GetString(reader.GetOrdinal("PortalReceivedCode"));
+                                    portalReceivedMasterDto.ChallanNo = reader.GetOrdinal("ChallanNo").ToString();
+                                    //  portalReceivedMasterDto.MaterialReceivedDate = reader.IsDBNull(reader.GetOrdinal("MaterialReceivedDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+
+
+                                    portalReceivedMasterDto.MaterialReceivedDate = reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+                                    portalReceivedMasterDto.Remarks = reader.GetOrdinal("Remarks").ToString();
+                                    portalReceivedMasterDto.CompanyCode = reader.GetOrdinal("CompanyCode").ToString();
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+                portalReceivedMasterDto.PortalReceivedDetailslist = portalReceivedDetailsDtos;
+
+                return Ok(portalReceivedMasterDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
+
 }
