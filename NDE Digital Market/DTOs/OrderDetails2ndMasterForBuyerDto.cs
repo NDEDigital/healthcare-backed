@@ -3,6 +3,7 @@
     public class OrderDetails2ndMasterForBuyerDto
     {
         public int? SellerId { get; set; }
+        public string? SellerName { get; set; }
         public DateTime? DeliveryDate { get; set; }
         public string? Status { get; set; }
         public decimal? PackageSubtotal { get; set; } = decimal.Zero;

@@ -1362,6 +1362,7 @@ namespace NDE_Digital_Market.Controllers
                                 Master.TotalAmount = reader.IsDBNull("TotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["TotalPrice"]);
 
                                 sellermaster = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+                                SecondMaster.SellerName = reader.IsDBNull("SellerName") ? null : reader["SellerName"].ToString();
                                 SecondMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
                                 SecondMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
                                 SecondMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
@@ -1410,6 +1411,7 @@ namespace NDE_Digital_Market.Controllers
                                 }
                                 else
                                 {
+                                    SenMaster.SellerName = reader.IsDBNull("SellerName") ? null : reader["SellerName"].ToString();
                                     SenMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
                                     SenMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
                                     SenMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
