@@ -1460,30 +1460,22 @@ namespace NDE_Digital_Market.Controllers
 
             try
             {
-                string query = string.Empty;
+                string query = @"GetALLOrderForSellerBySellerId";
 
-                if (status != null)
-                {
-                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
-                                  PL.ImagePath, OD.Qty, OD.Price, OD.DeliveryCharge, OD.Status  from OrderMaster OM
-                                  join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
-                                  join ProductList PL on PL.ProductId = OD.ProductId
-                                  where OD.UserId = @UserId and OD.Status = @Status and OM.Status = 'Approved'  ORDER BY OM.OrderMasterId DESC;";
+                //if (status != null)
+                //{
+                //    query = @"GetALLOrderForSellerBySellerId";
 
-                }
-                else
-                {
-                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
-                                  PL.ImagePath, OD.Qty, OD.Price, OD.DeliveryCharge, OD.Status  from OrderMaster OM
-                                  join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
-                                  join ProductList PL on PL.ProductId = OD.ProductId
-                                  where OD.UserId = @UserId and OM.Status = 'Approved'  ORDER BY OM.OrderMasterId DESC;";
-                }
+                //}
+                //else
+                //{
+                //    query = @"GetALLOrderForSellerBySellerId";
+                //}
 
                 con.Open();
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandType = CommandType.StoredProcedure;
                     if (status != null)
                     {
                         cmd.Parameters.AddWithValue("@UserId", userid);
@@ -1515,6 +1507,10 @@ namespace NDE_Digital_Market.Controllers
                                 Master.OrderMasterId = OrderMasterId;
                                 Master.OrderNo = reader.IsDBNull("OrderNo") ? (string?)null : reader["OrderNo"].ToString();
                                 Master.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+                                Master.SellerUserId = reader.IsDBNull("SellerUserId") ? (int?)null : Convert.ToInt32(reader["SellerUserId"]);
+                                Master.BuyerUserId = reader.IsDBNull("BuyerUserId") ? (int?)null : Convert.ToInt32(reader["BuyerUserId"]);
+                                Master.BuyerAddress = reader.IsDBNull("Address") ? (string?)null : reader["Address"].ToString();
+
 
                                 MasterList.Add(Master);
 
@@ -1524,10 +1520,16 @@ namespace NDE_Digital_Market.Controllers
                                     Detail.OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]);
                                     Detail.ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]);
                                     Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+                                    Detail.Specification = reader.IsDBNull("Specification") ? null : reader["Specification"].ToString();
                                     Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
                                     Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
                                     Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
                                     Detail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                                    Detail.StockQty = reader.IsDBNull(reader.GetOrdinal("StockQty")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("StockQty"));
+                                    Detail.SaleQty = reader.IsDBNull("SaleQty") ? (int?)null : Convert.ToInt32(reader["SaleQty"]);
+                                    Detail.UnitId = reader.IsDBNull("UnitId") ? (int?)null : Convert.ToInt32(reader["UnitId"]);
+                                    Detail.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                                    Detail.ProductGroupID = reader.IsDBNull("ProductGroupID") ? (int?)null : Convert.ToInt32(reader["ProductGroupID"]);
 
 
                                     Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
