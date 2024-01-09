@@ -1552,6 +1552,17 @@ namespace NDE_Digital_Market.Controllers
                                     Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
                                     Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
                                     Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
+                                    Detail.Specification = reader.IsDBNull("Specification") ? null : reader["Specification"].ToString();
+                                    Detail.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                                    Detail.ProductGroupID = reader.IsDBNull("ProductGroupID") ? (int?)null : Convert.ToInt32(reader["ProductGroupID"]);
+                                    Detail.SaleQty = reader.IsDBNull("SaleQty") ? (int?)null : Convert.ToInt32(reader["SaleQty"]);
+                                    Detail.StockQty = reader.IsDBNull(reader.GetOrdinal("StockQty")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("StockQty"));
+                                    Detail.UnitId = reader.IsDBNull("UnitId") ? (int?)null : Convert.ToInt32(reader["UnitId"]);
+
+
+
+
+
                                     //Price = reader["Price"] is DBNull ? (decimal?)null : Convert.ToDecimal(reader["Price"]),
                                     Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
                                     Detail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
