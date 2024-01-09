@@ -261,6 +261,7 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
+
         [HttpGet]
         [Route("GetProductListByStatus")]
         public async Task<IActionResult> GetProductListByStatus(Int32? status = null)
@@ -313,5 +314,39 @@ namespace NDE_Digital_Market.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
+        //========================tushar=========================
+
+        [HttpPut("MakeProductActiveOrInactive")]
+        public async Task<IActionResult> MakeProductActiveOrInactiveAsync(int productId, Boolean IsActive)
+        {
+            try
+            {
+                string query = @"UPDATE ProductList
+                                    SET IsActive = @IsActive
+                                    WHERE ProductId = @ProductId";
+                    using (SqlCommand command = new SqlCommand(query, con))
+                    {
+                        command.Parameters.AddWithValue("@IsActive", IsActive);
+                        command.Parameters.AddWithValue("@ProductId", productId);
+
+                        await con.OpenAsync();
+                        // Execute the command
+                        int Res = await command.ExecuteNonQueryAsync();
+                        if(Res == 0)
+                        {
+                            return BadRequest(new { message = $"Product didnot found." });
+                        }
+                        await con.CloseAsync();
+                    }
+                return Ok(new { message = $"Product IsActive status changed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Product IsActive status not change : {ex.Message}" });
+            }
+        }
+
     }
 }
