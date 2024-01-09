@@ -325,5 +325,38 @@ namespace NDE_Digital_Market.Controllers
             return lst;
         }
 
+
+        //========================tushar=========================
+
+        [HttpPut("MakeGroupActiveOrInactive")]
+        public async Task<IActionResult> MakeGroupActiveOrInactiveAsync(int groupId, Boolean IsActive)
+        {
+            try
+            {
+                string query = @"UPDATE ProductGroups
+                                    SET IsActive = @IsActive
+                                    WHERE ProductGroupID = @groupId";
+                using (SqlCommand command = new SqlCommand(query, con))
+                {
+                    command.Parameters.AddWithValue("@IsActive", IsActive);
+                    command.Parameters.AddWithValue("@groupId", groupId);
+
+                    await con.OpenAsync();
+                    // Execute the command
+                    int Res = await command.ExecuteNonQueryAsync();
+                    if (Res == 0)
+                    {
+                        return BadRequest(new { message = $"Group didnot found." });
+                    }
+                    await con.CloseAsync();
+                }
+                return Ok(new { message = $"Group IsActive status changed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Group IsActive status not change : {ex.Message}" });
+            }
+        }
+
     }
 }
