@@ -385,6 +385,7 @@ namespace NDE_Digital_Market.Controllers
             }
 
         }
+
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512(passwordSalt))
@@ -485,6 +486,7 @@ namespace NDE_Digital_Market.Controllers
 
 
         // =================================================== getSingleUserInfo ===================================
+
         [HttpGet]
         [Route("getSingleUserInfo")]
         public IActionResult getSingleUser(int? userId)
@@ -582,6 +584,49 @@ namespace NDE_Digital_Market.Controllers
             _healthCareConnection.Close();
             return BadRequest(new { message = "Password did not match!" });
         }
+
+
+
+
+        //========================tushar=========================
+        [HttpPut]
+        [Route("UpdateUserProfile")]
+        public async Task<IActionResult> UpdateUserProfileAsync([FromBody] UserModel userModel)
+        {
+            try
+            {
+                string query = @"UPDATE UserRegistration SET Email = @email, Address = @address WHERE UserId = @userID";
+                if(userModel.Email == null || userModel.Email == "")
+                {
+                    return BadRequest(new { message = $"User Email is not Provided." });
+                }
+                if (userModel.Address == null || userModel.Address == "")
+                {
+                    return BadRequest(new { message = $"User Address is not Provided." });
+                }
+                using (SqlCommand command = new SqlCommand(query, _healthCareConnection))
+                {
+                    command.Parameters.AddWithValue("@email", userModel.Email);
+                    command.Parameters.AddWithValue("@address", userModel.Address);
+                    command.Parameters.AddWithValue("@userID", userModel.UserId);
+
+                    await _healthCareConnection.OpenAsync();
+                    // Execute the command
+                    int Res = await command.ExecuteNonQueryAsync();
+                    if (Res == 0)
+                    {
+                        return BadRequest(new { message = $"User didnot found." });
+                    }
+                    await _healthCareConnection.CloseAsync();
+                }
+                return Ok(new { message = $"User Profile Updated." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"User profile update error: {ex.Message}" });
+            }
+        }
+
 
     }
 }
