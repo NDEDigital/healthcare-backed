@@ -329,7 +329,7 @@ namespace NDE_Digital_Market.Controllers
         //========================tushar=========================
 
         [HttpPut("MakeGroupActiveOrInactive")]
-        public async Task<IActionResult> MakeGroupActiveOrInactiveAsync(int groupId, Boolean IsActive)
+        public async Task<IActionResult> MakeGroupActiveOrInactiveAsync(int? groupId, bool? IsActive)
         {
             try
             {
