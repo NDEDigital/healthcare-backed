@@ -995,7 +995,7 @@ namespace NDE_Digital_Market.Controllers
                 if (status != null)
                 {
                     query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
-                                  PL.ImagePath, OD.Qty, OD.Status  from OrderMaster OM
+                                  PL.ImagePath, OD.Qty, OD.Price, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
                                   where OM.UserId = @UserId and OD.Status = @Status ORDER BY OM.OrderMasterId DESC;";
@@ -1003,7 +1003,7 @@ namespace NDE_Digital_Market.Controllers
                 else
                 {
                     query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
-                                  PL.ImagePath, OD.Qty, OD.Status  from OrderMaster OM
+                                  PL.ImagePath, OD.Qty, OD.Price, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
                                   where OM.UserId = @UserId ORDER BY OM.OrderMasterId DESC;";
@@ -1040,31 +1040,33 @@ namespace NDE_Digital_Market.Controllers
 
                                 MasterList.Add(Master);
 
-                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto()
+                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto();
                                 {
 
-                                    OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]),
-                                    ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]),
-                                    ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString(),
-                                    ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString(),
-                                    Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]),
-                                    Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString()
-                                };
+                                    Detail.OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]);
+                                    Detail.ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]);
+                                    Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+                                    Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
+                                    Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
+                                    Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price")) * Detail.Qty;
+                                    Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+                                }
                                 Master.OrderDetailsListForBuyer.Add(Detail);
 
                             }
                             else
                             {
-                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto()
+                                OrderDetailsDataForBuyerDto Detail = new OrderDetailsDataForBuyerDto();
                                 {
 
-                                    OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]),
-                                    ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]),
-                                    ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString(),
-                                    ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString(),
-                                    Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]),
-                                    Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString()
-                                };
+                                    Detail.OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]);
+                                    Detail.ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]);
+                                    Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+                                    Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
+                                    Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
+                                    Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price")) * Detail.Qty;
+                                    Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+                                }
                                 Master.OrderDetailsListForBuyer.Add(Detail);
                             }
                         }
@@ -1084,81 +1086,265 @@ namespace NDE_Digital_Market.Controllers
 
         }
 
+        //[HttpGet("getOrderDetailsForBuyerBasedOnOrderNo")]
+        //public async Task<IActionResult> getOrderDetailsForBuyerBasedOnOrderNoAsync(string OrderNo)
+        //{
+        //    //OrderDetailsMasterForBuyerDto Master = new OrderDetailsMasterForBuyerDto();
+        //    OrderDetailsMasterForBuyerDto Master = null;
+        //    try
+        //    {
+        //                              string query = @"SELECT
+        //                              OM.OrderMasterId,
+        //                              OM.OrderNo,
+        //                              OM.OrderDate,
+        //                              OD.UserId AS SellerID,
+        //                              UR.FullName AS SellerName,
+        //                              OD.DeliveryDate,
+        //                              OD.ProductId,
+        //                              PL.ProductName,
+        //                              PL.ImagePath,
+        //                              OD.Status,
+        //                              SPP.TotalPrice AS Price,
+        //                              OD.Qty As TotalQty,
+        //                              OD.DeliveryCharge,
+        //                              OD.NetPrice  As ProductSubtotal,
+        //                              OM.PaymentMethod,
+        //                              UR2.FullName BuyerName,
+        //                              OM.Address As ShippingAddress,
+        //                              OM.PhoneNumber As ShippingPhoneNumber,
+        //                              UR2.Address As BillingAddress,
+        //                              UR2.PhoneNumber As BillingPhoneNumber,
+        //                              OM.TotalPrice
+
+        //                            FROM
+        //                              OrderMaster OM
+        //                              LEFT JOIN OrderDetails OD ON OD.OrderMasterId = OM.OrderMasterId
+        //                              LEFT JOIN UserRegistration UR ON UR.UserId = OD.UserId
+        //                              LEFT JOIN ProductList PL ON PL.ProductId = OD.ProductId
+        //                              LEFT JOIN SellerProductPriceAndOffer SPP ON SPP.ProductId = OD.ProductId AND SPP.UserId = OD.UserId
+        //                              LEFT JOIN UserRegistration UR2 ON UR2.UserId= OM.UserId
+        //                            WHERE
+        //                              OM.OrderNo = @OrderNo
+        //                            GROUP BY
+        //                              OM.OrderMasterId,
+        //                              OM.OrderNo,
+        //                              OM.OrderDate,
+        //                              OD.UserId,
+        //                              UR.FullName,
+        //                              OD.DeliveryDate,
+        //                              OD.ProductId,
+        //                              PL.ProductName,
+        //                              PL.ImagePath,
+        //                              OD.Status,
+        //                              SPP.TotalPrice,
+        //                              OD.Qty,
+        //                              OD.DeliveryCharge,
+        //                              OD.NetPrice,
+        //                              OM.Address,
+        //                              OM.PhoneNumber,
+        //                              OM.PaymentMethod,
+        //                              UR2.FullName,
+        //                              UR2.Address,
+        //                              UR2.PhoneNumber,
+        //                              OM.TotalPrice";
+
+
+        //        con.Open();
+        //        using (SqlCommand cmd = new SqlCommand(query, con))
+        //        {
+        //            cmd.CommandType = CommandType.Text;
+        //            cmd.Parameters.AddWithValue("@OrderNo", OrderNo);
+
+
+        //            using (SqlDataReader reader = cmd.ExecuteReader())
+        //            {
+
+        //                OrderDetails2ndMasterForBuyerDto SecondMaster = null;
+        //                int? sellermaster = null;
+        //                while (reader.Read())
+        //                {
+
+        //                    decimal? Packagesubtotal = 0;
+        //                    int OrderMasterId = reader.IsDBNull("OrderMasterId") ? -1 : Convert.ToInt32(reader["OrderMasterId"]);
+        //                    //OrderDetails2ndMasterForBuyerDto SecondMaster = new OrderDetails2ndMasterForBuyerDto();
+
+        //                    if (Master == null || Master.OrderMasterId != OrderMasterId)
+        //                    {
+        //                        SecondMaster = new OrderDetails2ndMasterForBuyerDto();
+        //                        Master = new OrderDetailsMasterForBuyerDto();
+        //                        Master.OrderMasterId = OrderMasterId;
+        //                        Master.OrderNo = reader.IsDBNull("OrderNo") ? (string?)null : reader["OrderNo"].ToString();
+        //                        Master.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+        //                        Master.PaymentMethod = reader.IsDBNull("PaymentMethod") ? (string?)null : reader["PaymentMethod"].ToString();
+        //                        Master.BuyerName = reader.IsDBNull("BuyerName") ? (string?)null : reader["BuyerName"].ToString();
+        //                        Master.ShippingAddress = reader.IsDBNull("ShippingAddress") ? (string?)null : reader["ShippingAddress"].ToString();
+        //                        Master.ShippingPhoneNumber = reader.IsDBNull("ShippingPhoneNumber") ? (string?)null : reader["ShippingPhoneNumber"].ToString();
+        //                        Master.BillingAddress = reader.IsDBNull("BillingAddress") ? (string?)null : reader["BillingAddress"].ToString();
+        //                        Master.BillingPhoneNumber = reader.IsDBNull("BillingPhoneNumber") ? (string?)null : reader["BillingPhoneNumber"].ToString();
+
+
+
+        //                        sellermaster = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+        //                        SecondMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+        //                        SecondMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
+        //                        SecondMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+
+
+
+
+        //                        OrderDetails2ndMDetailsForBuyerDto SecondMasterDetails = new OrderDetails2ndMDetailsForBuyerDto();
+
+        //                        SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
+        //                        SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+        //                        SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToDecimal(reader["Price"]);
+        //                        SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (int?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+        //                        SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
+
+        //                        SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
+
+        //                        Master.OrderDetails2ndMasterListForBuyer.Add(SecondMaster);
+
+        //                    }
+        //                    else
+        //                    {
+        //                        OrderDetails2ndMasterForBuyerDto SenMaster = new OrderDetails2ndMasterForBuyerDto();
+
+        //                        int? SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+        //                        if (SellerId == sellermaster)
+        //                        {
+        //                            OrderDetails2ndMDetailsForBuyerDto SecondMasterDetails = new OrderDetails2ndMDetailsForBuyerDto();
+
+        //                            SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
+        //                            SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+        //                            SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToDecimal(reader["Price"]);
+        //                            SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (int?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+        //                            SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
+        //                            SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
+        //                            SenMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+
+        //                        }
+        //                        else
+        //                        {
+        //                            SenMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+        //                            SenMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
+        //                            SenMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+
+
+
+
+
+
+        //                            OrderDetails2ndMDetailsForBuyerDto SecondMasterDetails = new OrderDetails2ndMDetailsForBuyerDto();
+
+        //                            SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
+        //                            SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+        //                            SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToInt32(reader["Price"]);
+        //                            SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
+        //                            SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (int?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+        //                            SenMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+
+        //                            SenMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
+        //                            Master.OrderDetails2ndMasterListForBuyer.Add(SenMaster);
+        //                        }
+
+
+
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        return Ok(Master);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Handle the exception
+        //        return null;
+        //    }
+        //    finally
+        //    {
+        //        con.Close();
+        //    }
+
+        //}
+
+
         [HttpGet("getOrderDetailsForBuyerBasedOnOrderNo")]
         public async Task<IActionResult> getOrderDetailsForBuyerBasedOnOrderNoAsync(string OrderNo)
         {
-            //OrderDetailsMasterForBuyerDto Master = new OrderDetailsMasterForBuyerDto();
             OrderDetailsMasterForBuyerDto Master = null;
             try
             {
-                string query = @"SELECT
-                      OM.OrderMasterId,
-                      OM.OrderNo,
-                      OM.OrderDate,
-                      OD.UserId AS SellerID,
-                      UR.FullName AS SellerName,
-                      OD.DeliveryDate,
-                      PL.ProductName,
-                      PL.ImagePath,
-                      SPP.TotalPrice AS Price,
-                      OD.Qty As TotalQty,
-                      OD.Status,
-                      OD.DeliveryCharge,
-                      OM.PaymentMethod,
-                      UR2.FullName BuyerName,
-                      OM.Address As ShippingAddress,
-                      OM.PhoneNumber As ShippingPhoneNumber,
-                      UR2.Address As BillingAddress,
-                      UR2.PhoneNumber As BillingPhoneNumber
-                    FROM
-                      OrderMaster OM
-                      LEFT JOIN OrderDetails OD ON OD.OrderMasterId = OM.OrderMasterId
-                      LEFT JOIN UserRegistration UR ON UR.UserId = OD.UserId
-                      LEFT JOIN ProductList PL ON PL.ProductId = OD.ProductId
-                      LEFT JOIN SellerProductPriceAndOffer SPP ON SPP.ProductId = OD.ProductId AND SPP.UserId = OD.UserId
-                      LEFT JOIN UserRegistration UR2 ON UR2.UserId= OM.UserId
-                    WHERE
-                      OM.OrderNo = @OrderNo
-                    GROUP BY
-                      OM.OrderMasterId,
-                      OM.OrderNo,
-                      OM.OrderDate,
-                      OD.UserId,
-                      UR.FullName,
-                      PL.ProductName,
-                      PL.ImagePath,
-                      OD.DeliveryDate,
-                      SPP.TotalPrice,
-                      OD.Qty,
-                      OD.Status,
-                      OD.DeliveryCharge,
-                      OM.Address,
-                      OM.PhoneNumber,
-                      OM.PaymentMethod,
-                      UR2.FullName,
-                      UR2.Address,
-                      UR2.PhoneNumber"
-                ;
-
+                string query = @"
+            SELECT
+                OM.OrderMasterId,
+                OM.OrderNo,
+                OM.OrderDate,
+                OD.UserId AS SellerID,
+                UR.FullName AS SellerName,
+                OD.DeliveryDate,
+                OD.ProductId,
+                PL.ProductName,
+                PL.ImagePath,
+                OD.Status,
+                SPP.TotalPrice AS Price,
+                OD.Qty As TotalQty,
+                OD.DeliveryCharge,
+                OD.NetPrice  As ProductSubtotal,
+                SUM(OD.NetPrice - OD.DeliveryCharge) as ProductTotalPrice,
+                OM.PaymentMethod,
+                UR2.FullName BuyerName,
+                OM.Address As ShippingAddress,
+                OM.PhoneNumber As ShippingPhoneNumber,
+                UR2.Address As BillingAddress,
+                UR2.PhoneNumber As BillingPhoneNumber,
+                OM.TotalPrice
+            FROM
+                OrderMaster OM
+                LEFT JOIN OrderDetails OD ON OD.OrderMasterId = OM.OrderMasterId
+                LEFT JOIN UserRegistration UR ON UR.UserId = OD.UserId
+                LEFT JOIN ProductList PL ON PL.ProductId = OD.ProductId
+                LEFT JOIN SellerProductPriceAndOffer SPP ON SPP.ProductId = OD.ProductId AND SPP.UserId = OD.UserId
+                LEFT JOIN UserRegistration UR2 ON UR2.UserId= OM.UserId
+            WHERE
+                OM.OrderNo = @OrderNo
+            GROUP BY
+                OM.OrderMasterId,
+                OM.OrderNo,
+                OM.OrderDate,
+                OD.UserId,
+                UR.FullName,
+                OD.DeliveryDate,
+                OD.ProductId,
+                PL.ProductName,
+                PL.ImagePath,
+                OD.Status,
+                SPP.TotalPrice,
+                OD.Qty,
+                OD.DeliveryCharge,
+                OD.NetPrice,
+                OM.Address,
+                OM.PhoneNumber,
+                OM.PaymentMethod,
+                UR2.FullName,
+                UR2.Address,
+                UR2.PhoneNumber,
+                OM.TotalPrice";
 
                 con.Open();
+
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.AddWithValue("@OrderNo", OrderNo);
 
-
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-
                         OrderDetails2ndMasterForBuyerDto SecondMaster = null;
                         int? sellermaster = null;
+
                         while (reader.Read())
                         {
-
-                            decimal? Packagesubtotal = 0;
                             int OrderMasterId = reader.IsDBNull("OrderMasterId") ? -1 : Convert.ToInt32(reader["OrderMasterId"]);
-                            //OrderDetails2ndMasterForBuyerDto SecondMaster = new OrderDetails2ndMasterForBuyerDto();
 
                             if (Master == null || Master.OrderMasterId != OrderMasterId)
                             {
@@ -1173,35 +1359,31 @@ namespace NDE_Digital_Market.Controllers
                                 Master.ShippingPhoneNumber = reader.IsDBNull("ShippingPhoneNumber") ? (string?)null : reader["ShippingPhoneNumber"].ToString();
                                 Master.BillingAddress = reader.IsDBNull("BillingAddress") ? (string?)null : reader["BillingAddress"].ToString();
                                 Master.BillingPhoneNumber = reader.IsDBNull("BillingPhoneNumber") ? (string?)null : reader["BillingPhoneNumber"].ToString();
-
-
+                                Master.TotalAmount = reader.IsDBNull("TotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["TotalPrice"]);
 
                                 sellermaster = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
+                                SecondMaster.SellerName = reader.IsDBNull("SellerName") ? null : reader["SellerName"].ToString();
                                 SecondMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
                                 SecondMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
                                 SecondMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
-                                //SecondMaster.PackageSubtotal += reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
-                                SecondMaster.PackageDeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (int?)null : Convert.ToInt32(reader["DeliveryCharge"]);
-                                Master.TotalDeliveryCharge += SecondMaster.PackageDeliveryCharge;
-                                //SecondMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
-
-
-
 
                                 OrderDetails2ndMDetailsForBuyerDto SecondMasterDetails = new OrderDetails2ndMDetailsForBuyerDto();
 
                                 SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
                                 SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
-                                SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToInt32(reader["Price"]);
+                                SecondMasterDetails.Price = reader.IsDBNull("Price") ? (decimal?)null : Convert.ToDecimal(reader["Price"]);
+                                SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (decimal?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+                                SecondMasterDetails.ProductTotalPrice = reader.IsDBNull("ProductTotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["ProductTotalPrice"]);
                                 SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
-                                SecondMaster.PackageSubtotal += SecondMasterDetails.Price * SecondMasterDetails.TotalQty;
-                                Master.SubTotal += SecondMaster.PackageSubtotal;
-                                Master.TotalAmount += Master.SubTotal + Master.TotalDeliveryCharge;
+                                SecondMasterDetails.ProductSubtotal = reader.IsDBNull("ProductSubtotal") ? (decimal?)null : Convert.ToDecimal(reader["ProductSubtotal"]);
+
+                                SecondMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                SecondMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
 
                                 SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
-
                                 Master.OrderDetails2ndMasterListForBuyer.Add(SecondMaster);
-
                             }
                             else
                             {
@@ -1214,48 +1396,191 @@ namespace NDE_Digital_Market.Controllers
 
                                     SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
                                     SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
-                                    SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToInt32(reader["Price"]);
+                                    SecondMasterDetails.Price = reader.IsDBNull("Price") ? (decimal?)null : Convert.ToDecimal(reader["Price"]);
+                                    SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (decimal?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+                                    SecondMasterDetails.ProductTotalPrice = reader.IsDBNull("ProductTotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["ProductTotalPrice"]);
                                     SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
-                                    SecondMaster.PackageSubtotal += SecondMasterDetails.Price * SecondMasterDetails.TotalQty;
-                                    //Master.SubTotal += SecondMaster.PackageSubtotal;
-                                    //Master.TotalAmount += Master.SubTotal + Master.TotalDeliveryCharge;
+                                    SecondMasterDetails.ProductSubtotal = reader.IsDBNull("ProductSubtotal") ? (decimal?)null : Convert.ToDecimal(reader["ProductSubtotal"]);
+
+                                    SecondMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    SecondMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                    Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
 
                                     SecondMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
-
                                 }
                                 else
                                 {
+                                    SenMaster.SellerName = reader.IsDBNull("SellerName") ? null : reader["SellerName"].ToString();
                                     SenMaster.SellerId = reader.IsDBNull("SellerId") ? (int?)null : Convert.ToInt32(reader["SellerId"]);
                                     SenMaster.DeliveryDate = reader.IsDBNull(reader.GetOrdinal("DeliveryDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("DeliveryDate"));
                                     SenMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
-                                    //SenMaster.PackageSubtotal += reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
-                                    SenMaster.PackageDeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (int?)null : Convert.ToInt32(reader["DeliveryCharge"]);
-                                    //SenMaster.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
-
-
-
 
                                     OrderDetails2ndMDetailsForBuyerDto SecondMasterDetails = new OrderDetails2ndMDetailsForBuyerDto();
 
                                     SecondMasterDetails.Imagepath = reader.IsDBNull("Imagepath") ? null : reader["Imagepath"].ToString();
                                     SecondMasterDetails.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
-                                    SecondMasterDetails.Price = reader.IsDBNull("Price") ? (int?)null : Convert.ToInt32(reader["Price"]);
+                                    SecondMasterDetails.Price = reader.IsDBNull("Price") ? (decimal?)null : Convert.ToDecimal(reader["Price"]);
+                                    SecondMasterDetails.DeliveryCharge = reader.IsDBNull("DeliveryCharge") ? (decimal?)null : Convert.ToDecimal(reader["DeliveryCharge"]);
+                                    SecondMasterDetails.ProductTotalPrice = reader.IsDBNull("ProductTotalPrice") ? (decimal?)null : Convert.ToDecimal(reader["ProductTotalPrice"]);
                                     SecondMasterDetails.TotalQty = reader.IsDBNull("TotalQty") ? (int?)null : Convert.ToInt32(reader["TotalQty"]);
-                                    SenMaster.PackageSubtotal += SecondMasterDetails.Price * SecondMasterDetails.TotalQty;
-                                    Master.TotalDeliveryCharge += SecondMaster.PackageDeliveryCharge;
-                                    Master.TotalAmount += Master.SubTotal + Master.TotalDeliveryCharge;
+                                    SecondMasterDetails.ProductSubtotal = reader.IsDBNull("ProductSubtotal") ? (decimal?)null : Convert.ToDecimal(reader["ProductSubtotal"]);
+
+                                    SenMaster.PackageDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    SenMaster.PackageSubtotal += SecondMasterDetails.ProductTotalPrice;
+                                    Master.TotalDeliveryCharge += SecondMasterDetails.DeliveryCharge;
+                                    Master.SubTotal += SecondMasterDetails.ProductTotalPrice;
 
                                     SenMaster.OrderDetails2ndMDetailsListForBuyer.Add(SecondMasterDetails);
                                     Master.OrderDetails2ndMasterListForBuyer.Add(SenMaster);
                                 }
-
-
-
                             }
                         }
                     }
                 }
+
                 return Ok(Master);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("An error occurred while processing the request.");
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+
+
+        [HttpGet("getAllOrderForSeller")]
+        public async Task<IActionResult> getAllOrderForSellerAsync(int userid, string? status)
+        {
+            List<OrderMasterDataForSellerDto> MasterList = new List<OrderMasterDataForSellerDto>();
+
+            try
+            {
+                string query = @"GetALLOrderForSellerBySellerId";
+
+                //if (status != null)
+                //{
+                //    query = @"GetALLOrderForSellerBySellerId";
+
+                //}
+                //else
+                //{
+                //    query = @"GetALLOrderForSellerBySellerId";
+                //}
+
+                con.Open();
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    if (status != null)
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userid);
+                        cmd.Parameters.AddWithValue("@Status", status);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userid);
+                    }
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        OrderMasterDataForSellerDto Master = null;
+
+                        while (reader.Read())
+                        {
+                            int OrderMasterId = reader.IsDBNull("OrderMasterId") ? -1 : Convert.ToInt32(reader["OrderMasterId"]);
+
+                            if (Master == null || Master.OrderMasterId != OrderMasterId)
+                            {
+                                if (Master != null && Master.TotalPrice != null && Master.TotalDeliveryCharge != null)
+                                {
+                                    Master.TotalAmount += (Master.TotalPrice ?? 0) + (Master.TotalDeliveryCharge ?? 0);
+                                }
+
+
+
+                                Master = new OrderMasterDataForSellerDto();
+                                Master.OrderMasterId = OrderMasterId;
+                                Master.OrderNo = reader.IsDBNull("OrderNo") ? (string?)null : reader["OrderNo"].ToString();
+                                Master.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+                                Master.SellerUserId = reader.IsDBNull("SellerUserId") ? (int?)null : Convert.ToInt32(reader["SellerUserId"]);
+                                Master.BuyerUserId = reader.IsDBNull("BuyerUserId") ? (int?)null : Convert.ToInt32(reader["BuyerUserId"]);
+                                Master.BuyerAddress = reader.IsDBNull("Address") ? (string?)null : reader["Address"].ToString();
+
+
+                                MasterList.Add(Master);
+
+                                OrderDetailsDataForSellerDto Detail = new OrderDetailsDataForSellerDto();
+                                {
+
+                                    Detail.OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]);
+                                    Detail.ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]);
+                                    Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+                                    Detail.Specification = reader.IsDBNull("Specification") ? null : reader["Specification"].ToString();
+                                    Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
+                                    Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
+                                    Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
+                                    Detail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                                    Detail.StockQty = reader.IsDBNull(reader.GetOrdinal("StockQty")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("StockQty"));
+                                    Detail.SaleQty = reader.IsDBNull("SaleQty") ? (int?)null : Convert.ToInt32(reader["SaleQty"]);
+                                    Detail.UnitId = reader.IsDBNull("UnitId") ? (int?)null : Convert.ToInt32(reader["UnitId"]);
+                                    Detail.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                                    Detail.ProductGroupID = reader.IsDBNull("ProductGroupID") ? (int?)null : Convert.ToInt32(reader["ProductGroupID"]);
+
+
+                                    Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+
+                                    Master.TotalPrice += Detail.Price * Detail.Qty;
+
+                                    Master.TotalDeliveryCharge += reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                                    
+                                }
+                                Master.OrderDetailsListForSeller.Add(Detail);
+
+                            }
+                            else
+                            {
+                                OrderDetailsDataForSellerDto Detail = new OrderDetailsDataForSellerDto();
+                                {
+
+                                    Detail.OrderDetailId = reader.IsDBNull("OrderDetailId") ? (int?)null : Convert.ToInt32(reader["OrderDetailId"]);
+                                    Detail.ProductId = reader.IsDBNull("ProductId") ? (int?)null : Convert.ToInt32(reader["ProductId"]);
+                                    Detail.ProductName = reader.IsDBNull("ProductName") ? null : reader["ProductName"].ToString();
+                                    Detail.ImagePath = reader.IsDBNull("ImagePath") ? null : reader["ImagePath"].ToString();
+                                    Detail.Qty = reader.IsDBNull("Qty") ? (int?)null : Convert.ToInt32(reader["Qty"]);
+                                    Detail.Specification = reader.IsDBNull("Specification") ? null : reader["Specification"].ToString();
+                                    Detail.NetPrice = reader.IsDBNull(reader.GetOrdinal("NetPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("NetPrice"));
+                                    Detail.ProductGroupID = reader.IsDBNull("ProductGroupID") ? (int?)null : Convert.ToInt32(reader["ProductGroupID"]);
+                                    Detail.SaleQty = reader.IsDBNull("SaleQty") ? (int?)null : Convert.ToInt32(reader["SaleQty"]);
+                                    Detail.StockQty = reader.IsDBNull(reader.GetOrdinal("StockQty")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("StockQty"));
+                                    Detail.UnitId = reader.IsDBNull("UnitId") ? (int?)null : Convert.ToInt32(reader["UnitId"]);
+
+
+
+
+
+                                    //Price = reader["Price"] is DBNull ? (decimal?)null : Convert.ToDecimal(reader["Price"]),
+                                    Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
+                                    Detail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+
+
+                                    Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
+
+                                    Master.TotalPrice += Detail.Price * Detail.Qty;
+
+                                    Master.TotalDeliveryCharge += reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
+                                   // Master.TotalAmount += Master.TotalPrice + Detail.DeliveryCharge;
+                                }
+                                Master.OrderDetailsListForSeller.Add(Detail);
+                            }
+                        }
+                    }
+                }
+                return Ok(MasterList);
             }
             catch (Exception ex)
             {
