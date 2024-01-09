@@ -235,7 +235,9 @@ namespace NDE_Digital_Market.Controllers
             {
                 List<GetProductListDto> lst = new List<GetProductListDto>();
                 await con.OpenAsync();
-                string query = "select ProductId, ProductName from ProductList where IsActive = 1 ORDER BY ProductId DESC;";
+                string query = @"select PL.ProductId, PL.ProductName, PL.UnitId, U.Name as UnitName from ProductList PL 
+                                  join Units U on U.UnitId = PL.UnitId
+                                  where IsActive = 1 ORDER BY ProductId DESC; ";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
@@ -246,6 +248,8 @@ namespace NDE_Digital_Market.Controllers
                             GetProductListDto modelObj = new GetProductListDto();
                             modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
                             modelObj.ProductName = reader["ProductName"].ToString();
+                            modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
+                            modelObj.UnitName = reader["UnitName"].ToString();
 
                             lst.Add(modelObj);
                         }
