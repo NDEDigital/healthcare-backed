@@ -204,8 +204,136 @@ namespace NDE_Digital_Market.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        ///============================================================
+        [HttpGet]
+        [Route("PortalAfterInsert")]
+        public async Task<IActionResult> PortalAfterInsert(int PortalReceivedId)
+        {
+            using (var connection = new SqlConnection(_healthCareConnection))
+            {
+                try
+                {
+                    PortalAfterInsert portalAfterInsert = new PortalAfterInsert();
+                    string portalAfter = "GetPortalDataAfterInsertByPortalReceivedId";
+                    connection.Open();
+                    SqlCommand cmdportal = new SqlCommand(portalAfter, connection);
+                    cmdportal.CommandType = CommandType.StoredProcedure;
+
+                    cmdportal.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmdportal);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable reader = ds.Tables[0];
+                    DataTable reader1 = ds.Tables[1];
+
+                    for (int i = 0; i < reader.Rows.Count; i++)
+                    {
+                        portalAfterInsert.PortalReceivedId = Convert.ToInt32(reader.Rows[i]["PortalReceivedId"].ToString());
+                        portalAfterInsert.PortalReceivedCode = reader.Rows[i]["PortalReceivedCode"].ToString();
+                        portalAfterInsert.MaterialReceivedDate = Convert.ToDateTime(reader.Rows[i]["MaterialReceivedDate"].ToString());
+                        portalAfterInsert.ChallanNo = reader.Rows[i]["ChallanNo"].ToString();
+                        portalAfterInsert.ChallanDate = Convert.ToDateTime(reader.Rows[i]["ChallanDate"].ToString());
+                        portalAfterInsert.Remarks = reader.Rows[i]["Remarks"].ToString();
+                    }
+
+                    for (int i = 0; i < reader1.Rows.Count; i++)
+                    {
+                        PortalReceivedDetailAfterInsert portalReceivedDetailAfterInsert = new PortalReceivedDetailAfterInsert
+                        {
+                            PortalReceivedId = Convert.ToInt32(reader1.Rows[i]["PortalReceivedId"].ToString()),
+                            PortalDetailsId = Convert.ToInt32(reader1.Rows[i]["PortalDetailsId"].ToString()),
+                            ProductGroupId = Convert.ToInt32(reader1.Rows[i]["ProductGroupId"].ToString()),
+                            ProductGroupName = reader1.Rows[i]["ProductGroupName"].ToString(),
+                            ProductId = Convert.ToInt32(reader1.Rows[i]["ProductId"].ToString()),
+                            ProductName = reader1.Rows[i]["ProductName"].ToString(),
+                            Specification = reader1.Rows[i]["Specification"].ToString(),
+                            ReceivedQty = Convert.ToDecimal(reader1.Rows[i]["ReceivedQty"].ToString()),
+                            UnitId = Convert.ToInt32(reader1.Rows[i]["UnitId"].ToString()),
+                            Unit = reader1.Rows[i]["Unit"].ToString(),
+                            Price = Convert.ToDecimal(reader1.Rows[i]["Price"].ToString()),
+                            TotalPrice = Convert.ToDecimal(reader1.Rows[i]["TotalPrice"].ToString()),
+                            AvailableQty = Convert.ToDecimal(reader1.Rows[i]["AvailableQty"].ToString()),
+                            Remarks = reader1.Rows[i]["Remarks"].ToString(),
+                        };
+                        portalAfterInsert.PortalReceivedDetailAfterInsertlList.Add(portalReceivedDetailAfterInsert);
+                    }
+
+                    return Ok(new { message = "portal Data After Insert got successfully", portalAfterInsert });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = "An error occurred while fetching the portal Data After Insert." });
+                }
+                finally
+                {
+                    if (connection.State == ConnectionState.Open)
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+        }
+
+        ///============================================================
+
+        private async Task<IActionResult> GetPortalReceivedDetailsAndMasterAsync(int portalReceivedId)
+        {
+            try
+            {
+                var portalReceivedMasterDto = new PortalReceivedMasterDto();
+                var portalReceivedDetailsDtos = new List<PortalReceivedDetailsDto>();
+                using (con)
+                {
+                    await con.OpenAsync();
+                    using (SqlCommand command = new SqlCommand("GetPortalReceivedDetailsAndMaster", con))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@PortalReceivedId", portalReceivedId);
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var portalReceivedDetailsDto = new PortalReceivedDetailsDto
+                                {
+                                    PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId")),
+                                    ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupId")),
+                                    ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    UnitId = reader.GetInt32(reader.GetOrdinal("UnitId")),
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Remarks = reader.GetOrdinal("Remarks").ToString(),
+                                    Specification = reader.GetOrdinal("Specification").ToString(),
+                                    Price = reader.GetOrdinal("Price"),
+                                    TotalPrice = reader.GetOrdinal("TotalPrice"),
+                                };
+                                portalReceivedDetailsDtos.Add(portalReceivedDetailsDto);
+                            }
+                            if (await reader.NextResultAsync())
+                            {
+                                if (await reader.ReadAsync())
+                                {
+                                    portalReceivedMasterDto.PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId"));
+                                    portalReceivedMasterDto.PortalReceivedCode = reader.GetString(reader.GetOrdinal("PortalReceivedCode"));
+                                    portalReceivedMasterDto.ChallanNo = reader.GetOrdinal("ChallanNo").ToString();
+                                    //  portalReceivedMasterDto.MaterialReceivedDate = reader.IsDBNull(reader.GetOrdinal("MaterialReceivedDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+                                    portalReceivedMasterDto.MaterialReceivedDate = reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+                                    portalReceivedMasterDto.Remarks = reader.GetOrdinal("Remarks").ToString();
+                                    portalReceivedMasterDto.CompanyCode = reader.GetOrdinal("CompanyCode").ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+                portalReceivedMasterDto.PortalReceivedDetailslist = portalReceivedDetailsDtos;
+                return Ok(portalReceivedMasterDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
 
+        ///========================================================
 
 
 
@@ -338,6 +466,5 @@ namespace NDE_Digital_Market.Controllers
                 return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
             }
         }
-
     }
 }
