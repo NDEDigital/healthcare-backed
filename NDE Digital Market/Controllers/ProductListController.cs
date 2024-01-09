@@ -319,7 +319,7 @@ namespace NDE_Digital_Market.Controllers
         //========================tushar=========================
 
         [HttpPut("MakeProductActiveOrInactive")]
-        public async Task<IActionResult> MakeProductActiveOrInactiveAsync(int productId, Boolean IsActive)
+        public async Task<IActionResult> MakeProductActiveOrInactiveAsync(int? productId, bool? IsActive)
         {
             try
             {
