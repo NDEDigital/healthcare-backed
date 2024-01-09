@@ -439,11 +439,11 @@ namespace NDE_Digital_Market.Controllers
 
          
             [HttpGet("GetPortalReceivedByUserId/{userId}")]
-            public async Task<ActionResult<IEnumerable<PortalReceivedModel>>> GetPortalReceivedByUserId(int userId)
+            public async Task<ActionResult> GetPortalReceivedByUserId(int userId)
             {
                 try
                 {
-                    List<PortalReceivedModel> portalReceivedList = new List<PortalReceivedModel>();
+                    List<PortalReceived> portalReceivedList = new List<PortalReceived>();
 
                     using ( con)
                     {
@@ -456,8 +456,8 @@ namespace NDE_Digital_Market.Controllers
                             {
                                 while (await reader.ReadAsync())
                                 {
-                                    PortalReceivedModel portalReceived = new PortalReceivedModel
-                                    {
+                                PortalReceived portalReceived = new PortalReceived
+                                {
                                         PortalReceivedId = Convert.ToInt32(reader["PortalReceivedId"]),
                                         PortalReceivedCode = reader["PortalReceivedCode"].ToString(),
                                         MaterialReceivedDate = reader["MaterialReceivedDate"] != DBNull.Value ? Convert.ToDateTime(reader["MaterialReceivedDate"]) : (DateTime?)null,
@@ -483,14 +483,7 @@ namespace NDE_Digital_Market.Controllers
             }
          
 
-        public class PortalReceivedModel
-        {
-            public int PortalReceivedId { get; set; }
-            public string PortalReceivedCode { get; set; }
-            public DateTime? MaterialReceivedDate { get; set; }
-            public int UserId { get; set; }
-        }
-
+  
         [HttpGet]
         [Route("GetPortalData")]
         public async Task<IActionResult> GetPortalData(int PortalReceivedId)
@@ -516,7 +509,7 @@ namespace NDE_Digital_Market.Controllers
                         portalAfterInsert.PortalReceivedCode = reader.Rows[i]["PortalReceivedCode"].ToString();
                         portalAfterInsert.MaterialReceivedDate = Convert.ToDateTime(reader.Rows[i]["MaterialReceivedDate"].ToString());
                         portalAfterInsert.ChallanNo = reader.Rows[i]["ChallanNo"].ToString();
-                        portalAfterInsert.ChallanDate = Convert.ToDateTime(reader.Rows[i]["ChallanDate"].ToString());
+                        portalAfterInsert.ChallanDate = reader.Rows[i]["ChallanDate"] != DBNull.Value ? Convert.ToDateTime(reader.Rows[i]["ChallanDate"]) : (DateTime?)null;
                         portalAfterInsert.Remarks = reader.Rows[i]["Remarks"].ToString();
                     }
                     for (int i = 0; i < reader1.Rows.Count; i++)
