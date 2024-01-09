@@ -59,7 +59,9 @@ namespace NDE_Digital_Market.Controllers
                     invoice.NumberOfItem = Convert.ToInt32(reader.Rows[i]["NumberOfItem"].ToString());
                     invoice.TotalPrice = Convert.ToDecimal(reader.Rows[i]["TotalPrice"].ToString());
                 }
+
                 for (int i = 0; i < reader1.Rows.Count; i++)
+
                 {
                     OrderInvoiceDetails orderDetails = new OrderInvoiceDetails
                     {
@@ -72,7 +74,7 @@ namespace NDE_Digital_Market.Controllers
                         Price = Convert.ToDecimal(reader1.Rows[i]["Price"].ToString()),
                         DeliveryCharge = Convert.ToDecimal(reader1.Rows[i]["DeliveryCharge"].ToString()),
                         DiscountAmount = Convert.ToDecimal(reader1.Rows[i]["DiscountAmount"].ToString()),
-                        // DeliveryDate = Convert.ToDateTime(reader.Rows[i]["DeliveryDate"].ToString()),
+                        DeliveryDate = Convert.ToDateTime(reader1.Rows[i]["DeliveryDate"].ToString()),
                         DiscountPct = Convert.ToDecimal(reader1.Rows[i]["DiscountPct"].ToString()),
                         NetPrice = Convert.ToDecimal(reader1.Rows[i]["NetPrice"].ToString()),
                         DetailDeliveryCharge = Convert.ToDecimal(reader1.Rows[i]["DetailDeliveryCharge"].ToString()),
