@@ -29,9 +29,43 @@ namespace NDE_Digital_Market.Controllers
             foldername = commonServices.FilesPath + "SellerProductPriceAndOfferFiles";
         }
 
- 
-        [HttpGet("GetProductForAddQtyByUserId/{UserId}")]
-        public async Task<IActionResult> GetProductForAddQtyByUserId(int UserId)
+        [HttpGet]
+        [Route("ProductGroupsDropdownByUserId/{userID}")]
+        public async Task<IActionResult> ProductGroupsDropdownByUserId(int userID)
+        {
+            var productGroupsDropdownByUserId = new List<ProductGroupsDropdown>();
+            try
+            {
+                using (var connection = new SqlConnection(_healthCareConnection))
+                {
+                    using (var command = new SqlCommand("GetProductGroupsDropdownByUserId", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@userID", userID));
+                        await connection.OpenAsync();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var productGroupsDropdown = new ProductGroupsDropdown();
+                                productGroupsDropdown.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                                productGroupsDropdown.ProductGroupName = reader["ProductGroupName"].ToString();
+                                productGroupsDropdownByUserId.Add(productGroupsDropdown);
+                            }
+                        }
+                    }
+                }
+                return Ok(productGroupsDropdownByUserId);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
+            }
+        }
+
+
+        [HttpGet("GetProductForAddQtyByUserId/{UserId}/{productGroupId}")]
+        public async Task<IActionResult> GetProductForAddQtyByUserId(int UserId ,int productGroupId)
         {
             var products = new List<SellerPoductListModel>();
 
@@ -43,6 +77,7 @@ namespace NDE_Digital_Market.Controllers
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.Add(new SqlParameter("@UserId", UserId));
+                        command.Parameters.Add(new SqlParameter("@productGroupId", productGroupId));
                         await connection.OpenAsync();
 
                         using (var reader = await command.ExecuteReaderAsync())
@@ -56,7 +91,6 @@ namespace NDE_Digital_Market.Controllers
                                     ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupID")),
                                     Specification = reader.IsDBNull(reader.GetOrdinal("Specification")) ? null : reader.GetString(reader.GetOrdinal("Specification")),
                                     UnitId = reader.IsDBNull(reader.GetOrdinal("UnitId")) ? 0 : reader.GetInt32(reader.GetOrdinal("UnitId")),
-
                                     Unit = reader.IsDBNull(reader.GetOrdinal("Unit")) ? null : reader.GetString(reader.GetOrdinal("Unit")),
                                     Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Price")),
                                     AvailableQty = reader.IsDBNull(reader.GetOrdinal("AvailableQty")) ? 0 : reader.GetDecimal(reader.GetOrdinal("AvailableQty"))
@@ -118,23 +152,16 @@ namespace NDE_Digital_Market.Controllers
                 cmd.Parameters.AddWithValue("@PortalReceivedCode", PortalReceivedCode);
                 cmd.Parameters.AddWithValue("@MaterialReceivedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@ChallanNo", portaldata.ChallanNo ?? String.Empty);
-
-
-
                 cmd.Parameters.AddWithValue("@ChallanDate", portaldata.ChallanDate ?? (object)DBNull.Value);
-
-
                 cmd.Parameters.AddWithValue("@Remarks", portaldata.Remarks ?? String.Empty);
                 cmd.Parameters.AddWithValue("@UserId", portaldata.UserId);
-             
- 
                 cmd.Parameters.AddWithValue("@AddedBy", portaldata.AddedBy);
                 cmd.Parameters.AddWithValue("@AddedDate", DateTime.Now);
                 cmd.Parameters.AddWithValue("@AddedPC", portaldata.AddedPC);
 
                 int a = await cmd.ExecuteNonQueryAsync();
 
-                if(a > 0)
+                if (a > 0)
                 {
                     var detailsResult = await InsertPortalReceivedAsync(PortalReceivedId, portaldata.PortalReceivedDetailslist, transaction);
                     if (detailsResult is BadRequestObjectResult)
@@ -168,7 +195,7 @@ namespace NDE_Digital_Market.Controllers
 
         private async Task<IActionResult> InsertPortalReceivedAsync(int PortalReceivedId, List<PortalReceivedDetailsDto> PortalReceivedDetailsList, SqlTransaction transaction)
         {
-            try 
+            try
             {
                 for (int i = 0; i < PortalReceivedDetailsList.Count; i++)
                 {
@@ -176,7 +203,6 @@ namespace NDE_Digital_Market.Controllers
                     string query = "InsertPortalReceivedDetails";
                     SqlCommand CheckCMD = new SqlCommand(query, con, transaction);
                     CheckCMD.CommandType = CommandType.StoredProcedure;
-
                     CheckCMD.Parameters.Clear();
                     CheckCMD.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
                     CheckCMD.Parameters.AddWithValue("@ProductGroupID", PortalReceivedDetailsList[i].ProductGroupId);
@@ -188,27 +214,27 @@ namespace NDE_Digital_Market.Controllers
                     CheckCMD.Parameters.AddWithValue("@TotalPrice", PortalReceivedDetailsList[i].TotalPrice);
                     CheckCMD.Parameters.AddWithValue("@UserId", PortalReceivedDetailsList[i].UserId);
                     CheckCMD.Parameters.AddWithValue("@Remarks", PortalReceivedDetailsList[i].Remarks ?? String.Empty);
-
-
                     CheckCMD.Parameters.AddWithValue("@AddedBy", PortalReceivedDetailsList[i].AddedBy);
                     CheckCMD.Parameters.AddWithValue("@DateAdded", DateTime.Now);
                     CheckCMD.Parameters.AddWithValue("@AddedPC", PortalReceivedDetailsList[i].AddedPC);
-
                     await CheckCMD.ExecuteNonQueryAsync();
 
                 }
+
+
+                // transaction.Commit();
+
+           
+
                 return Ok(new { message = "Portal Details data Inserted Successfully." });
-            } 
-            catch(Exception ex) 
+            }
+            catch (Exception ex)
             {
+
+
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
-
 
         private async Task<Boolean> SellerProductPriceAndOfferCheck(int ProductId, int? userId)
         {
@@ -234,7 +260,7 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId,sellerproductdata.UserId);
+                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId, sellerproductdata.UserId);
                 if (ProductPriceAndOfferExist)
                 {
                     return BadRequest(new { message = "ProductPriceAndOffer Allready Added." });
@@ -279,7 +305,7 @@ namespace NDE_Digital_Market.Controllers
                 }
 
 
-                
+
             }
             catch (Exception ex)
             {
@@ -289,7 +315,7 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetSellerProductsByCompanyCode")]
-        public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status=null)
+        public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status = null)
         {
             var sellerProductsByCompanyCode = new List<SellerProductsByCompanyCodeDto>();
             try
@@ -339,5 +365,191 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
+
+
+        private async Task<IActionResult> GetPortalReceivedDetailsAndMasterAsync(int portalReceivedId)
+        {
+            try
+            {
+                var portalReceivedMasterDto = new PortalReceivedMasterDto();
+                var portalReceivedDetailsDtos = new List<PortalReceivedDetailsDto>();
+
+                using (con)
+                {
+                    await con.OpenAsync();
+
+                    using (SqlCommand command = new SqlCommand("GetPortalReceivedDetailsAndMaster", con))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@PortalReceivedId", portalReceivedId);
+
+
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var portalReceivedDetailsDto = new PortalReceivedDetailsDto
+                                {
+                                    PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId")),
+                                    ProductGroupId = reader.GetInt32(reader.GetOrdinal("ProductGroupId")),
+                                    ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    UnitId = reader.GetInt32(reader.GetOrdinal("UnitId")),
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Remarks = reader.GetOrdinal("Remarks").ToString(),
+                                    Specification = reader.GetOrdinal("Specification").ToString(),
+                                    Price = reader.GetOrdinal("Price"),
+                                    TotalPrice = reader.GetOrdinal("TotalPrice"),
+
+
+                                };
+                                portalReceivedDetailsDtos.Add(portalReceivedDetailsDto);
+                            }
+
+                            if (await reader.NextResultAsync())
+                            {
+                                if (await reader.ReadAsync())
+                                {
+                                    portalReceivedMasterDto.PortalReceivedId = reader.GetInt32(reader.GetOrdinal("PortalReceivedId"));
+                                    portalReceivedMasterDto.PortalReceivedCode = reader.GetString(reader.GetOrdinal("PortalReceivedCode"));
+                                    portalReceivedMasterDto.ChallanNo = reader.GetOrdinal("ChallanNo").ToString();
+                                    //  portalReceivedMasterDto.MaterialReceivedDate = reader.IsDBNull(reader.GetOrdinal("MaterialReceivedDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+
+
+                                    portalReceivedMasterDto.MaterialReceivedDate = reader.GetDateTime(reader.GetOrdinal("MaterialReceivedDate"));
+                                    portalReceivedMasterDto.Remarks = reader.GetOrdinal("Remarks").ToString();
+                                    portalReceivedMasterDto.CompanyCode = reader.GetOrdinal("CompanyCode").ToString();
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+                portalReceivedMasterDto.PortalReceivedDetailslist = portalReceivedDetailsDtos;
+
+                return Ok(portalReceivedMasterDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+         
+            [HttpGet("GetPortalReceivedByUserId")]
+            public async Task<ActionResult> GetPortalReceivedByUserId(int userId)
+            {
+                try
+                {
+                    List<PortalReceived> portalReceivedList = new List<PortalReceived>();
+
+                    using ( con)
+                    {
+                        using (var command = new SqlCommand("SELECT [PortalReceivedId], [PortalReceivedCode], [MaterialReceivedDate], UserId FROM [PortalReceivedMaster] WHERE UserId = @UserId ORDER BY [PortalReceivedCode] DESC ", con))
+                        {
+                            command.Parameters.AddWithValue("@UserId", userId);
+                            await con.OpenAsync();
+
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                PortalReceived portalReceived = new PortalReceived
+                                {
+                                        PortalReceivedId = Convert.ToInt32(reader["PortalReceivedId"]),
+                                        PortalReceivedCode = reader["PortalReceivedCode"].ToString(),
+                                        MaterialReceivedDate = reader["MaterialReceivedDate"] != DBNull.Value ? Convert.ToDateTime(reader["MaterialReceivedDate"]) : (DateTime?)null,
+                                        UserId = Convert.ToInt32(reader["UserId"])
+                                    };
+                                    portalReceivedList.Add(portalReceived);
+                                }
+                            }
+                        }
+                    }
+
+                    if (portalReceivedList.Count == 0)
+                    {   
+                        return NotFound("No data found for the given user ID.");
+                    }
+
+                    return Ok(portalReceivedList);
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, "An error occurred while retrieving data: " + ex.Message);
+                }
+            }
+         
+
+  
+        [HttpGet]
+        [Route("GetPortalData")]
+        public async Task<IActionResult> GetPortalData(int PortalReceivedId)
+        {
+            using (var connection = new SqlConnection(_healthCareConnection))
+            {
+                try
+                {
+                    PortalAfterInsert portalAfterInsert = new PortalAfterInsert();
+                    string portalAfter = "GetPortalDataAfterInsertByPortalReceivedId";
+                    connection.Open();
+                    SqlCommand cmdportal = new SqlCommand(portalAfter, connection);
+                    cmdportal.CommandType = CommandType.StoredProcedure;
+                    cmdportal.Parameters.AddWithValue("@PortalReceivedId", PortalReceivedId);
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmdportal);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds);
+                    DataTable reader = ds.Tables[0];
+                    DataTable reader1 = ds.Tables[1];
+                    for (int i = 0; i < reader.Rows.Count; i++)
+                    {
+                        portalAfterInsert.PortalReceivedId = Convert.ToInt32(reader.Rows[i]["PortalReceivedId"].ToString());
+                        portalAfterInsert.PortalReceivedCode = reader.Rows[i]["PortalReceivedCode"].ToString();
+                        portalAfterInsert.MaterialReceivedDate = Convert.ToDateTime(reader.Rows[i]["MaterialReceivedDate"].ToString());
+                        portalAfterInsert.ChallanNo = reader.Rows[i]["ChallanNo"].ToString();
+                        portalAfterInsert.ChallanDate = reader.Rows[i]["ChallanDate"] != DBNull.Value ? Convert.ToDateTime(reader.Rows[i]["ChallanDate"]) : (DateTime?)null;
+                        portalAfterInsert.Remarks = reader.Rows[i]["Remarks"].ToString();
+                    }
+                    for (int i = 0; i < reader1.Rows.Count; i++)
+                    {
+                        PortalReceivedDetailAfterInsert portalReceivedDetailAfterInsert = new PortalReceivedDetailAfterInsert
+                        {
+                            PortalReceivedId = Convert.ToInt32(reader1.Rows[i]["PortalReceivedId"].ToString()),
+                            PortalDetailsId = Convert.ToInt32(reader1.Rows[i]["PortalDetailsId"].ToString()),
+                            ProductGroupId = Convert.ToInt32(reader1.Rows[i]["ProductGroupId"].ToString()),
+                            ProductGroupName = reader1.Rows[i]["ProductGroupName"].ToString(),
+                            ProductId = Convert.ToInt32(reader1.Rows[i]["ProductId"].ToString()),
+                            ProductName = reader1.Rows[i]["ProductName"].ToString(),
+                            Specification = reader1.Rows[i]["Specification"].ToString(),
+                            ReceivedQty = Convert.ToDecimal(reader1.Rows[i]["ReceivedQty"].ToString()),
+                            UnitId = Convert.ToInt32(reader1.Rows[i]["UnitId"].ToString()),
+                            Unit = reader1.Rows[i]["Unit"].ToString(),
+                            Price = Convert.ToDecimal(reader1.Rows[i]["Price"].ToString()),
+                            TotalPrice = Convert.ToDecimal(reader1.Rows[i]["TotalPrice"].ToString()),
+                            AvailableQty = Convert.ToDecimal(reader1.Rows[i]["AvailableQty"].ToString()),
+                            Remarks = reader1.Rows[i]["Remarks"].ToString(),
+                        };
+                        portalAfterInsert.PortalReceivedDetailAfterInsertlList.Add(portalReceivedDetailAfterInsert);
+                    }
+                    return Ok(new { message = "portal Data After Insert got successfully", portalAfterInsert });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = "An error occurred while fetching the portal Data After Insert." });
+                }
+                finally
+                {
+                    if (connection.State == ConnectionState.Open)
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+        }
+
+
     }
+
 }
