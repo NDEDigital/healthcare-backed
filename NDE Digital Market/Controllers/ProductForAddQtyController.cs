@@ -101,10 +101,10 @@ namespace NDE_Digital_Market.Controllers
                     }
                 }
 
-                if (products.Count == 0)
-                {
-                    return NotFound("No products found for the given user ID.");
-                }
+                //if (products.Count == 0)
+                //{
+                //    return NotFound("No products found for the given user ID.");
+                //}
 
                 return Ok(products);
             }
