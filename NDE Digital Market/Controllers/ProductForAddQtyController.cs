@@ -438,7 +438,7 @@ namespace NDE_Digital_Market.Controllers
 
 
          
-            [HttpGet("GetPortalReceivedByUserId/{userId}")]
+            [HttpGet("GetPortalReceivedByUserId")]
             public async Task<ActionResult> GetPortalReceivedByUserId(int userId)
             {
                 try
@@ -447,7 +447,7 @@ namespace NDE_Digital_Market.Controllers
 
                     using ( con)
                     {
-                        using (var command = new SqlCommand("SELECT [PortalReceivedId], [PortalReceivedCode], [MaterialReceivedDate], UserId FROM [PortalReceivedMaster] WHERE UserId = @UserId", con))
+                        using (var command = new SqlCommand("SELECT [PortalReceivedId], [PortalReceivedCode], [MaterialReceivedDate], UserId FROM [PortalReceivedMaster] WHERE UserId = @UserId ORDER BY [PortalReceivedCode] DESC ", con))
                         {
                             command.Parameters.AddWithValue("@UserId", userId);
                             await con.OpenAsync();
