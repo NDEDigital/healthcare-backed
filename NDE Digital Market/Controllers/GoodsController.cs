@@ -24,80 +24,95 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("GetNavData")]
-        public async Task<List<NavModel>> GetNavData()
+        public async Task<ActionResult<List<NavModel>>> GetNavData()
         {
             List<NavModel> lst = new List<NavModel>();
-            using (SqlConnection con = new SqlConnection(_healthCareConnection))
-            {
-                await con.OpenAsync();
-                string query = @"SELECT * FROM ProductGroups Where IsActive = 1";
 
-                using (SqlCommand cmd = new SqlCommand(query, con))
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_healthCareConnection))
                 {
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    await con.OpenAsync();
+                    string query = @"SELECT * FROM ProductGroups Where IsActive = 1";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        while (await reader.ReadAsync())
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            NavModel modelObj = new NavModel
+                            while (await reader.ReadAsync())
                             {
-                                ProductGroupCode = reader["ProductGroupCode"].ToString(),
-                                ProductGroupName = reader["ProductGroupName"].ToString(),
-                                ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
-                                ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
-                                ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
-                            };
-                            lst.Add(modelObj);
+                                NavModel modelObj = new NavModel
+                                {
+                                    ProductGroupCode = reader["ProductGroupCode"].ToString(),
+                                    ProductGroupName = reader["ProductGroupName"].ToString(),
+                                    ProductGroupPrefix = reader["ProductGroupPrefix"].ToString(),
+                                    ProductGroupDetails = reader["ProductGroupDetails"].ToString(),
+                                    ImagePath = reader["ImagePath"].ToString(),
+                                    ProductGroupID = Convert.ToInt32(reader["ProductGroupID"])
+                                };
+                                lst.Add(modelObj);
+                            }
                         }
                     }
                 }
-
             }
-
-
-            return lst;
-        }
-
-       
-
-        [HttpGet]
-        [Route("GetGoodsList")]
-        public async Task<List<AllProductDto>> GetGoodsList()
-        {
-            List<AllProductDto> lst = new List<AllProductDto>();
-            using (SqlConnection con = new SqlConnection(_healthCareConnection))
+            catch (Exception ex)
             {
-                await con.OpenAsync();
-                string query = "GetAllProductListWithAvailableQty";
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            AllProductDto modelObj = new AllProductDto();
-                            modelObj.CompanyName = reader["CompanyName"].ToString();
-                            modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
-                            modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
-                            modelObj.ProductName = reader["ProductName"].ToString();
-                            modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
-                            modelObj.Specification = reader["Specification"].ToString();
-                            modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
-                            modelObj.Unit = reader["Unit"].ToString();
-                            modelObj.Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0;
-                            modelObj.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountAmount"]) : 0;
-                            modelObj.DiscountPct = reader["DiscountPct"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountPct"]) : 0;
-                            modelObj.ImagePath = reader["ImagePath"].ToString();
-                            modelObj.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
-                            modelObj.SellerId = Convert.ToInt32(reader["SellerId"]);
-                            modelObj.AvailableQty = Convert.ToInt32(reader["AvailableQty"]);
-
-                            lst.Add(modelObj);
-                        }
-                    }
-                }
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
             return lst;
         }
+
+
+[HttpGet]
+[Route("GetGoodsList")]
+public async Task<ActionResult<List<AllProductDto>>> GetGoodsList()
+{
+    List<AllProductDto> lst = new List<AllProductDto>();
+
+    try
+    {
+        using (SqlConnection con = new SqlConnection(_healthCareConnection))
+        {
+            await con.OpenAsync();
+            string query = "GetAllProductListWithAvailableQty";
+
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        AllProductDto modelObj = new AllProductDto();
+                        modelObj.CompanyName = reader["CompanyName"].ToString();
+                        modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+                        modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
+                        modelObj.ProductName = reader["ProductName"].ToString();
+                        modelObj.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
+                        modelObj.Specification = reader["Specification"].ToString();
+                        modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
+                        modelObj.Unit = reader["Unit"].ToString();
+                        modelObj.Price = reader["Price"] != DBNull.Value ? Convert.ToDecimal(reader["Price"]) : 0;
+                        modelObj.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountAmount"]) : 0;
+                        modelObj.DiscountPct = reader["DiscountPct"] != DBNull.Value ? Convert.ToDecimal(reader["DiscountPct"]) : 0;
+                        modelObj.ImagePath = reader["ImagePath"].ToString();
+                        modelObj.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
+                        modelObj.SellerId = Convert.ToInt32(reader["SellerId"]);
+                        modelObj.AvailableQty = Convert.ToInt32(reader["AvailableQty"]);
+
+                        lst.Add(modelObj);
+                    }
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"An error occurred: {ex.Message}");
+    }
+    return lst;
+}
+
 
 
 
@@ -133,12 +148,6 @@ namespace NDE_Digital_Market.Controllers
                         }
                     }
                 }
-                //if (companiesByProductGroup.Count == 0)
-                //{
-                //    return BadRequest(new {
-                //        message = "No companies found for the given product group code."}
-                //    );
-                //}
                 return Ok(companiesByProductGroup);
             }
             catch (Exception ex)
@@ -199,8 +208,5 @@ namespace NDE_Digital_Market.Controllers
                 return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
             }
         }
-
-
-
     }
 }

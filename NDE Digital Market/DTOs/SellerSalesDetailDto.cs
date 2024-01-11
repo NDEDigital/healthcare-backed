@@ -16,7 +16,7 @@
 
 
         public DateTime? AddedDate { get; set; }
-        public int? AddedBy { get; set; }
+        public string? AddedBy { get; set; }
         public string? AddedPC { get; set; }
 
     }

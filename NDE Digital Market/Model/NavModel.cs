@@ -7,5 +7,6 @@
         public string ProductGroupName { get; set; }
         public string ProductGroupPrefix { get; set; }
         public string ProductGroupDetails { get; set; }
+        public string ImagePath { get; set; }
     }
 }

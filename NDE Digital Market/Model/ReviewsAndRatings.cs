@@ -4,8 +4,22 @@ namespace NDE_Digital_Market.Model
 {
     public class ReviewsAndRatings
     {
+        
+        public int? GoodsId { get; set; }
+ 
+        public string? BuyerName { get; set; }
 
-        public int ReviewId { get; set; }
+        public string? SellerName { get; set; }
+        public string? GroupName { get; set; }
+        public string? GroupCode { get; set; }
+        public DateTime? DateTime { get; set; }
+
+ 
+
+        public string? EmptyRatingArray { get; set; }
+        public string? RatingArray { get; set; }
+        public string? BuyerCode { get; set; }
+        public int? ReviewId { get; set; }
 
         public int? OrderDetailId { get; set; }
 
@@ -13,28 +27,28 @@ namespace NDE_Digital_Market.Model
 
         public int? RatingValue { get; set; }
 
-        public string? BuyerId { get; set; }
-        public string? BuyerCode { get; set; }
+        public int? BuyerId { get; set; }
 
-        public string? GroupCode { get; set; }
 
-        public int? GoodsId { get; set; }
+        public int? ProductGroupID { get; set; }
 
-        public string? GroupName { get; set; }
+        public int? ProductId { get; set; }
 
-        public string? SellerId { get; set; }
+        public int? SellerId { get; set; }
 
-        public DateTime? DateTime { get; set; }
-        public IFormFile? Image { get; set; }
+        public DateTime? ReviewDate { get; set; }
 
-        public string? ImageName { get; set; }
-        
+        public IFormFile? ImageFile { get; set; }
+
+        //public byte[]? ImageFileBite { get; set; }
+
         public string? ImagePath { get; set; }
 
-        // Added by Marufa
-        public string? RatingArray { get; set; }
-        public string? EmptyRatingArray { get; set; }
-        public string? BuyerName { get; set; }
-        public string? SellerName { get; set; }
+        public DateTime? AddedDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
+        public string? AddedBy { get; set; }
+        public string? UpdatedBy { get; set; }
+        public string? AddedPc { get; set; }
+        public string? UpdatedPC { get; set; }
     }
 }

@@ -27,32 +27,26 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpGet("GetSearchedProduct")]
-        public IActionResult GetSearchedProduct(string productName, string sortDirection, int nextCount, int offset)
+        public IActionResult GetSearchedProduct(string productName, string sortDirection)
         {
-            if (offset != 0)
+            try
             {
-                offset = 20 * (offset - 1);
-            }
+                var resultList = new List<ProductSearchDto>();
 
-            var resultList = new List<ProductSearchDto>();
-
-            using (SqlConnection connection = new SqlConnection(_healthCareConnection))
-            {
-                using (SqlCommand cmd = new SqlCommand("ProductSearch", connection))
+                using (SqlConnection connection = new SqlConnection(_healthCareConnection))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@ProductName", productName));
-                    cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
-                    cmd.Parameters.Add(new SqlParameter("@NextCount", nextCount));
-                    cmd.Parameters.Add(new SqlParameter("@Offset", offset));
-
-                    connection.Open();
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand("ProductSearch", connection))
                     {
-                        while (reader.Read())
-                        {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@ProductName", productName));
+                        cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
 
+                        connection.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
                                 var productSearchDto = new ProductSearchDto();
 
                                 productSearchDto.CompanyName = reader["CompanyName"] is DBNull ? null : (string)reader["CompanyName"];
@@ -73,15 +67,18 @@ namespace NDE_Digital_Market.Controllers
                                 productSearchDto.TotalCount = reader["TotalCount"] is DBNull ? (int?)null : (int)reader["TotalCount"];
 
                                 resultList.Add(productSearchDto);
-
+                            }
                         }
                     }
                 }
+                return Ok(resultList);
             }
-
-            return Ok(resultList);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest(new { message = "An error occurred while processing the request." });
+            }
         }
-
 
     }
 

@@ -3,6 +3,7 @@
     public class GetSellerOrderBasedOnUserCodeDto
     {
         public int OrderDetailId { get; set; }
+        public int OrderMasterId { get; set; }
         public string? OrderNo { get; set; }
         public string? Address { get; set; }
         public int? BUserId { get; set; }
@@ -18,5 +19,6 @@
         public string? Unit { get; set; }
         public decimal? NetPrice { get; set; }
         public string? Status { get; set; }
+        public string? ReturnTypeName { get; set; }
     }
 }
