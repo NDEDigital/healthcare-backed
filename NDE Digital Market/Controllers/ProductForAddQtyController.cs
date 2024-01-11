@@ -224,14 +224,14 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-        private async Task<Boolean> SellerProductPriceAndOfferCheck(int ProductName, string companycode)
+        private async Task<Boolean> SellerProductPriceAndOfferCheck(int ProductId, int? userId)
         {
 
-            string query = @"SELECT COUNT(*) AS ProductCount FROM SellerProductPriceAndOffer WHERE ProductId = @ProductId AND CompanyCode = @CompanyCode";
+            string query = @"SELECT COUNT(*) AS ProductCount FROM SellerProductPriceAndOffer WHERE ProductId = @ProductId AND CompanyCode =(SELECT UPPER(CompanyCode) FROM UserRegistration WHERE UserId = @UserId)";
             SqlCommand cmd = new SqlCommand(query, con);
             cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@ProductId", ProductName);
-            cmd.Parameters.AddWithValue("@CompanyCode", companycode);
+            cmd.Parameters.AddWithValue("@ProductId", ProductId);
+            cmd.Parameters.AddWithValue("@UserId", userId);
             await con.OpenAsync();
             int count = (int)await cmd.ExecuteScalarAsync();
             await con.CloseAsync();
@@ -248,7 +248,7 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId, sellerproductdata.CompanyCode);
+                Boolean ProductPriceAndOfferExist = await SellerProductPriceAndOfferCheck(sellerproductdata.ProductId,sellerproductdata.UserId);
                 if (ProductPriceAndOfferExist)
                 {
                     return BadRequest(new { message = "ProductPriceAndOffer Allready Added." });
