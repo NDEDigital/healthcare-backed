@@ -70,6 +70,18 @@ namespace NDE_Digital_Market.Controllers
                                 productSearchDto.SellerId = reader["SellerId"] is DBNull ? (int?)null : (int)reader["SellerId"];
                                 productSearchDto.AvailableQty = reader["AvailableQty"] is DBNull ? (decimal?)null : (decimal)reader["AvailableQty"];
                                 productSearchDto.TotalCount = reader["TotalCount"] is DBNull ? (int?)null : (int)reader["TotalCount"];
+                                DateTime? endDate = null;
+                                if (reader["EndDate"] != DBNull.Value)
+                                {
+                                    endDate = Convert.ToDateTime(reader["EndDate"]);
+                                    if (endDate <= DateTime.Now)
+                                    {
+
+                                        productSearchDto.TotalPrice = productSearchDto.Price;
+                                        productSearchDto.DiscountAmount = 0;
+                                        productSearchDto.DiscountPct = 0;
+                                    }
+                                }
 
                                 resultList.Add(productSearchDto);
                             }
