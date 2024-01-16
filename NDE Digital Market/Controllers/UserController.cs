@@ -222,7 +222,10 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM  [UserRegistration] WHERE PhoneNumber = @phoneNumber ", _healthCareConnection);
+                string query = @"SELECT UR.UserId, UR.IsBuyer, UR.IsAdmin, UR.IsSeller, UR.PasswordHash, UR.PasswordSalt,CR.CompanyAdminId  FROM  UserRegistration UR
+                                    LEFT JOIN CompanyRegistration CR ON CR.CompanyCode = UR.CompanyCode AND CR.CompanyAdminId = UR.UserId
+                                    WHERE PhoneNumber = @PhoneNumber";
+                SqlCommand cmd = new SqlCommand(query, _healthCareConnection);
                 cmd.CommandType = CommandType.Text;
                 cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
 
@@ -235,7 +238,12 @@ namespace NDE_Digital_Market.Controllers
                     bool IsBuyer = (bool)reader["IsBuyer"];
                     bool IsSeller = (bool)reader["IsSeller"];
                     bool IsAdmin = (bool)reader["IsAdmin"];
-
+                    bool IsSellerAdmin = false;
+                    string adminId = reader["CompanyAdminId"]?.ToString();
+                    if (adminId.Length>0)
+                    {
+                         IsSellerAdmin = true;
+                    }
                     byte[] storedPasswordHash = (byte[])reader["PasswordHash"];
                     byte[] storedPasswordSalt = (byte[])reader["PasswordSalt"];
 
@@ -250,7 +258,8 @@ namespace NDE_Digital_Market.Controllers
                         return BadRequest(new { message = "Invalid password" });
                     }
 
-                    return Ok(new { message = "Login successful", userId, role, token, newRefreshToken });
+
+                    return Ok(new { message = "Login successful", userId, role, token, newRefreshToken, IsSellerAdmin });
                 }
                 else
                 {
