@@ -34,12 +34,12 @@ namespace NDE_Digital_Market.Controllers
                                             UR.UserId,
                                             UR.FullName,
                                             UR.PhoneNumber,
-                                            CR.Email,
+                                            UR.Email,
                                             UR.Address,
                                             UR.AddedDate,
                                             CR.IsActive,
                                             CR.CompanyCode,
-CR.CompanyName
+                                            CR.CompanyName
                                         FROM
                                             UserRegistration UR
                                         JOIN
