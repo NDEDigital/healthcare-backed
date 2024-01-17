@@ -164,7 +164,7 @@ namespace NDE_Digital_Market.Controllers
 
 
 
-
+        //admin order getdata
 
         [HttpGet("GetOrderMasterData")]
         public async Task<IActionResult> GetOrderMasterData(string? status)
@@ -175,37 +175,45 @@ namespace NDE_Digital_Market.Controllers
             {
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    using (var command = new SqlCommand("GetOrderMasterByStatus", connection))
+                    string spConnection = "GetOrderMasterByStatus";
+                        if(status == "Cancelled")
                     {
-                        command.CommandType = CommandType.StoredProcedure;
-                        if(status != null)
+                        spConnection = "GetOrderMasterByCancelled";
+                    }
+                        using (var command = new SqlCommand(spConnection, connection))
                         {
-                            command.Parameters.Add(new SqlParameter("@Status", status));
-                        }
-
-                        await connection.OpenAsync();
-
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
+                            command.CommandType = CommandType.StoredProcedure;
+                            if (status != null && status != "Cancelled")
                             {
-                                var product = new OrderDataBaseOnStatusDto();
+                                command.Parameters.Add(new SqlParameter("@Status", status));
+                            }
 
-                                product.OrderMasterId = Convert.ToInt32(reader["OrderMasterId"]);
-                                product.OrderNo = reader["OrderNo"].ToString();
-                                product.OrderDate = Convert.ToDateTime(reader["OrderDate"]);
-                                product.Address = reader["Address"].ToString();
-                                product.UserId = Convert.ToInt32(reader["UserId"]);
-                                product.PaymentMethod = reader["PaymentMethod"].ToString();
-                                product.NumberOfItem = Convert.ToInt32(reader["NumberOfItem"]);
-                                product.TotalPrice = Convert.ToInt32(reader["TotalPrice"]);
-                                product.PhoneNumber = reader["PhoneNumber"].ToString();
-                                product.DeliveryCharge = Convert.ToDecimal(reader["DeliveryCharge"]);
-                                product.Status = reader["Status"].ToString();
-                                products.Add(product);
+                            await connection.OpenAsync();
+
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    var product = new OrderDataBaseOnStatusDto();
+
+                                    product.OrderMasterId = Convert.ToInt32(reader["OrderMasterId"]);
+                                    product.OrderNo = reader["OrderNo"].ToString();
+                                    product.OrderDate = Convert.ToDateTime(reader["OrderDate"]);
+                                    product.Address = reader["Address"].ToString();
+                                    product.UserId = Convert.ToInt32(reader["UserId"]);
+                                    product.PaymentMethod = reader["PaymentMethod"].ToString();
+                                    product.NumberOfItem = Convert.ToInt32(reader["NumberOfItem"]);
+                                    product.TotalPrice = Convert.ToInt32(reader["TotalPrice"]);
+                                    product.PhoneNumber = reader["PhoneNumber"].ToString();
+                                    product.DeliveryCharge = Convert.ToDecimal(reader["DeliveryCharge"]);
+                                    product.Status = reader["Status"].ToString();
+                                    products.Add(product);
+                                }
                             }
                         }
-                    }
+                    
+               
+                   
                 }
                 return Ok(products);
             }
@@ -215,6 +223,7 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+        //orderDetailssdd
 
         [HttpGet("GetOrderDetailData")]
         public async Task<IActionResult> GetOrderDetailData(int? OrderMasterId, string? status = null)
