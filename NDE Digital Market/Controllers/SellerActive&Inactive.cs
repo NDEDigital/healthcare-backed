@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NDE_Digital_Market.DTOs;
 using NDE_Digital_Market.SharedServices;
+using Newtonsoft.Json;
 using System.Data.SqlClient;
 
 namespace NDE_Digital_Market.Controllers
@@ -29,31 +30,39 @@ namespace NDE_Digital_Market.Controllers
 
                     using (SqlCommand cmd = new SqlCommand(@"DECLARE @SpecificCompanyCode NVARCHAR(255);
 
-                                                                    IF EXISTS (SELECT * FROM CompanyRegistration WHERE CompanyCode = @CompanyCode )
-                                                                        SET @SpecificCompanyCode = @CompanyCode;
-                                                                    ELSE
-                                                                        SET @SpecificCompanyCode = NULL;
+                                                        IF EXISTS (SELECT * FROM CompanyRegistration WHERE CompanyCode = @CompanyCode)
+                                                            SET @SpecificCompanyCode = @CompanyCode;
+                                                        ELSE
+                                                            SET @SpecificCompanyCode = NULL;
 
-                                                                    SELECT
-                                                                        UR.UserId,
-                                                                        UR.FullName,
-                                                                        UR.PhoneNumber,
-                                                                        UR.Email,
-                                                                        UR.Address,
-                                                                        UR.AddedDate,
-                                                                        UR.IsActive ,
-                                                                        UR.CompanyCode,
-                                                                        UR.IsBuyer,
-																		UR.IsSeller
+                                                        SELECT
+                                                            UR.UserId,
+                                                            UR.FullName,
+                                                            UR.PhoneNumber,
+                                                            UR.Email,
+                                                            UR.Address,
+                                                            UR.AddedDate,
+                                                            UR.IsActive,
+                                                            UR.CompanyCode,
+                                                            UR.IsBuyer,
+                                                            UR.IsSeller,
+	                                                        CR.CompanyCode,
+	                                                        CR.CompanyName
+                                                        FROM
+                                                            UserRegistration UR
+                                                        JOIN
+                                                            CompanyRegistration CR ON UR.CompanyCode = CR.CompanyCode
+                                                        WHERE
+                                                            (
+                                                                (UR.IsSeller = @IsSeller AND UR.IsActive = @IsActive AND
+                                                                    (UR.CompanyCode = @SpecificCompanyCode OR @SpecificCompanyCode IS NULL)
+                                                                )
+                                                            )
+                                                            AND
+                                                            (
+                                                                CR.CompanyCode = @SpecificCompanyCode OR @SpecificCompanyCode IS NULL
+                                                            );
 
-                                                                    FROM
-                                                                        UserRegistration UR
-                                                                    WHERE
-                                                                        (
-                                                                            (UR.IsSeller = @IsSeller AND UR.IsActive = @IsActive AND
-                                                                                (UR.CompanyCode = @SpecificCompanyCode OR @SpecificCompanyCode IS NULL )
-                                                                            )
-                                                                        );
 
                                                                     ", con))
                     {
@@ -78,7 +87,8 @@ namespace NDE_Digital_Market.Controllers
                                 bid.IsActive = reader["IsActive"] as bool? ?? IsActive;
                                 bid.IsSeller = reader["IsSeller"] as bool? ?? IsActive;
                                 bid.CompanyCode = reader["CompanyCode"].ToString();
-                                //bid.CompanyName = reader["CompanyName"].ToString();
+
+                                bid.CompanyName = reader["CompanyName"].ToString();
 
 
                                 bidList.Add(bid);
@@ -87,7 +97,12 @@ namespace NDE_Digital_Market.Controllers
                     }
 
                     con.Close();
+                   
+
+                 
                 }
+              
+
 
                 return bidList;
             }
@@ -96,6 +111,43 @@ namespace NDE_Digital_Market.Controllers
                 Console.WriteLine($"Error: {ex.Message}");
                 // You might want to handle errors more gracefully
                 return null;
+            }
+        }
+        [HttpPut]
+        [Route("updateSellerActive&Inactive/{userId}/{IsActive}")]
+        public IActionResult UpdateUserStatus(int userId, bool IsActive)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_healthCareConnection))
+                {
+                    con.Open();
+
+                    using (SqlCommand cmd = new SqlCommand(@"UPDATE UserRegistration
+                                                     SET IsActive = @IsActive
+                                                     WHERE UserId = @UserId;", con))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", userId);
+                        cmd.Parameters.AddWithValue("@IsActive", IsActive);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        Console.WriteLine(rowsAffected + "ekhane Jhamela");
+                        if (rowsAffected > 0)
+                        {
+                            return Ok(new { message = "Updated Successfully" }); // Update successful
+                        }
+                        else
+                        {
+                            return BadRequest(); // User not found
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                // You might want to handle errors more gracefully
+                return StatusCode(500, "Internal Server Error");
             }
         }
     }
