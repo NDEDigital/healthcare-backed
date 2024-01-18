@@ -47,7 +47,8 @@ namespace NDE_Digital_Market.Controllers
                                                             UR.IsBuyer,
                                                             UR.IsSeller,
 	                                                        CR.CompanyCode,
-	                                                        CR.CompanyName
+	                                                        CR.CompanyName,
+                                                            CR.CompanyAdminId
                                                         FROM
                                                             UserRegistration UR
                                                         JOIN
@@ -87,6 +88,7 @@ namespace NDE_Digital_Market.Controllers
                                 bid.IsActive = reader["IsActive"] as bool? ?? IsActive;
                                 bid.IsSeller = reader["IsSeller"] as bool? ?? IsActive;
                                 bid.CompanyCode = reader["CompanyCode"].ToString();
+                                bid.CompanyAdminId = Convert.ToInt32(reader["CompanyAdminId"]);
 
                                 bid.CompanyName = reader["CompanyName"].ToString();
 
