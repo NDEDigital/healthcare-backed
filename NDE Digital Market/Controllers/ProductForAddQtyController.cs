@@ -359,7 +359,7 @@ namespace NDE_Digital_Market.Controllers
                                 cmd.Parameters.AddWithValue("@DiscountPct", sellerproductdata.DiscountPct ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EffectivateDate", sellerproductdata.EffectivateDate ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EndDate", sellerproductdata.EndDate ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Status", sellerproductdata.Status ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Status", "Pending");
                                 cmd.Parameters.AddWithValue("@IsActive", sellerproductdata.IsActive ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@UpdatedBy", sellerproductdata.UpdatedBy ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@UpdatedDate", sellerproductdata.UpdatedDate ?? (object)DBNull.Value);
@@ -379,7 +379,7 @@ namespace NDE_Digital_Market.Controllers
                                 cmd.Parameters.AddWithValue("@DiscountPct", sellerproductdata.DiscountPct ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EffectivateDate", sellerproductdata.EffectivateDate ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EndDate", sellerproductdata.EndDate ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Status", sellerproductdata.Status ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Status", "Pending");
                                 cmd.Parameters.AddWithValue("@IsActive", sellerproductdata.IsActive ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@UpdatedBy", sellerproductdata.UpdatedBy ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@UpdatedDate", sellerproductdata.UpdatedDate ?? (object)DBNull.Value);
