@@ -454,6 +454,7 @@ namespace NDE_Digital_Market.Controllers
                                 sellerProduct.IsActive = reader["IsActive"] != DBNull.Value ? Convert.ToBoolean(reader["IsActive"]) : false;
                                 sellerProduct.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
                                 sellerProduct.AddedDate = reader["AddedDate"] != DBNull.Value ? Convert.ToDateTime(reader["AddedDate"]) : DateTime.MinValue;
+                                sellerProduct.UnitName = reader["UnitName"].ToString();
 
 
                                 sellerProductsByCompanyCode.Add(sellerProduct);

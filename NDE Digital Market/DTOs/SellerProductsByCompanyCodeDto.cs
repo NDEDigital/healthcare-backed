@@ -17,5 +17,7 @@
         public string Status { get; set; }
         public bool IsActive { get; set; }
         public decimal TotalPrice { get; set; }
+       
+        public string? UnitName { get; set; }
     }
 }
