@@ -359,10 +359,10 @@ namespace NDE_Digital_Market.Controllers
                                 cmd.Parameters.AddWithValue("@DiscountPct", sellerproductdata.DiscountPct ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EffectivateDate", sellerproductdata.EffectivateDate ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EndDate", sellerproductdata.EndDate ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Status", sellerproductdata.Status ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@IsActive", sellerproductdata.IsActive ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Status", "Pending");
+                                cmd.Parameters.AddWithValue("@IsActive", 1);
                                 cmd.Parameters.AddWithValue("@UpdatedBy", sellerproductdata.UpdatedBy ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@UpdatedDate", sellerproductdata.UpdatedDate ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
                                 cmd.Parameters.AddWithValue("@UpdatedPC", sellerproductdata.UpdatedPC ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@TotalPrice", sellerproductdata.TotalPrice ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@ImagePath", ImagePath);
@@ -379,10 +379,10 @@ namespace NDE_Digital_Market.Controllers
                                 cmd.Parameters.AddWithValue("@DiscountPct", sellerproductdata.DiscountPct ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EffectivateDate", sellerproductdata.EffectivateDate ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@EndDate", sellerproductdata.EndDate ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Status", sellerproductdata.Status ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@IsActive", sellerproductdata.IsActive ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Status", "Pending");
+                                cmd.Parameters.AddWithValue("@IsActive", 1);
                                 cmd.Parameters.AddWithValue("@UpdatedBy", sellerproductdata.UpdatedBy ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@UpdatedDate", sellerproductdata.UpdatedDate ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
                                 cmd.Parameters.AddWithValue("@UpdatedPC", sellerproductdata.UpdatedPC ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@TotalPrice", sellerproductdata.TotalPrice ?? (object)DBNull.Value);
 
