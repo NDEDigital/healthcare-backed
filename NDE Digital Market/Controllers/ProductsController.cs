@@ -294,8 +294,10 @@ namespace NDE_Digital_Market.Controllers
                                         TotalPrice = reader.IsDBNull(reader.GetOrdinal("TotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("TotalPrice")),
                                         CompanyCode = reader.IsDBNull(reader.GetOrdinal("CompanyCode")) ? null : reader.GetString(reader.GetOrdinal("CompanyCode")),
                                         CompanyName = reader.IsDBNull(reader.GetOrdinal("CompanyName")) ? null : reader.GetString(reader.GetOrdinal("CompanyName")),
-                                        Status= reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status"))
-
+                                        Status= reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status")),
+                                        PreviousPrice = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PPrice")),
+                                        PreviousDiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PDiscountAmount")),
+                                        PreviousDiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PDiscountPct"))
 
                                     };
                                 products.Add(product);
