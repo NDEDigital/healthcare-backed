@@ -19,5 +19,8 @@
         public decimal TotalPrice { get; set; }
        
         public string? UnitName { get; set; }
+
+        public int ProductGroupID { get; set; }
+        public string ProductGroupName { get; set; }
     }
 }

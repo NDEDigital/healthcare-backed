@@ -417,7 +417,6 @@ namespace NDE_Digital_Market.Controllers
         }
 
 
-
         [HttpGet]
         [Route("GetSellerProductsByCompanyCode")]
         public async Task<IActionResult> GetSellerProductsByCompanyCode(string userID, Int32? status = null)
@@ -455,7 +454,8 @@ namespace NDE_Digital_Market.Controllers
                                 sellerProduct.TotalPrice = reader["TotalPrice"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPrice"]) : 0;
                                 sellerProduct.AddedDate = reader["AddedDate"] != DBNull.Value ? Convert.ToDateTime(reader["AddedDate"]) : DateTime.MinValue;
                                 sellerProduct.UnitName = reader["UnitName"].ToString();
-
+                                sellerProduct.ProductGroupName = reader["ProductGroupName"].ToString();
+                                sellerProduct.ProductGroupID = Convert.ToInt32(reader["ProductGroupID"]);
 
                                 sellerProductsByCompanyCode.Add(sellerProduct);
                             }
@@ -470,7 +470,6 @@ namespace NDE_Digital_Market.Controllers
                 return StatusCode(500, "An error occurred while retrieving companies: " + ex.Message);
             }
         }
-
 
 
 
