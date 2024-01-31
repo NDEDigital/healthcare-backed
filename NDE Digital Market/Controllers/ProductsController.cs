@@ -353,7 +353,7 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode";
+                string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status, UpdatedDate = @UpdatedDate WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode ";
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -362,6 +362,9 @@ namespace NDE_Digital_Market.Controllers
                         command.Parameters.AddWithValue("@UserId", productStatus.UserId);
                         command.Parameters.AddWithValue("@CompanyCode", productStatus.CompanyCode);
                         command.Parameters.AddWithValue("@ProductId", productStatus.ProductId);
+                        command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+
+
 
                         await connection.OpenAsync();
                         // Execute the command
