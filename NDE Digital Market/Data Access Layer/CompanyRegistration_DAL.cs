@@ -172,7 +172,9 @@ public class CompanyRegistration_DAL
         {
             updateSql += " MaxUser = @MaxUser,";
         }
+        updateSql += " DateUpdated = @DateUpdated,";
         updateSql = updateSql.TrimEnd(',');
+
         updateSql += " WHERE CompanyCode = @CompanyCode;";
         SqlCommand cmd = new SqlCommand(updateSql, connection);
         if (companyDto.IsActive != null)
@@ -184,7 +186,7 @@ public class CompanyRegistration_DAL
             cmd.Parameters.AddWithValue("@MaxUser", companyDto.MaxUser);
         }
         cmd.Parameters.AddWithValue("@CompanyCode", companyDto.CompanyCode);
-
+        cmd.Parameters.AddWithValue("@DateUpdated", DateTime.Now);
         await connection.OpenAsync();
         // Execute the update
         int res = await cmd.ExecuteNonQueryAsync();
