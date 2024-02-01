@@ -47,7 +47,8 @@ namespace NDE_Digital_Market.Controllers
                                         WHERE
                                             CR.IsActive = 1
                                             AND UR.IsActive = @IsActive
-                                            AND CR.CompanyAdminId = @UserId
+                                                    AND UR.UserId!=  CR.CompanyAdminId
+                                                                    AND UR.UserId!=@userId
                                             AND EXISTS (
                                                 SELECT 1
                                                 FROM UserRegistration

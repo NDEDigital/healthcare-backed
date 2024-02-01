@@ -18,7 +18,7 @@ namespace NDE_Digital_Market.Controllers
 
         [HttpGet]
         [Route("getSellerActive&Inactive/{IsSeller}")]
-        public List<sellerStatus> CompanySellerDetails(string CompanyCode,bool IsSeller, bool IsActive)
+        public List<sellerStatus> CompanySellerDetails(string CompanyCode, bool IsSeller, bool IsActive)
         {
             List<sellerStatus> bidList = new List<sellerStatus>();
 
@@ -46,6 +46,7 @@ namespace NDE_Digital_Market.Controllers
                                                             UR.CompanyCode,
                                                             UR.IsBuyer,
                                                             UR.IsSeller,
+                                                        
 	                                                        CR.CompanyCode,
 	                                                        CR.CompanyName,
                                                             CR.CompanyAdminId
@@ -73,6 +74,7 @@ namespace NDE_Digital_Market.Controllers
                         cmd.Parameters.AddWithValue("@IsSeller", IsSeller);
 
 
+
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -87,6 +89,8 @@ namespace NDE_Digital_Market.Controllers
                                 bid.AddedDate = (DateTime)(reader["AddedDate"] as DateTime?);
                                 bid.IsActive = reader["IsActive"] as bool? ?? IsActive;
                                 bid.IsSeller = reader["IsSeller"] as bool? ?? IsActive;
+
+
                                 bid.CompanyCode = reader["CompanyCode"].ToString();
                                 bid.CompanyAdminId = Convert.ToInt32(reader["CompanyAdminId"]);
 
@@ -99,11 +103,11 @@ namespace NDE_Digital_Market.Controllers
                     }
 
                     con.Close();
-                   
 
-                 
+
+
                 }
-              
+
 
 
                 return bidList;
