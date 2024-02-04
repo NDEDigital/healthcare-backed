@@ -6,5 +6,7 @@
         public string? ProductName { get; set; }
         public int? UnitId { get; set; }
         public string? UnitName { get; set; }
+        public int? ProductGroupId { get; set; }
+        public string? ProductGroupName { get; set; }
     }
 }

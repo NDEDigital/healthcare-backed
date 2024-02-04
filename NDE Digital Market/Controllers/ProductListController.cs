@@ -235,9 +235,18 @@ namespace NDE_Digital_Market.Controllers
             {
                 List<GetProductListDto> lst = new List<GetProductListDto>();
                 await con.OpenAsync();
-                string query = @"select PL.ProductId, PL.ProductName, PL.UnitId, U.Name as UnitName from ProductList PL 
-                                  join Units U on U.UnitId = PL.UnitId
-                                  where IsActive = 1 ORDER BY ProductId DESC; ";
+                string query = @"SELECT
+                                PL.ProductId, 
+                                PL.ProductName, 
+                                PL.UnitId,
+                                U.Name as UnitName, 
+                                PL.ProductGroupID,
+                                PG.ProductGroupName
+                                FROM ProductList PL
+                                JOIN Units U ON U.UnitId = PL.UnitId
+                                JOIN ProductGroups PG ON PG.ProductGroupID = PL.ProductGroupID 
+                                WHERE PL.IsActive = 1  
+                                ORDER BY PL.ProductId DESC;  ";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
@@ -250,6 +259,10 @@ namespace NDE_Digital_Market.Controllers
                             modelObj.ProductName = reader["ProductName"].ToString();
                             modelObj.UnitId = Convert.ToInt32(reader["UnitId"]);
                             modelObj.UnitName = reader["UnitName"].ToString();
+                            modelObj.ProductGroupId = Convert.ToInt32(reader["ProductGroupID"]);
+                            modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+
+
 
                             lst.Add(modelObj);
                         }
@@ -258,7 +271,7 @@ namespace NDE_Digital_Market.Controllers
 
                 return Ok(lst);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -319,6 +332,62 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
+
+        // ==============================productName by productGroupId===================
+
+        [HttpGet]
+        [Route("GetProductNameByProductGroupId")]
+        public async Task<List<ProductNameByGroup>> GetProductNameByProductGroupId(int ProductGroupId)
+        {
+            List<ProductNameByGroup> lst = new List<ProductNameByGroup>();
+
+            try
+            {
+                await con.OpenAsync();
+                string query = @"SELECT p.ProductName, g.ProductGroupName, p.ProductGroupId, p.ProductId, U.Name 
+                 FROM ProductList p 
+                 INNER JOIN ProductGroups g ON p.ProductGroupId = g.ProductGroupID 
+				 left JOIN Units U ON  U.UnitId = p.UnitId
+                 WHERE p.ProductGroupId = @ProductGroupId;";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    // Add the parameter and its value to the command
+                    cmd.Parameters.AddWithValue("@ProductGroupId", ProductGroupId);
+
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            ProductNameByGroup modelObj = new ProductNameByGroup();
+                            modelObj.ProductGroupId = Convert.ToInt32(reader["ProductGroupID"]);
+                            modelObj.ProductId = Convert.ToInt32(reader["ProductId"]);
+                            modelObj.ProductGroupName = reader["ProductGroupName"].ToString();
+                            modelObj.ProductName = reader["ProductName"].ToString();
+                            modelObj.UnitName = reader["Name"].ToString();
+
+                            lst.Add(modelObj);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                // You might want to throw the exception again if you cannot handle it at this level.
+                throw;
+            }
+            finally
+            {
+                // Ensure the connection is closed, even in case of an exception.
+                if (con.State == ConnectionState.Open)
+                {
+                    await con.CloseAsync();
+                }
+            }
+
+            return lst;
+        }
 
         //========================tushar=========================
 

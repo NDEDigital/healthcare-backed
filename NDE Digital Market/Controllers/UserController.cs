@@ -224,7 +224,7 @@ namespace NDE_Digital_Market.Controllers
             {
                 string query = @"SELECT UR.UserId, UR.IsBuyer, UR.IsAdmin, UR.IsSeller, UR.PasswordHash, UR.PasswordSalt,CR.CompanyAdminId  FROM  UserRegistration UR
                                     LEFT JOIN CompanyRegistration CR ON CR.CompanyCode = UR.CompanyCode AND CR.CompanyAdminId = UR.UserId
-                                    WHERE PhoneNumber = @PhoneNumber";
+                                    WHERE PhoneNumber = @PhoneNumber AND UR.IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, _healthCareConnection);
                 cmd.CommandType = CommandType.Text;
                 cmd.Parameters.AddWithValue("@phoneNumber", user.PhoneNumber);
