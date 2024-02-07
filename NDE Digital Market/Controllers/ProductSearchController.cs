@@ -27,7 +27,7 @@ namespace NDE_Digital_Market.Controllers
         }
 
         [HttpGet("GetSearchedProduct")]
-        public IActionResult GetSearchedProduct(string productName, string sortDirection)
+        public IActionResult GetSearchedProduct(string productName, string sortDirection, int nextCount, int offset)
         {
             try
             {
@@ -35,12 +35,17 @@ namespace NDE_Digital_Market.Controllers
 
                 using (SqlConnection connection = new SqlConnection(_healthCareConnection))
                 {
+                    if (offset > 0)
+                    {
+                        offset = (offset - 1) * 20;
+                    }
                     using (SqlCommand cmd = new SqlCommand("ProductSearch", connection))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Add(new SqlParameter("@ProductName", productName));
                         cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
-
+                        cmd.Parameters.Add(new SqlParameter("@Offset", offset));
+                        cmd.Parameters.Add(new SqlParameter("@NextCount", nextCount));
                         connection.Open();
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
@@ -65,18 +70,33 @@ namespace NDE_Digital_Market.Controllers
                                 productSearchDto.SellerId = reader["SellerId"] is DBNull ? (int?)null : (int)reader["SellerId"];
                                 productSearchDto.AvailableQty = reader["AvailableQty"] is DBNull ? (decimal?)null : (decimal)reader["AvailableQty"];
                                 productSearchDto.TotalCount = reader["TotalCount"] is DBNull ? (int?)null : (int)reader["TotalCount"];
+                                DateTime? endDate = null;
+                                if (reader["EndDate"] != DBNull.Value)
+                                {
+                                    endDate = Convert.ToDateTime(reader["EndDate"]);
+                                    if (endDate <= DateTime.Now)
+                                    {
+
+                                        productSearchDto.TotalPrice = productSearchDto.Price;
+                                        productSearchDto.DiscountAmount = 0;
+                                        productSearchDto.DiscountPct = 0;
+                                    }
+                                }
 
                                 resultList.Add(productSearchDto);
                             }
                         }
                     }
                 }
+
                 return Ok(resultList);
             }
             catch (Exception ex)
             {
+                // Handle the exception here. You can log the exception or perform any other necessary actions.
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return BadRequest(new { message = "An error occurred while processing the request." });
+                // You might want to return a specific error response or customize as needed.
+                return StatusCode(500, new { message = "Internal Server Error" });
             }
         }
 

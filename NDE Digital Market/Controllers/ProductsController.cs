@@ -261,6 +261,7 @@ namespace NDE_Digital_Market.Controllers
         [HttpGet("GetSellerProductForAdminApproval")]
         public async Task<IActionResult> GetSellerProductForAdminApproval(string status)
         {
+            //string DecryptId = CommonServices.DecryptPassword(companyCode);
             var products = new List<ProductStatusDto>();
 
             try
@@ -278,31 +279,35 @@ namespace NDE_Digital_Market.Controllers
                         {
                             while (await reader.ReadAsync())
                             {
-                               
-                                    var product = new ProductStatusDto
+
+                                var product = new ProductStatusDto
                                 {
-                                        ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
-                                        ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
-                                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                                        FullName = reader.GetString(reader.GetOrdinal("FullName")),
-                                        Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price")),
-                                        DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
-                                        DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountPct")),
-                                        EffectivateDate = reader.IsDBNull(reader.GetOrdinal("EffectivateDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EffectivateDate")),
-                                        EndDate = reader.IsDBNull(reader.GetOrdinal("EndDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                                        ImagePath = reader.IsDBNull(reader.GetOrdinal("ImagePath")) ? null : reader.GetString(reader.GetOrdinal("ImagePath")),
-                                        TotalPrice = reader.IsDBNull(reader.GetOrdinal("TotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("TotalPrice")),
-                                        CompanyCode = reader.IsDBNull(reader.GetOrdinal("CompanyCode")) ? null : reader.GetString(reader.GetOrdinal("CompanyCode")),
-                                        CompanyName = reader.IsDBNull(reader.GetOrdinal("CompanyName")) ? null : reader.GetString(reader.GetOrdinal("CompanyName")),
-                                        Status= reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status"))
+                                    ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    FullName = reader.GetString(reader.GetOrdinal("FullName")),
+                                    Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    DiscountAmount = reader.IsDBNull(reader.GetOrdinal("DiscountAmount")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
+                                    DiscountPct = reader.IsDBNull(reader.GetOrdinal("DiscountPct")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DiscountPct")),
+                                    EffectivateDate = reader.IsDBNull(reader.GetOrdinal("EffectivateDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EffectivateDate")),
+                                    EndDate = reader.IsDBNull(reader.GetOrdinal("EndDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                                    ImagePath = reader.IsDBNull(reader.GetOrdinal("ImagePath")) ? null : reader.GetString(reader.GetOrdinal("ImagePath")),
+                                    TotalPrice = reader.IsDBNull(reader.GetOrdinal("TotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("TotalPrice")),
+                                    CompanyCode = reader.IsDBNull(reader.GetOrdinal("CompanyCode")) ? null : reader.GetString(reader.GetOrdinal("CompanyCode")),
+                                    CompanyName = reader.IsDBNull(reader.GetOrdinal("CompanyName")) ? null : reader.GetString(reader.GetOrdinal("CompanyName")),
+                                    Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status")),
+                                    PreviousPrice = reader.IsDBNull(reader.GetOrdinal("PPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PPrice")),
+                                    PreviousDiscountAmount = reader.IsDBNull(reader.GetOrdinal("PDiscountAmount")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PDiscountAmount")),
+                                    PreviousDiscountPct = reader.IsDBNull(reader.GetOrdinal("PDiscountPct")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PDiscountPct")),
+                                    PreviousTotalPrice = reader.IsDBNull(reader.GetOrdinal("PTotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("PTotalPrice"))
 
-
-                                    };
+                                };
                                 products.Add(product);
                             }
                         }
                     }
                 }
+
                 return Ok(products);
             }
             catch (Exception ex)
@@ -311,7 +316,7 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
-            // ======================= DELETE Product ==================
+        // ======================= DELETE Product ==================
 
         [HttpDelete, Authorize(Roles = "seller")]
         [Route("DeleteProduct")]
@@ -351,7 +356,7 @@ namespace NDE_Digital_Market.Controllers
         {
             try
             {
-                string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode";
+                string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status, UpdatedDate = @UpdatedDate WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode ";
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -360,6 +365,9 @@ namespace NDE_Digital_Market.Controllers
                         command.Parameters.AddWithValue("@UserId", productStatus.UserId);
                         command.Parameters.AddWithValue("@CompanyCode", productStatus.CompanyCode);
                         command.Parameters.AddWithValue("@ProductId", productStatus.ProductId);
+                        command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+
+
 
                         await connection.OpenAsync();
                         // Execute the command
