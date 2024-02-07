@@ -352,29 +352,34 @@ namespace NDE_Digital_Market.Controllers
 
         //================== SellerProductPriceAndOffer status Update by Tushar ==================
         [HttpPut("SellerProductStatusUpdate")]
-        public async Task<IActionResult> UpdateSellerProductStatusAsync(ProductStatusDto productStatus)
+        public async Task<IActionResult> UpdateSellerProductStatusAsync(List<ProductStatusDto> productStatusList)
         {
             try
             {
                 string query = @"UPDATE SellerProductPriceAndOffer SET Status = @Status, UpdatedDate = @UpdatedDate WHERE ProductId = @ProductId AND UserId = @UserId AND CompanyCode = @CompanyCode ";
+
                 using (var connection = new SqlConnection(_healthCareConnection))
                 {
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    await connection.OpenAsync();
+
+                    foreach (var productStatus in productStatusList)
                     {
-                        command.Parameters.AddWithValue("@Status", productStatus.Status);
-                        command.Parameters.AddWithValue("@UserId", productStatus.UserId);
-                        command.Parameters.AddWithValue("@CompanyCode", productStatus.CompanyCode);
-                        command.Parameters.AddWithValue("@ProductId", productStatus.ProductId);
-                        command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@Status", productStatus.Status);
+                            command.Parameters.AddWithValue("@UserId", productStatus.UserId);
+                            command.Parameters.AddWithValue("@CompanyCode", productStatus.CompanyCode);
+                            command.Parameters.AddWithValue("@ProductId", productStatus.ProductId);
+                            command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
 
-
-
-                        await connection.OpenAsync();
-                        // Execute the command
-                        await command.ExecuteNonQueryAsync();
-                        await connection.CloseAsync();
+                            // Execute the command
+                            await command.ExecuteNonQueryAsync();
+                        }
                     }
+
+                    await connection.CloseAsync();
                 }
+
                 return Ok(new { message = "SellerProduct status Changed successfully." });
             }
             catch (Exception ex)

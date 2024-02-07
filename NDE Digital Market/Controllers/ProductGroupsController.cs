@@ -329,17 +329,15 @@ namespace NDE_Digital_Market.Controllers
         //========================tushar=========================
 
         [HttpPut("MakeGroupActiveOrInactive")]
-        public async Task<IActionResult> MakeGroupActiveOrInactiveAsync(int? groupId, bool? IsActive)
+        public async Task<IActionResult> MakeGroupActiveOrInactiveAsync(string groupIds, bool? IsActive)
         {
             try
             {
-                string query = @"UPDATE ProductGroups
-                                    SET IsActive = @IsActive
-                                    WHERE ProductGroupID = @groupId";
+                string query = $"UPDATE ProductGroups  SET IsActive = @IsActive WHERE ProductGroupID IN ({groupIds})";
                 using (SqlCommand command = new SqlCommand(query, con))
                 {
                     command.Parameters.AddWithValue("@IsActive", IsActive);
-                    command.Parameters.AddWithValue("@groupId", groupId);
+                    command.Parameters.AddWithValue("@groupId", groupIds);
 
                     await con.OpenAsync();
                     // Execute the command

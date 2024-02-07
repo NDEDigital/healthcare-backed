@@ -392,32 +392,48 @@ namespace NDE_Digital_Market.Controllers
         //========================tushar=========================
 
         [HttpPut("MakeProductActiveOrInactive")]
-        public async Task<IActionResult> MakeProductActiveOrInactiveAsync(int? productId, bool? IsActive)
+
+
+        public async Task<IActionResult> MakeProductActiveOrInactiveAsync(List<int> productIds, bool? IsActive)
         {
             try
             {
                 string query = @"UPDATE ProductList
-                                    SET IsActive = @IsActive
-                                    WHERE ProductId = @ProductId";
-                    using (SqlCommand command = new SqlCommand(query, con))
-                    {
-                        command.Parameters.AddWithValue("@IsActive", IsActive);
-                        command.Parameters.AddWithValue("@ProductId", productId);
+                          SET IsActive = @IsActive
+                          WHERE ProductId IN ({0})";
 
-                        await con.OpenAsync();
-                        // Execute the command
-                        int Res = await command.ExecuteNonQueryAsync();
-                        if(Res == 0)
-                        {
-                            return BadRequest(new { message = $"Product didnot found." });
-                        }
-                        await con.CloseAsync();
+                // Create a parameterized list of parameters for the IN clause
+                string parameterList = string.Join(",", productIds.Select((_, index) => $"@ProductId{index}"));
+                query = string.Format(query, parameterList);
+
+                using (SqlCommand command = new SqlCommand(query, con))
+                {
+                    // Add parameters for productIds
+                    for (int i = 0; i < productIds.Count; i++)
+                    {
+                        command.Parameters.AddWithValue($"@ProductId{i}", productIds[i]);
                     }
-                return Ok(new { message = $"Product IsActive status changed." });
+
+                    command.Parameters.AddWithValue("@IsActive", IsActive);
+
+                    await con.OpenAsync();
+
+                    // Execute the command
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                    if (rowsAffected == 0)
+                    {
+                        return BadRequest(new { message = $"No products found." });
+                    }
+
+                    await con.CloseAsync();
+                }
+
+                return Ok(new { message = $"Products' IsActive status changed." });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = $"Product IsActive status not change : {ex.Message}" });
+                return BadRequest(new { message = $"Products' IsActive status not changed: {ex.Message}" });
             }
         }
 
