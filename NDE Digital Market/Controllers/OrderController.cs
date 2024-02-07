@@ -982,7 +982,6 @@ namespace NDE_Digital_Market.Controllers
             }
         }
 
-
         [HttpGet("getAllOrderForBuyer")]
         public async Task<IActionResult> getAllOrderForBuyerAsync(string userid, string? status)
         {
@@ -994,7 +993,7 @@ namespace NDE_Digital_Market.Controllers
 
                 if (status != null)
                 {
-                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
+                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OM.TotalPrice, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
                                   PL.ImagePath, OD.Qty, OD.Price, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
@@ -1002,7 +1001,7 @@ namespace NDE_Digital_Market.Controllers
                 }
                 else
                 {
-                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
+                    query = @"select OM.OrderMasterId, OM.OrderNo, OM.OrderDate, OM.TotalPrice, OD.OrderDetailId, OD.ProductId, PL.ProductName, 
                                   PL.ImagePath, OD.Qty, OD.Price, OD.Status  from OrderMaster OM
                                   join OrderDetails OD on OM.OrderMasterId = OD.OrderMasterId
                                   join ProductList PL on PL.ProductId = OD.ProductId
@@ -1037,6 +1036,7 @@ namespace NDE_Digital_Market.Controllers
                                 Master.OrderMasterId = OrderMasterId;
                                 Master.OrderNo = reader.IsDBNull("OrderNo") ? (string?)null : reader["OrderNo"].ToString();
                                 Master.OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? (DateTime?)null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("OrderDate"));
+                                Master.TotalPrice = reader.IsDBNull(reader.GetOrdinal("TotalPrice")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("TotalPrice"));
 
                                 MasterList.Add(Master);
 
@@ -1532,12 +1532,13 @@ namespace NDE_Digital_Market.Controllers
                                     Detail.ProductGroupID = reader.IsDBNull("ProductGroupID") ? (int?)null : Convert.ToInt32(reader["ProductGroupID"]);
 
 
+                                    Detail.ReturnTypeName = reader.IsDBNull("ReturnTypeName") ? null : reader["ReturnTypeName"].ToString();
                                     Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
 
                                     Master.TotalPrice += Detail.Price * Detail.Qty;
 
                                     Master.TotalDeliveryCharge += reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
-                                    
+
                                 }
                                 Master.OrderDetailsListForSeller.Add(Detail);
 
@@ -1567,13 +1568,14 @@ namespace NDE_Digital_Market.Controllers
                                     Detail.Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("Price"));
                                     Detail.DeliveryCharge = reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
 
+                                    Detail.ReturnTypeName = reader.IsDBNull("ReturnTypeName") ? null : reader["ReturnTypeName"].ToString();
 
                                     Detail.Status = reader.IsDBNull("Status") ? null : reader["Status"].ToString();
 
                                     Master.TotalPrice += Detail.Price * Detail.Qty;
 
                                     Master.TotalDeliveryCharge += reader.IsDBNull(reader.GetOrdinal("DeliveryCharge")) ? (decimal?)null : (decimal?)reader.GetDecimal(reader.GetOrdinal("DeliveryCharge"));
-                                   // Master.TotalAmount += Master.TotalPrice + Detail.DeliveryCharge;
+                                    // Master.TotalAmount += Master.TotalPrice + Detail.DeliveryCharge;
                                 }
                                 Master.OrderDetailsListForSeller.Add(Detail);
                             }
